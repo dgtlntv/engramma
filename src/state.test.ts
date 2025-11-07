@@ -1,10 +1,12 @@
 import { test, expect } from "vitest";
 import { TreeState } from "./state.svelte";
 
+const meta = undefined;
+
 test("should work as a regular tree store", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "", meta });
   });
   const nodes = state.values();
   expect(nodes).toHaveLength(1);
@@ -14,9 +16,9 @@ test("should work as a regular tree store", () => {
 test("should support multiple operations", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "root", parentId: undefined, index: "" });
-    tx.set({ nodeId: "child1", parentId: "root", index: "" });
-    tx.set({ nodeId: "child2", parentId: "root", index: "" });
+    tx.set({ nodeId: "root", parentId: undefined, index: "", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "", meta });
   });
   const children = state.getChildren("root");
   expect(children).toHaveLength(2);
@@ -29,9 +31,9 @@ test("should support multiple operations", () => {
 test("should maintain tree structure", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "root", parentId: undefined, index: "" });
-    tx.set({ nodeId: "parent1", parentId: "root", index: "" });
-    tx.set({ nodeId: "child1", parentId: "parent1", index: "" });
+    tx.set({ nodeId: "root", parentId: undefined, index: "", meta });
+    tx.set({ nodeId: "parent1", parentId: "root", index: "", meta });
+    tx.set({ nodeId: "child1", parentId: "parent1", index: "", meta });
   });
   const allNodes = state.values();
   expect(allNodes).toHaveLength(3);
@@ -43,8 +45,8 @@ test("should maintain tree structure", () => {
 test("should auto-generate indices", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "b0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "b0", meta });
   });
   const children = state.getChildren(undefined);
   expect(children[0].index).toBe("a0");
@@ -54,8 +56,8 @@ test("should auto-generate indices", () => {
 test("should support explicit indices", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "z0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "z0", meta });
   });
   const children = state.getChildren(undefined);
   expect(children[0].index).toBe("a0");
@@ -65,8 +67,8 @@ test("should support explicit indices", () => {
 test("should update existing nodes", () => {
   const state = new TreeState();
   state.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node1", parentId: "parent1", index: "b0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node1", parentId: "parent1", index: "b0", meta });
   });
   const nodes = state.values();
   expect(nodes).toHaveLength(1);

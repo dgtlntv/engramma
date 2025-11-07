@@ -1,6 +1,8 @@
 import { test, expect } from "vitest";
 import { TreeStore } from "./store";
 
+const meta = undefined;
+
 test("should add a node with auto-generated index", () => {
   const store = new TreeStore();
   store.transact((tx) => {
@@ -19,11 +21,11 @@ test("should add a node with auto-generated index", () => {
 });
 
 test("should add multiple nodes and sort by index", () => {
-  const store = new TreeStore();
+  const store = new TreeStore<undefined>();
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "b0" });
-    tx.set({ nodeId: "node3", parentId: undefined, index: "c0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "b0", meta });
+    tx.set({ nodeId: "node3", parentId: undefined, index: "c0", meta });
   });
   const nodes = store.values();
   expect(nodes).toHaveLength(3);
@@ -40,8 +42,8 @@ test("should add multiple nodes and sort by index", () => {
 test("should add nodes with specific indices", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "z0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "z0", meta });
   });
   const children = store.getChildren(undefined);
   expect(children[0].index).toBe("a0");
@@ -51,9 +53,9 @@ test("should add nodes with specific indices", () => {
 test("should support hierarchical nodes", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "root", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "child1", parentId: "root", index: "a0" });
-    tx.set({ nodeId: "child2", parentId: "root", index: "b0" });
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
   });
   const rootChildren = store.getChildren("root");
   expect(rootChildren).toHaveLength(2);
@@ -65,8 +67,8 @@ test("should support hierarchical nodes", () => {
 test("should delete nodes", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "b0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "b0", meta });
   });
   expect(store.values()).toHaveLength(2);
   store.transact((tx) => {
@@ -80,10 +82,10 @@ test("should delete nodes", () => {
 test("should update existing node", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
   });
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: "parent1", index: "b0" });
+    tx.set({ nodeId: "node1", parentId: "parent1", index: "b0", meta });
   });
   const nodes = store.values();
   expect(nodes).toHaveLength(1);
@@ -94,9 +96,9 @@ test("should update existing node", () => {
 test("should return values() correctly", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: "node1", index: "a0" });
-    tx.set({ nodeId: "node3", parentId: "node1", index: "b0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: "node1", index: "a0", meta });
+    tx.set({ nodeId: "node3", parentId: "node1", index: "b0", meta });
   });
   const values = store.values();
   expect(values).toHaveLength(3);
@@ -110,8 +112,8 @@ test("should return values() correctly", () => {
 test("should maintain fractional indices for proper ordering", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "node2", parentId: undefined, index: "b0" });
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "b0", meta });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
   });
   const children = store.getChildren(undefined);
   expect(children[0].index < children[1].index).toBe(true);
@@ -120,10 +122,10 @@ test("should maintain fractional indices for proper ordering", () => {
 test("should handle nested hierarchies", () => {
   const store = new TreeStore();
   store.transact((tx) => {
-    tx.set({ nodeId: "root", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "parent1", parentId: "root", index: "a0" });
-    tx.set({ nodeId: "child1", parentId: "parent1", index: "a0" });
-    tx.set({ nodeId: "child2", parentId: "parent1", index: "b0" });
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "parent1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "parent1", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "parent1", index: "b0", meta });
   });
   const rootChildren = store.getChildren("root");
   expect(rootChildren).toHaveLength(1);
@@ -140,9 +142,9 @@ test("should notify subscribers only once per transaction", () => {
     notifyCount++;
   });
   store.transact((tx) => {
-    tx.set({ nodeId: "node1", parentId: undefined, index: "a0" });
-    tx.set({ nodeId: "node2", parentId: undefined, index: "b0" });
-    tx.set({ nodeId: "node3", parentId: undefined, index: "c0" });
+    tx.set({ nodeId: "node1", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "node2", parentId: undefined, index: "b0", meta });
+    tx.set({ nodeId: "node3", parentId: undefined, index: "c0", meta });
   });
   // Should notify only once after the transaction completes
   expect(notifyCount).toBe(1);

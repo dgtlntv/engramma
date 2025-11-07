@@ -1,16 +1,19 @@
-export interface Transaction {
-  set: (node: TreeNode) => void;
+export interface Transaction<Meta> {
+  set: (node: TreeNode<Meta>) => void;
   delete: (nodeId: string) => void;
 }
 
-export interface TreeNode {
+export interface TreeNode<Meta> {
   nodeId: string;
   parentId: string | undefined;
   index: string;
-  meta?: undefined;
+  meta: Meta;
 }
 
-export const compareTreeNodes = (a: TreeNode, b: TreeNode) => {
+export const compareTreeNodes = <Meta>(
+  a: TreeNode<Meta>,
+  b: TreeNode<Meta>,
+) => {
   if (a.index < b.index) {
     return -1;
   }
@@ -20,11 +23,11 @@ export const compareTreeNodes = (a: TreeNode, b: TreeNode) => {
   return 0;
 };
 
-export class TreeStore {
-  #nodes = new Map<string, TreeNode>();
+export class TreeStore<Meta> {
+  #nodes = new Map<string, TreeNode<Meta>>();
   #subscribers = new Set<() => void>();
 
-  transact(callback: (tx: Transaction) => void): void {
+  transact(callback: (tx: Transaction<Meta>) => void): void {
     callback({
       set: (node) => {
         this.#nodes.set(node.nodeId, node);
@@ -36,11 +39,11 @@ export class TreeStore {
     this.#notify();
   }
 
-  values(): TreeNode[] {
+  values(): TreeNode<Meta>[] {
     return Array.from(this.#nodes.values());
   }
 
-  getChildren(nodeId: string | undefined): TreeNode[] {
+  getChildren(nodeId: string | undefined): TreeNode<Meta>[] {
     return Array.from(this.#nodes.values())
       .filter((node) => node.parentId === nodeId)
       .sort(compareTreeNodes);
