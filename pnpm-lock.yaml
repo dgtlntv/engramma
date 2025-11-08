@@ -17,9 +17,9 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.5
         version: 5.0.5
-      fractional-index:
-        specifier: ^1.0.0
-        version: 1.0.0
+      fractional-indexing:
+        specifier: ^3.2.0
+        version: 3.2.0
       nano-staged:
         specifier: ^0.8.0
         version: 0.8.0
@@ -50,6 +50,9 @@ importers:
       vitest:
         specifier: ^4.0.3
         version: 4.0.8
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
 
 packages:
 
@@ -479,8 +482,9 @@ packages:
       picomatch:
         optional: true
 
-  fractional-index@1.0.0:
-    resolution: {integrity: sha512-AsCqhK0KuX37mZC8BtP9jSTfor6GxIivLYhbYJS1e6gW//kph+d9oF+BM/Y6NMcCHfGCxhuj+ueyXLLIc+ri1A==}
+  fractional-indexing@3.2.0:
+    resolution: {integrity: sha512-PcOxmqwYCW7O2ovKRU8OoQQj2yqTfEB/yeTYk4gPid6dN5ODRfU1hXd9tTVZzax/0NkO7AxpHykvZnT1aYp/BQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -700,6 +704,9 @@ packages:
 
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
+
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
 
 snapshots:
 
@@ -1018,7 +1025,7 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
-  fractional-index@1.0.0: {}
+  fractional-indexing@3.2.0: {}
 
   fsevents@2.3.3:
     optional: true
@@ -1222,3 +1229,5 @@ snapshots:
       stackback: 0.0.2
 
   zimmerframe@1.1.4: {}
+
+  zod@4.1.12: {}

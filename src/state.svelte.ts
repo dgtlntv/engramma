@@ -1,28 +1,22 @@
 import { createSubscriber } from "svelte/reactivity";
 import { TreeStore, type Transaction, type TreeNode } from "./store";
+import type { Value } from "./schema";
 
 export type GroupMeta = {
   nodeType: "token-group";
   name: string;
-  path: string;
   type?: string;
   description?: string;
   deprecated?: boolean | string;
   extensions?: Record<string, unknown>;
-  extends?: string; // e.g. "{button}"
 };
 
-export type TokenMeta = {
+export type TokenMeta = Value & {
   nodeType: "token";
   name: string;
-  path: string;
-  type?: string;
   description?: string;
   deprecated?: boolean | string;
   extensions?: Record<string, unknown>;
-  value?: unknown; // original $value, untouched
-  alias?: string | null; // "{group.token}"
-  ref?: string | null; // "#/pointer"
 };
 
 export class TreeState<Meta> {
