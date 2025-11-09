@@ -1,5 +1,8 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import stringify from "json-stringify-pretty-compact";
+  import TreeView from "./tree-view.svelte";
+  import type { TreeItem } from "./tree-view.svelte";
   import { treeState } from "./state.svelte";
   import type { GroupMeta, TokenMeta } from "./state.svelte";
   import type { TreeNode } from "./store";
@@ -8,77 +11,25 @@
 
   const rootNodes = $derived(treeState.getChildren(undefined));
 
-  let expandedNodes = $state(new Set<string>());
-  let selectedNodeId = $state<string | null>(null);
+  let selectedItems = new SvelteSet<string>();
   let outputMode = $state<"css" | "json">("css");
 
-  function toggleNode(nodeId: string) {
-    const newSet = new Set(expandedNodes);
-    if (newSet.has(nodeId)) {
-      newSet.delete(nodeId);
-    } else {
-      newSet.add(nodeId);
-    }
-    expandedNodes = newSet;
+  function buildTreeItem(node: TreeNode<GroupMeta | TokenMeta>): TreeItem {
+    const children = treeState.getChildren(node.nodeId);
+    return {
+      id: node.nodeId,
+      name: node.meta.name,
+      children: children.map(buildTreeItem),
+    };
   }
 
-  function selectNode(nodeId: string) {
-    selectedNodeId = nodeId;
-  }
+  const treeData = $derived(rootNodes.map(buildTreeItem));
+  const defaultExpandedItems = $derived([]);
 
-  function getChildren(nodeId: string): TreeNode<GroupMeta | TokenMeta>[] {
-    return treeState.getChildren(nodeId);
-  }
-
-  function formatValue(meta: GroupMeta | TokenMeta): string | null {
-    if (meta.nodeType !== "token") return null;
-
-    switch (meta.type) {
-      case "color": {
-        const { colorSpace, components } = meta.value;
-        if (colorSpace === "srgb" && components.length >= 3) {
-          const r = Math.round(components[0] * 255);
-          const g = Math.round(components[1] * 255);
-          const b = Math.round(components[2] * 255);
-          const a = components[3];
-          if (a !== undefined) {
-            return `rgba(${r}, ${g}, ${b}, ${a})`;
-          }
-          return `rgb(${r}, ${g}, ${b})`;
-        }
-        return `${colorSpace}(${components.join(", ")})`;
-      }
-      case "dimension":
-        return `${meta.value.value}${meta.value.unit}`;
-      case "duration":
-        return `${meta.value.value}${meta.value.unit}`;
-      case "number":
-        return String(meta.value);
-      case "fontFamily":
-        return Array.isArray(meta.value) ? meta.value[0] : meta.value;
-      case "fontWeight":
-        return String(meta.value);
-      case "cubicBezier":
-        return `cubic-bezier(${meta.value.join(", ")})`;
-      case "transition":
-        return `${meta.value.duration.value}${meta.value.duration.unit}`;
-      case "shadow":
-        return "shadow";
-      case "border":
-        return "border";
-      case "typography":
-        return "typography";
-      case "strokeStyle":
-        return typeof meta.value === "string" ? meta.value : "custom stroke";
-      case "gradient":
-        return "gradient";
-      default:
-        return null;
-    }
-  }
-
-  function getColorPreview(meta: GroupMeta | TokenMeta): string | null {
-    if (meta.nodeType !== "token" || meta.type !== "color") return null;
+  function getColorPreview(
+    meta: undefined | GroupMeta | TokenMeta,
+  ): string | null {
+    if (meta?.nodeType !== "token" || meta.type !== "color") return null;
 
     const { colorSpace, components } = meta.value;
     if (colorSpace === "srgb" && components.length === 3) {
@@ -96,51 +47,6 @@
     stringify(serializeDesignTokens(treeState.nodes())),
   );
 </script>
-
-{#snippet treeItem(node: TreeNode<GroupMeta | TokenMeta>, depth: number)}
-  {@const children = getChildren(node.nodeId)}
-  {@const hasChildren = children.length > 0}
-  {@const isExpanded = expandedNodes.has(node.nodeId)}
-  {@const isSelected = selectedNodeId === node.nodeId}
-  {@const valuePreview = formatValue(node.meta)}
-  {@const colorPreview = getColorPreview(node.meta)}
-
-  <div class="tree-node" style="padding-left: {depth * 16}px;">
-    {#if hasChildren}
-      <button
-        class="tree-toggle"
-        onclick={() => toggleNode(node.nodeId)}
-        title={isExpanded ? "Collapse" : "Expand"}
-      >
-        <span class="tree-chevron" class:rotated={isExpanded}> ▶ </span>
-      </button>
-      <span class="tree-folder-icon">📁</span>
-    {:else}
-      <span class="tree-spacer"></span>
-    {/if}
-    {#if colorPreview}
-      <div class="token-preview" style="background: {colorPreview};"></div>
-    {/if}
-    <button
-      class="tree-label"
-      class:selected={isSelected}
-      onclick={() => selectNode(node.nodeId)}
-    >
-      {node.meta.name}
-    </button>
-    {#if valuePreview}
-      <div class="tree-preview">
-        <span class="tree-preview-value">{valuePreview}</span>
-      </div>
-    {/if}
-  </div>
-
-  {#if isExpanded && hasChildren}
-    {#each children as child (child.nodeId)}
-      {@render treeItem(child, depth + 1)}
-    {/each}
-  {/if}
-{/snippet}
 
 <div class="container">
   <!-- Toolbar -->
@@ -176,11 +82,30 @@
         <button class="add-btn" title="Add token">+</button>
       </div>
 
-      <div class="tokens-list">
-        {#each rootNodes as node (node.nodeId)}
-          {@render treeItem(node, 0)}
-        {/each}
-      </div>
+      {#snippet renderTreeItem(item: TreeItem)}
+        {@const meta = treeState.getNode(item.id)?.meta}
+        <div class="token">
+          {#if meta?.nodeType === "token" && meta?.type === "color"}
+            <div
+              class="token-preview"
+              style="background: {getColorPreview(meta)};"
+            ></div>
+          {/if}
+          <span class="token-name">{item.name}</span>
+          {#if meta?.type}
+            <div class="token-hint">{meta.type}</div>
+          {/if}
+        </div>
+      {/snippet}
+
+      <TreeView
+        id="tokens-tree"
+        label="Design Tokens"
+        data={treeData}
+        {selectedItems}
+        {defaultExpandedItems}
+        renderItem={renderTreeItem}
+      />
     </aside>
 
     <!-- Right Panel: CSS Variables / JSON -->
@@ -217,3 +142,209 @@
     </main>
   </div>
 </div>
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    height: 56px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  .toolbar-section {
+    display: flex;
+    gap: 4px;
+  }
+
+  .toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 18px;
+    transition: all 0.2s ease;
+  }
+
+  .toolbar-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .toolbar-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Main content */
+  .content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Panels */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+  }
+
+  .left-panel {
+    width: 50%;
+    border-right: 1px solid var(--border-color);
+  }
+
+  .right-panel {
+    flex: 1;
+    border-right: none;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    height: 60px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    background: var(--bg-primary);
+    gap: 16px;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .add-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* Tree structure */
+  .token {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    transition: all 0.2s ease;
+  }
+
+  .token-preview {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  .token-hint {
+    font-size: 12px;
+    opacity: 0.6;
+    font-family: var(--typography-monospace-code);
+  }
+
+  .token-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  /* CSS Textarea */
+  .css-textarea {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--typography-monospace-code);
+    font-size: 13px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+  }
+
+  .css-textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+
+  /* Output mode switcher */
+  .output-mode-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 6px;
+  }
+
+  .mode-btn {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+
+  .mode-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .mode-btn.active:hover {
+    background: var(--accent-hover);
+  }
+</style>

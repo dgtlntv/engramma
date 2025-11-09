@@ -39,6 +39,11 @@ export class TreeState<Meta> {
     return this.#store.nodes();
   }
 
+  getNode(nodeId: string): undefined | TreeNode<Meta> {
+    this.#subscribe();
+    return this.#store.nodes().get(nodeId);
+  }
+
   getChildren(nodeId: string | undefined): TreeNode<Meta>[] {
     this.#subscribe();
     return this.#store.getChildren(nodeId);
