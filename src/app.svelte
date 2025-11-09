@@ -3,7 +3,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import { hotkeyKeyUX, hotkeyMacCompat, startKeyUX } from "keyux";
   import stringify from "json-stringify-pretty-compact";
-  import { Settings } from "@lucide/svelte";
+  import { Plus, Settings } from "@lucide/svelte";
   import TreeView, { type TreeItem } from "./tree-view.svelte";
   import { treeState, type TreeNodeMeta } from "./state.svelte";
   import Editor from "./editor.svelte";
@@ -131,7 +131,9 @@
     <aside class="panel left-panel">
       <div class="panel-header">
         <h2 class="panel-title">Design Tokens</h2>
-        <button class="add-btn" title="Add token">+</button>
+        <button class="add-btn" title="Add token">
+          <Plus size={20} />
+        </button>
       </div>
 
       {#snippet renderTreeItem(item: TreeItem)}
@@ -244,7 +246,6 @@
     border: none;
     background: transparent;
     border-radius: 6px;
-    cursor: pointer;
     color: var(--text-secondary);
     font-size: 18px;
     transition: all 0.2s ease;
@@ -313,20 +314,17 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: 1px solid var(--border-color);
+    border: none;
     background: transparent;
     border-radius: 4px;
-    cursor: pointer;
     color: var(--text-secondary);
-    font-size: 16px;
-    font-weight: 600;
     transition: all 0.2s ease;
+    padding: 0;
   }
 
   .add-btn:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
+    background: var(--bg-hover);
+    color: var(--text-primary);
   }
 
   /* Tree structure */
@@ -357,10 +355,10 @@
     font-size: 14px;
     font-weight: 400;
     color: var(--text-primary);
-    flex: 1;
   }
 
   .edit-btn {
+    pointer-events: auto;
     visibility: var(--tree-view-item-hover-visibility);
     display: flex;
     align-items: center;
@@ -371,7 +369,6 @@
     border: none;
     background: transparent;
     border-radius: 4px;
-    cursor: pointer;
     color: var(--text-primary);
     opacity: 0.6;
     transition: all 0.2s ease;
@@ -421,7 +418,6 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-radius: 4px;
-    cursor: pointer;
     transition: all 0.2s ease;
   }
 

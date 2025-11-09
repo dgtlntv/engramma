@@ -150,7 +150,6 @@
     border: none;
     background: transparent;
     border-radius: 4px;
-    cursor: pointer;
     color: var(--text-secondary);
     transition: all 0.2s ease;
     padding: 0;

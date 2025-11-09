@@ -258,11 +258,13 @@
       <button class="toggle" tabindex="-1" onclick={toggleItem}>
         <ChevronDown size={16} />
       </button>
-      {#if renderItem}
-        {@render renderItem(itemData)}
-      {:else}
-        <div class="name">{name}</div>
-      {/if}
+      <div class="item">
+        {#if renderItem}
+          {@render renderItem(itemData)}
+        {:else}
+          <div class="name">{name}</div>
+        {/if}
+      </div>
     </div>
     <div role="group">
       {#each children as child, position (child.id)}
@@ -388,8 +390,13 @@
     }
   }
 
-  .name {
+  .item {
     isolation: isolate;
+    flex: 1;
+    pointer-events: none;
+  }
+
+  .name {
     font-size: 14px;
     pointer-events: none;
     padding: 4px 0;
