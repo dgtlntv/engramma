@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { kebabCase } from "change-case";
   import stringify from "json-stringify-pretty-compact";
   import { treeState } from "./state.svelte";
   import type { GroupMeta, TokenMeta } from "./state.svelte";
   import type { TreeNode } from "./store";
   import { serializeDesignTokens } from "./tokens";
+  import { generateCssVariables } from "./css-variables";
 
   const rootNodes = $derived(treeState.getChildren(undefined));
 
@@ -36,10 +36,14 @@
     switch (meta.type) {
       case "color": {
         const { colorSpace, components } = meta.value;
-        if (colorSpace === "srgb" && components.length === 3) {
+        if (colorSpace === "srgb" && components.length >= 3) {
           const r = Math.round(components[0] * 255);
           const g = Math.round(components[1] * 255);
           const b = Math.round(components[2] * 255);
+          const a = components[3];
+          if (a !== undefined) {
+            return `rgba(${r}, ${g}, ${b}, ${a})`;
+          }
           return `rgb(${r}, ${g}, ${b})`;
         }
         return `${colorSpace}(${components.join(", ")})`;
@@ -56,6 +60,18 @@
         return String(meta.value);
       case "cubicBezier":
         return `cubic-bezier(${meta.value.join(", ")})`;
+      case "transition":
+        return `${meta.value.duration.value}${meta.value.duration.unit}`;
+      case "shadow":
+        return "shadow";
+      case "border":
+        return "border";
+      case "typography":
+        return "typography";
+      case "strokeStyle":
+        return typeof meta.value === "string" ? meta.value : "custom stroke";
+      case "gradient":
+        return "gradient";
       default:
         return null;
     }
@@ -74,55 +90,11 @@
     return "transparent";
   }
 
-  function buildPath(nodeId: string): string[] {
-    const path: string[] = [];
-    let currentId: string | null = nodeId;
+  const cssOutput = $derived(generateCssVariables(treeState.nodes()));
 
-    while (currentId) {
-      const nodes = treeState.values();
-      const node = nodes.find((n) => n.nodeId === currentId);
-      if (!node) break;
-
-      path.unshift(node.meta.name);
-      currentId = node.parentId ?? null;
-    }
-
-    return path;
-  }
-
-  function generateCssVariables(): string {
-    const nodes = treeState.values();
-    const tokens = nodes.filter((node) => node.meta.nodeType === "token");
-
-    if (tokens.length === 0) {
-      return ":root {\n  /* No tokens defined */\n}";
-    }
-
-    const cssVars = tokens
-      .map((node) => {
-        const tokenMeta = node.meta as TokenMeta;
-        const path = buildPath(node.nodeId);
-        const kebabPath = path.map((segment) => kebabCase(segment));
-        const varName = `--${kebabPath.join("-")}`;
-        const value = formatValue(tokenMeta);
-
-        if (value === null) return null;
-
-        return `  ${varName}: ${value};`;
-      })
-      .filter((line): line is string => line !== null);
-
-    return `:root {\n${cssVars.join("\n")}\n}`;
-  }
-
-  const cssOutput = $derived(generateCssVariables());
-
-  function serializeToJson(): string {
-    const result = serializeDesignTokens(treeState.nodes());
-    return stringify(result);
-  }
-
-  const jsonOutput = $derived(serializeToJson());
+  const jsonOutput = $derived(
+    stringify(serializeDesignTokens(treeState.nodes())),
+  );
 </script>
 
 {#snippet treeItem(node: TreeNode<GroupMeta | TokenMeta>, depth: number)}

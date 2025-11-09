@@ -5,7 +5,9 @@ const ColorValueSchema = z.object({
   components: z.array(z.number()),
 });
 
-export const ColorSchema = z.object({
+export type ColorValue = z.infer<typeof ColorValueSchema>;
+
+const ColorSchema = z.object({
   type: z.literal("color"),
   value: ColorValueSchema,
 });
@@ -15,7 +17,9 @@ const DimensionValueSchema = z.object({
   unit: z.enum(["px", "rem"]),
 });
 
-export const DimensionSchema = z.object({
+export type DimensionValue = z.infer<typeof DimensionValueSchema>;
+
+const DimensionSchema = z.object({
   type: z.literal("dimension"),
   value: DimensionValueSchema,
 });
@@ -25,12 +29,14 @@ const DurationValueSchema = z.object({
   unit: z.enum(["ms", "s"]),
 });
 
-export const DurationSchema = z.object({
+export type DurationValue = z.infer<typeof DurationValueSchema>;
+
+const DurationSchema = z.object({
   type: z.literal("duration"),
   value: DurationValueSchema,
 });
 
-export const NumberSchema = z.object({
+const NumberSchema = z.object({
   type: z.literal("number"),
   value: z.number(),
 });
@@ -42,32 +48,40 @@ const CubicBezierValueSchema = z
     "Cubic bezier x-coordinates must be between 0 and 1",
   );
 
-export const CubicBezierSchema = z.object({
+export type CubicBezierValue = z.infer<typeof CubicBezierValueSchema>;
+
+const CubicBezierSchema = z.object({
   type: z.literal("cubicBezier"),
   value: CubicBezierValueSchema,
 });
 
 const FontFamilyValueSchema = z.union([z.string(), z.array(z.string())]);
 
-export const FontFamilySchema = z.object({
+export type FontFamilyValue = z.infer<typeof FontFamilyValueSchema>;
+
+const FontFamilySchema = z.object({
   type: z.literal("fontFamily"),
   value: FontFamilyValueSchema,
 });
 
 const FontWeightValueSchema = z.union([z.number(), z.string()]);
 
-export const FontWeightSchema = z.object({
+const FontWeightSchema = z.object({
   type: z.literal("fontWeight"),
   value: FontWeightValueSchema,
 });
 
-export const TransitionSchema = z.object({
+const TransitionValueSchema = z.object({
+  duration: DurationValueSchema,
+  delay: DurationValueSchema,
+  timingFunction: CubicBezierValueSchema,
+});
+
+export type TransitionValue = z.infer<typeof TransitionValueSchema>;
+
+const TransitionSchema = z.object({
   type: z.literal("transition"),
-  value: z.object({
-    duration: DurationValueSchema,
-    delay: DurationValueSchema,
-    timingFunction: CubicBezierValueSchema,
-  }),
+  value: TransitionValueSchema,
 });
 
 const StrokeStyleValueSchema = z.union([
@@ -89,7 +103,9 @@ const StrokeStyleValueSchema = z.union([
   }),
 ]);
 
-export const StrokeStyleSchema = z.object({
+export type StrokeStyleValue = z.infer<typeof StrokeStyleValueSchema>;
+
+const StrokeStyleSchema = z.object({
   type: z.literal("strokeStyle"),
   value: StrokeStyleValueSchema,
 });
@@ -103,29 +119,44 @@ const ShadowItemSchema = z.object({
   inset: z.boolean().optional(),
 });
 
-export const ShadowSchema = z.object({
+const ShadowValueSchema = z.union([
+  ShadowItemSchema,
+  z.array(ShadowItemSchema),
+]);
+
+export type ShadowValue = z.infer<typeof ShadowValueSchema>;
+
+const ShadowSchema = z.object({
   type: z.literal("shadow"),
-  value: z.union([ShadowItemSchema, z.array(ShadowItemSchema)]),
+  value: ShadowValueSchema,
 });
 
-export const BorderSchema = z.object({
+const BorderValueSchema = z.object({
+  color: ColorValueSchema,
+  width: DimensionValueSchema,
+  style: StrokeStyleValueSchema,
+});
+
+export type BorderValue = z.infer<typeof BorderValueSchema>;
+
+const BorderSchema = z.object({
   type: z.literal("border"),
-  value: z.object({
-    color: ColorValueSchema,
-    width: DimensionValueSchema,
-    style: StrokeStyleValueSchema,
-  }),
+  value: BorderValueSchema,
 });
 
-export const TypographySchema = z.object({
+const TypographyValueSchema = z.object({
+  fontFamily: FontFamilyValueSchema,
+  fontSize: DimensionValueSchema,
+  fontWeight: FontWeightValueSchema,
+  letterSpacing: DimensionValueSchema,
+  lineHeight: z.number(),
+});
+
+export type TypographyValue = z.infer<typeof TypographyValueSchema>;
+
+const TypographySchema = z.object({
   type: z.literal("typography"),
-  value: z.object({
-    fontFamily: FontFamilyValueSchema,
-    fontSize: DimensionValueSchema,
-    fontWeight: FontWeightValueSchema,
-    letterSpacing: DimensionValueSchema,
-    lineHeight: z.number(),
-  }),
+  value: TypographyValueSchema,
 });
 
 const GradientStopSchema = z.object({
@@ -133,9 +164,13 @@ const GradientStopSchema = z.object({
   position: z.number().min(0).max(1),
 });
 
-export const GradientSchema = z.object({
+const GradientValueSchema = z.array(GradientStopSchema);
+
+export type GradientValue = z.infer<typeof GradientValueSchema>;
+
+const GradientSchema = z.object({
   type: z.literal("gradient"),
-  value: z.array(GradientStopSchema),
+  value: GradientValueSchema,
 });
 
 export const ValueSchema = z.union([

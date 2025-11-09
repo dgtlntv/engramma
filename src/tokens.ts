@@ -46,7 +46,7 @@ const getMeta = (data: Record<string, unknown>) => {
   return { type, description, deprecated, extensions };
 };
 
-export function parseDesignTokens(input: unknown): ParseResult {
+export const parseDesignTokens = (input: unknown): ParseResult => {
   const nodes: TreeNode<TreeNodeMeta>[] = [];
   const collectedErrors: Array<{ path: string; message: string }> = [];
   const lastChildIndexPerParent = new Map<string | undefined, string>();
@@ -159,11 +159,11 @@ export function parseDesignTokens(input: unknown): ParseResult {
     nodes,
     errors: collectedErrors,
   };
-}
+};
 
-export function serializeDesignTokens(
+export const serializeDesignTokens = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
-): Record<string, unknown> {
+): Record<string, unknown> => {
   const childrenMap = new Map<string | undefined, TreeNode<TreeNodeMeta>[]>();
 
   for (const node of nodes.values()) {
@@ -236,4 +236,4 @@ export function serializeDesignTokens(
     result[node.meta.name] = serializeNode(node);
   }
   return result;
-}
+};

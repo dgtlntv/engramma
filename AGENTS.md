@@ -21,6 +21,8 @@
 
 **Naming**: Use camelCase for variables/functions, PascalCase for classes/components. Prefix event handlers with on\* (onMount, onClick).
 
+**Functions** use const and arrow function.
+
 **Error Handling**: Use try-catch for async operations. Propagate errors with meaningful context.
 
 **Testing**: Use Vitest with descriptive test names. Test structure: describe → it → expect. Keep tests focused and isolated.

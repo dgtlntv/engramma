@@ -19,6 +19,8 @@ export type TokenMeta = Value & {
   extensions?: Record<string, unknown>;
 };
 
+export type TreeNodeMeta = GroupMeta | TokenMeta;
+
 export class TreeState<Meta> {
   #store = new TreeStore<Meta>();
   #subscribe = createSubscriber((update) => this.#store.subscribe(update));
@@ -43,4 +45,4 @@ export class TreeState<Meta> {
   }
 }
 
-export const treeState = new TreeState<GroupMeta | TokenMeta>();
+export const treeState = new TreeState<TreeNodeMeta>();
