@@ -1,6 +1,7 @@
 <script module lang="ts">
   export type TreeItem = {
     id: string;
+    parentId: undefined | string;
     name: string;
     children: TreeItem[];
   };
@@ -35,6 +36,35 @@
   const expandedItems = new SvelteSet(defaultExpandedItems);
   let activeItemId = $state(Array.from(selectedItems).at(0));
   let treeElement: undefined | HTMLElement;
+
+  // reset active item when deleted
+  $effect(() => {
+    if (activeItemId && !selectedItems.has(activeItemId)) {
+      activeItemId = Array.from(selectedItems)[0];
+    }
+  });
+
+  const traverceNodes = (
+    nodes: TreeItem[],
+    callback: (nodeId: string, parentId: undefined | string) => void,
+  ) => {
+    for (const node of nodes) {
+      callback(node.id, node.parentId);
+      traverceNodes(node.children, callback);
+    }
+  };
+
+  // expand all parents of selected items
+  // so newly created items could be visible
+  $effect(() => {
+    traverceNodes(data, (nodeId, parentId) => {
+      for (const selectedItemId of selectedItems) {
+        if (nodeId === selectedItemId && parentId) {
+          expandedItems.add(parentId);
+        }
+      }
+    });
+  });
 
   const getItemId = (item: undefined | null | Element) => {
     if (item?.role === "treeitem") {

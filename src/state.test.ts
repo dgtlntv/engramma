@@ -90,3 +90,64 @@ test("should return nodes as Map", () => {
   expect(nodesMap.get("node1")?.nodeId).toBe("node1");
   expect(nodesMap.get("node2")?.parentId).toBe("node1");
 });
+
+test("getParent should return the parent node", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child", parentId: "root", index: "a0", meta });
+  });
+  const parent = state.getParent("child");
+  expect(parent?.nodeId).toBe("root");
+});
+
+test("getParent should return undefined for root nodes", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+  });
+  const parent = state.getParent("root");
+  expect(parent).toBeUndefined();
+});
+
+test("getPrevSibling should return the previous sibling", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+  });
+  const prevSibling = state.getPrevSibling("child2");
+  expect(prevSibling?.nodeId).toBe("child1");
+});
+
+test("getPrevSibling should return undefined for first child", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+  });
+  const prevSibling = state.getPrevSibling("child1");
+  expect(prevSibling).toBeUndefined();
+});
+
+test("getNextSibling should return the next sibling", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+  });
+  const nextSibling = state.getNextSibling("child1");
+  expect(nextSibling?.nodeId).toBe("child2");
+});
+
+test("getNextSibling should return undefined for last child", () => {
+  const state = new TreeState();
+  state.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+  });
+  const nextSibling = state.getNextSibling("child1");
+  expect(nextSibling).toBeUndefined();
+});

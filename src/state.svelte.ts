@@ -48,6 +48,21 @@ export class TreeState<Meta> {
     this.#subscribe();
     return this.#store.getChildren(nodeId);
   }
+
+  getParent(nodeId: string): TreeNode<Meta> | undefined {
+    this.#subscribe();
+    return this.#store.getParent(nodeId);
+  }
+
+  getPrevSibling(nodeId: string): TreeNode<Meta> | undefined {
+    this.#subscribe();
+    return this.#store.getPrevSibling(nodeId);
+  }
+
+  getNextSibling(nodeId: string): TreeNode<Meta> | undefined {
+    this.#subscribe();
+    return this.#store.getNextSibling(nodeId);
+  }
 }
 
 export const treeState = new TreeState<TreeNodeMeta>();

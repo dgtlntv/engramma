@@ -53,6 +53,38 @@ export class TreeStore<Meta> {
       .sort(compareTreeNodes);
   }
 
+  getParent(nodeId: string): TreeNode<Meta> | undefined {
+    const node = this.#nodes.get(nodeId);
+    if (!node?.parentId) {
+      return;
+    }
+    return this.#nodes.get(node.parentId);
+  }
+
+  getPrevSibling(nodeId: string): TreeNode<Meta> | undefined {
+    const node = this.#nodes.get(nodeId);
+    if (!node) {
+      return;
+    }
+    const siblings = this.getChildren(node.parentId);
+    const index = siblings.findIndex((n) => n.nodeId === nodeId);
+    if (index > 0) {
+      return siblings[index - 1];
+    }
+  }
+
+  getNextSibling(nodeId: string): TreeNode<Meta> | undefined {
+    const node = this.#nodes.get(nodeId);
+    if (!node) {
+      return;
+    }
+    const siblings = this.getChildren(node.parentId);
+    const index = siblings.findIndex((n) => n.nodeId === nodeId);
+    if (index >= 0 && index < siblings.length - 1) {
+      return siblings[index + 1];
+    }
+  }
+
   subscribe(callback: () => void): () => void {
     this.#subscribers.add(callback);
     return () => {

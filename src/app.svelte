@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
+  import { generateKeyBetween } from "fractional-indexing";
   import { hotkeyKeyUX, hotkeyMacCompat, startKeyUX } from "keyux";
   import stringify from "json-stringify-pretty-compact";
-  import { Plus, Settings } from "@lucide/svelte";
+  import { Plus, Settings, Trash2, Folder } from "@lucide/svelte";
   import TreeView, { type TreeItem } from "./tree-view.svelte";
   import { treeState, type TreeNodeMeta } from "./state.svelte";
   import Editor from "./editor.svelte";
@@ -25,6 +26,7 @@
     const children = treeState.getChildren(node.nodeId);
     return {
       id: node.nodeId,
+      parentId: node.parentId,
       name: node.meta.name,
       children: children.map(buildTreeItem),
     };
@@ -98,9 +100,144 @@
   const jsonOutput = $derived(
     stringify(serializeDesignTokens(allSelectedNodes)),
   );
+
+  const handleDelete = () => {
+    if (selectedItems.size === 0) {
+      return;
+    }
+    // find the next focus target before deletion
+    const currentNodeId = Array.from(selectedItems).at(0);
+    let nextFocusId: string | undefined;
+    if (currentNodeId) {
+      const nextSelectedNode =
+        treeState.getNextSibling(currentNodeId) ??
+        treeState.getPrevSibling(currentNodeId) ??
+        treeState.getParent(currentNodeId);
+      if (nextSelectedNode) {
+        nextFocusId = nextSelectedNode.nodeId;
+      }
+    }
+    // delete selected nodes
+    treeState.transact((tx) => {
+      for (const nodeId of selectedItems) {
+        tx.delete(nodeId);
+      }
+    });
+    // move selection to the next focus target
+    selectedItems.clear();
+    if (nextFocusId) {
+      selectedItems.add(nextFocusId);
+    }
+  };
+
+  const handleAddGroup = () => {
+    if (selectedItems.size === 0) {
+      return;
+    }
+    const firstSelectedId = Array.from(selectedItems)[0];
+    const firstSelectedNode = treeState.getNode(firstSelectedId);
+    if (!firstSelectedNode) {
+      return;
+    }
+    // determine parent and index for new group
+    let parentId: string | undefined;
+    let insertAfterIndex: string;
+    if (firstSelectedNode.meta.nodeType === "token-group") {
+      parentId = firstSelectedId;
+      // add at the end of the group
+      const children = treeState.getChildren(firstSelectedId);
+      const lastChildIndex =
+        children.length > 0 ? children[children.length - 1].index : null;
+      insertAfterIndex = generateKeyBetween(lastChildIndex, null);
+    } else {
+      // add after the token
+      parentId = firstSelectedNode.parentId;
+      insertAfterIndex = generateKeyBetween(firstSelectedNode.index, null);
+    }
+    const newGroup: TreeNode<TreeNodeMeta> = {
+      nodeId: crypto.randomUUID(),
+      parentId,
+      index: insertAfterIndex,
+      meta: {
+        nodeType: "token-group",
+        name: "New Group",
+      },
+    };
+    treeState.transact((tx) => {
+      tx.set(newGroup);
+    });
+    selectedItems.clear();
+    selectedItems.add(newGroup.nodeId);
+  };
+
+  const handleAddToken = () => {
+    let parentId: string | undefined;
+    let insertAfterIndex: undefined | string;
+    if (selectedItems.size === 0) {
+      // no selection: add to root at the end
+      parentId = undefined;
+      const rootChildren = treeState.getChildren(undefined);
+      const lastRootIndex = rootChildren.at(-1)?.index;
+      insertAfterIndex = generateKeyBetween(lastRootIndex ?? null, null);
+    } else {
+      const selectedArray = Array.from(selectedItems);
+      const selectedNode = treeState.getNode(selectedArray[0]);
+      // Single selection: add inside if it's a group, otherwise add after it
+      if (selectedNode?.meta.nodeType === "token-group") {
+        parentId = selectedNode.nodeId;
+        // Add at the end of the group
+        const children = treeState.getChildren(selectedNode.nodeId);
+        const lastChildIndex =
+          children.length > 0 ? children[children.length - 1].index : null;
+        insertAfterIndex = generateKeyBetween(lastChildIndex, null);
+      }
+      if (selectedNode?.meta.nodeType === "token") {
+        // add between selected item and the next sibling
+        const nextSibling = treeState.getNextSibling(selectedNode.nodeId);
+        parentId = selectedNode.parentId;
+        insertAfterIndex = generateKeyBetween(
+          selectedNode.index,
+          nextSibling?.index ?? null,
+        );
+      }
+    }
+    if (!insertAfterIndex) {
+      return;
+    }
+    // Create new token node with a default color value
+    const tokenNodeId = crypto.randomUUID();
+    const newToken: TreeNode<TreeNodeMeta> = {
+      nodeId: tokenNodeId,
+      parentId,
+      index: insertAfterIndex,
+      meta: {
+        nodeType: "token",
+        name: "New Token",
+        type: "color",
+        value: {
+          colorSpace: "srgb",
+          components: [0, 0, 0],
+        },
+      },
+    };
+    treeState.transact((tx) => {
+      tx.set(newToken);
+    });
+    // select and open editor for the new token
+    selectedItems.clear();
+    selectedItems.add(tokenNodeId);
+    editingMode = true;
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Backspace") {
+      handleDelete();
+    }
+  };
 </script>
 
-<div class="container">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="container" onkeydown={handleKeyDown}>
   <!-- Toolbar -->
   <header class="toolbar" hidden>
     <div class="toolbar-section">
@@ -131,9 +268,31 @@
     <aside class="panel left-panel">
       <div class="panel-header">
         <h2 class="panel-title">Design Tokens</h2>
-        <button class="add-btn" title="Add token">
-          <Plus size={20} />
-        </button>
+        <div class="toolbar-actions">
+          {#if selectedItems.size > 0}
+            <button
+              class="button"
+              aria-label={`Delete ${selectedItems.size} item(s)`}
+              onclick={handleDelete}
+            >
+              <Trash2 size={20} />
+            </button>
+            <button
+              class="button"
+              aria-label="Add group"
+              onclick={handleAddGroup}
+            >
+              <Folder size={20} />
+            </button>
+          {/if}
+          <button
+            class="button"
+            aria-label="Add token"
+            onclick={handleAddToken}
+          >
+            <Plus size={20} />
+          </button>
+        </div>
       </div>
 
       {#snippet renderTreeItem(item: TreeItem)}
@@ -156,21 +315,23 @@
               selectedItems.clear();
               selectedItems.add(item.id);
             }}
-            title="Edit"
+            aria-label="Edit"
           >
             <Settings size={16} />
           </button>
         </div>
       {/snippet}
 
-      <TreeView
-        id="tokens-tree"
-        label="Design Tokens"
-        data={treeData}
-        {selectedItems}
-        {defaultExpandedItems}
-        renderItem={renderTreeItem}
-      />
+      <div class="tokens-container">
+        <TreeView
+          id="tokens-tree"
+          label="Design Tokens"
+          data={treeData}
+          {selectedItems}
+          {defaultExpandedItems}
+          renderItem={renderTreeItem}
+        />
+      </div>
     </aside>
 
     <!-- Right Panel: CSS Variables / JSON -->
@@ -187,16 +348,16 @@
             <button
               class="mode-btn"
               class:active={outputMode === "css"}
+              aria-label="Show CSS Variables"
               onclick={() => (outputMode = "css")}
-              title="Show CSS Variables"
             >
               CSS
             </button>
             <button
               class="mode-btn"
               class:active={outputMode === "json"}
+              aria-label="Show JSON"
               onclick={() => (outputMode = "json")}
-              title="Show JSON"
             >
               JSON
             </button>
@@ -299,6 +460,12 @@
     gap: 16px;
   }
 
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
   .panel-title {
     margin: 0;
     font-size: 14px;
@@ -308,7 +475,7 @@
     letter-spacing: 0.5px;
   }
 
-  .add-btn {
+  .button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -320,11 +487,15 @@
     color: var(--text-secondary);
     transition: all 0.2s ease;
     padding: 0;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
   }
 
-  .add-btn:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
+  .tokens-container {
+    overflow: auto;
   }
 
   /* Tree structure */

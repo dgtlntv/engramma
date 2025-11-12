@@ -180,3 +180,87 @@ test("nodes() should return a copy of the internal map", () => {
   expect(nodesMap1.size).toBe(nodesMap2.size);
   expect(nodesMap1.get("node1")).toEqual(nodesMap2.get("node1"));
 });
+
+test("getParent should return the parent node", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child", parentId: "root", index: "a0", meta });
+  });
+  const parent = store.getParent("child");
+  expect(parent?.nodeId).toBe("root");
+  expect(parent?.parentId).toBeUndefined();
+});
+
+test("getParent should return undefined for root nodes", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+  });
+  const parent = store.getParent("root");
+  expect(parent).toBeUndefined();
+});
+
+test("getParent should return undefined for non-existent nodes", () => {
+  const store = new TreeStore();
+  const parent = store.getParent("non-existent");
+  expect(parent).toBeUndefined();
+});
+
+test("getPrevSibling should return the previous sibling", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+    tx.set({ nodeId: "child3", parentId: "root", index: "c0", meta });
+  });
+  const prevSibling = store.getPrevSibling("child2");
+  expect(prevSibling?.nodeId).toBe("child1");
+});
+
+test("getPrevSibling should return undefined for first child", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+  });
+  const prevSibling = store.getPrevSibling("child1");
+  expect(prevSibling).toBeUndefined();
+});
+
+test("getPrevSibling should return undefined for non-existent nodes", () => {
+  const store = new TreeStore();
+  const prevSibling = store.getPrevSibling("non-existent");
+  expect(prevSibling).toBeUndefined();
+});
+
+test("getNextSibling should return the next sibling", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+    tx.set({ nodeId: "child3", parentId: "root", index: "c0", meta });
+  });
+  const nextSibling = store.getNextSibling("child2");
+  expect(nextSibling?.nodeId).toBe("child3");
+});
+
+test("getNextSibling should return undefined for last child", () => {
+  const store = new TreeStore();
+  store.transact((tx) => {
+    tx.set({ nodeId: "root", parentId: undefined, index: "a0", meta });
+    tx.set({ nodeId: "child1", parentId: "root", index: "a0", meta });
+    tx.set({ nodeId: "child2", parentId: "root", index: "b0", meta });
+  });
+  const nextSibling = store.getNextSibling("child2");
+  expect(nextSibling).toBeUndefined();
+});
+
+test("getNextSibling should return undefined for non-existent nodes", () => {
+  const store = new TreeStore();
+  const nextSibling = store.getNextSibling("non-existent");
+  expect(nextSibling).toBeUndefined();
+});
