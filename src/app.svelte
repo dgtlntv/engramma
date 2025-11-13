@@ -10,7 +10,8 @@
   import Editor from "./editor.svelte";
   import type { TreeNode } from "./store";
   import { serializeDesignTokens } from "./tokens";
-  import { generateCssVariables, toColorValue } from "./css-variables";
+  import { generateCssVariables } from "./css-variables";
+  import { serializeColor } from "./color";
 
   onMount(() => {
     return startKeyUX(window, [hotkeyKeyUX([hotkeyMacCompat()])]);
@@ -217,6 +218,12 @@
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.closest("input, textarea, [contenteditable]")
+    ) {
+      return;
+    }
     if (event.key === "Backspace") {
       handleDelete();
     }
@@ -312,7 +319,7 @@
           {#if meta?.nodeType === "token" && meta?.type === "color"}
             <div
               class="token-preview"
-              style="background: {toColorValue(meta.value)};"
+              style="background: {serializeColor(meta.value)};"
             ></div>
           {/if}
           <span class="token-name">{item.name}</span>

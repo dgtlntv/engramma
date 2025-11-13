@@ -2,6 +2,7 @@
   import type { SvelteSet } from "svelte/reactivity";
   import { X } from "@lucide/svelte";
   import { treeState, type TreeNodeMeta } from "./state.svelte";
+  import { parseColor, serializeColor } from "./color";
 
   let {
     selectedItems,
@@ -112,6 +113,30 @@
         <div class="form-value">{meta.type}</div>
       </div>
     {/if}
+
+    {#if meta?.nodeType === "token" && meta.type === "color"}
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Color</label>
+        <div class="color-picker-wrapper">
+          <color-input
+            value={serializeColor(meta.value)}
+            onopen={(event: InputEvent) => {
+              // track both open and close because of bug in css-color-component
+              const input = event.target as HTMLInputElement;
+              updateMeta({ value: parseColor(input.value) });
+            }}
+            onclose={(event: InputEvent) => {
+              const input = event.target as HTMLInputElement;
+              updateMeta({ value: parseColor(input.value) });
+            }}
+          ></color-input>
+          <span class="color-value">
+            {serializeColor(meta.value)}
+          </span>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -216,5 +241,19 @@
     border-radius: 4px;
     font-size: 14px;
     color: var(--text-secondary);
+  }
+
+  .color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-value {
+    font-family: var(--typography-monospace-code);
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 50px;
+    text-align: center;
   }
 </style>

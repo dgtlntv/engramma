@@ -1,9 +1,9 @@
 import { kebabCase } from "change-case";
 import { compareTreeNodes, type TreeNode } from "./store";
 import type { TreeNodeMeta } from "./state.svelte";
+import { serializeColor } from "./color";
 import type {
   BorderValue,
-  ColorValue,
   CubicBezierValue,
   DimensionValue,
   DurationValue,
@@ -16,52 +16,6 @@ import type {
 } from "./schema";
 
 // https://www.designtokens.org/tr/2025.10/color
-
-const toComponent = (component: number | "none") => {
-  if (component === "none") {
-    return 0;
-  }
-  return component;
-};
-
-export const toColorValue = (color: ColorValue) => {
-  const c1 = toComponent(color.components[0]);
-  const c2 = toComponent(color.components[1]);
-  const c3 = toComponent(color.components[2]);
-  const alpha = color.alpha !== undefined ? ` / ${color.alpha}` : "";
-  switch (color.colorSpace) {
-    case "srgb":
-      return `rgb(${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "hsl":
-      return `hsl(${c1} ${c2}% ${c3}%${alpha})`;
-    case "hwb":
-      return `hwb(${c1} ${c2}% ${c3}%${alpha})`;
-    case "lab":
-      return `lab(${c1} ${c2} ${c3}${alpha})`;
-    case "lch":
-      return `lch(${c1} ${c2} ${c3}${alpha})`;
-    case "oklab":
-      return `oklab(${c1} ${c2} ${c3}${alpha})`;
-    case "oklch":
-      return `oklch(${c1} ${c2} ${c3}${alpha})`;
-    case "display-p3":
-      return `color(display-p3 ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "a98-rgb":
-      return `color(a98-rgb ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "prophoto-rgb":
-      return `color(prophoto-rgb ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "rec2020":
-      return `color(rec2020 ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "srgb-linear":
-      return `color(srgb-linear ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "xyz-d65":
-      return `color(xyz-d65 ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    case "xyz-d50":
-      return `color(xyz-d50 ${c1 * 100}% ${c2 * 100}% ${c3 * 100}%${alpha})`;
-    default:
-      return "transparent";
-  }
-};
 
 const toDimensionValue = (value: DimensionValue) => {
   return `${value.value}${value.unit}`;
@@ -82,7 +36,7 @@ const toFontFamily = (value: FontFamilyValue) => {
 const toShadow = (value: ShadowValue) => {
   const shadows = Array.isArray(value) ? value : [value];
   const shadowStrings = shadows.map((shadow) => {
-    const color = toColorValue(shadow.color);
+    const color = serializeColor(shadow.color);
     const inset = shadow.inset ? "inset " : "";
     const offsetX = toDimensionValue(shadow.offsetX);
     const offsetY = toDimensionValue(shadow.offsetY);
@@ -95,7 +49,7 @@ const toShadow = (value: ShadowValue) => {
 
 const toGradient = (value: GradientValue) => {
   const stops = value.map(
-    (stop) => `${toColorValue(stop.color)} ${stop.position * 100}%`,
+    (stop) => `${serializeColor(stop.color)} ${stop.position * 100}%`,
   );
   return `linear-gradient(90deg, ${stops.join(", ")})`;
 };
@@ -129,7 +83,7 @@ const addStrokeStyle = (
 };
 
 const addBorder = (varName: string, value: BorderValue, cssLines: string[]) => {
-  const color = toColorValue(value.color);
+  const color = serializeColor(value.color);
   const width = toDimensionValue(value.width);
   const style = typeof value.style === "string" ? value.style : "solid";
   cssLines.push(`  ${varName}-color: ${color};`);
@@ -174,7 +128,7 @@ const processNode = (
     const varName = `--${kebabCase([...path, node.meta.name].join("-"))}`;
     switch (node.meta.type) {
       case "color":
-        cssLines.push(`  ${varName}: ${toColorValue(node.meta.value)};`);
+        cssLines.push(`  ${varName}: ${serializeColor(node.meta.value)};`);
         break;
       case "dimension":
         cssLines.push(`  ${varName}: ${toDimensionValue(node.meta.value)};`);
