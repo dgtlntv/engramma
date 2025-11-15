@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { SvelteSet } from "svelte/reactivity";
-  import { X } from "@lucide/svelte";
+  import { Plus, X } from "@lucide/svelte";
   import { treeState, type TreeNodeMeta } from "./state.svelte";
   import { parseColor, serializeColor } from "./color";
   import type {
     CubicBezierValue,
     DimensionValue,
     FontFamilyValue,
+    ShadowItem,
     TransitionValue,
   } from "./schema";
   import CubicBezierEditor from "./cubic-bezier-editor.svelte";
@@ -581,6 +582,159 @@
         })}
       </div>
     {/if}
+
+    {#if meta?.nodeType === "token" && meta.type === "shadow"}
+      {@const shadows = Array.isArray(meta.value) ? meta.value : [meta.value]}
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Shadow</label>
+        <div class="shadow-list">
+          {#each shadows as item, index (index)}
+            <div class="shadow-item">
+              <div class="shadow-item-header">
+                <span class="shadow-item-title">Shadow {index + 1}</span>
+                {#if shadows.length > 1}
+                  <button
+                    class="remove-btn"
+                    aria-label="Remove shadow"
+                    onclick={() => {
+                      const updated = shadows.filter((_, i) => i !== index);
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                {/if}
+              </div>
+
+              <div class="shadow-item-body">
+                <div class="shadow-fields-grid">
+                  <div class="form-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={item.inset ?? false}
+                        onchange={(e) => {
+                          const updated = [...shadows];
+                          updated[index].inset =
+                            e.currentTarget.checked || undefined;
+                          updateMeta({
+                            value: updated.length === 1 ? updated[0] : updated,
+                          });
+                        }}
+                      />
+                      Inset
+                    </label>
+                  </div>
+
+                  <div class="form-group">
+                    <!-- svelte-ignore a11y_label_has_associated_control -->
+                    <label>Color</label>
+                    <div class="color-picker-wrapper">
+                      <color-input
+                        value={serializeColor(item.color)}
+                        onopen={(event: InputEvent) => {
+                          const input = event.target as HTMLInputElement;
+                          const updated = [...shadows];
+                          updated[index].color = parseColor(input.value);
+                          updateMeta({
+                            value: updated.length === 1 ? updated[0] : updated,
+                          });
+                        }}
+                        onclose={(event: InputEvent) => {
+                          const input = event.target as HTMLInputElement;
+                          const updated = [...shadows];
+                          updated[index].color = parseColor(input.value);
+                          updateMeta({
+                            value: updated.length === 1 ? updated[0] : updated,
+                          });
+                        }}
+                      ></color-input>
+                      <span class="color-value">
+                        {serializeColor(item.color)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <!-- svelte-ignore a11y_label_has_associated_control -->
+                    <label>Offset X</label>
+                    {@render dimensionEditor(item.offsetX, (offsetX) => {
+                      const updated = [...shadows];
+                      updated[index].offsetX = offsetX;
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    })}
+                  </div>
+
+                  <div class="form-group">
+                    <!-- svelte-ignore a11y_label_has_associated_control -->
+                    <label>Offset Y</label>
+                    {@render dimensionEditor(item.offsetY, (offsetY) => {
+                      const updated = [...shadows];
+                      updated[index].offsetY = offsetY;
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    })}
+                  </div>
+
+                  <div class="form-group">
+                    <!-- svelte-ignore a11y_label_has_associated_control -->
+                    <label>Blur</label>
+                    {@render dimensionEditor(item.blur, (blur) => {
+                      const updated = [...shadows];
+                      updated[index].blur = blur;
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    })}
+                  </div>
+
+                  <div class="form-group">
+                    <!-- svelte-ignore a11y_label_has_associated_control -->
+                    <label>Spread</label>
+                    {@render dimensionEditor(
+                      item.spread ?? { value: 0, unit: "px" },
+                      (spread) => {
+                        const updated = [...shadows];
+                        updated[index].spread = spread;
+                        updateMeta({
+                          value: updated.length === 1 ? updated[0] : updated,
+                        });
+                      },
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/each}
+
+          <button
+            class="add-shadow-btn"
+            onclick={() => {
+              const newShadow: ShadowItem = {
+                color: {
+                  colorSpace: "srgb",
+                  components: [0, 0, 0],
+                  alpha: 1,
+                },
+                offsetX: { value: 0, unit: "px" },
+                offsetY: { value: 4, unit: "px" },
+                blur: { value: 6, unit: "px" },
+                spread: { value: 0, unit: "px" },
+              };
+              updateMeta({ value: [...shadows, newShadow] });
+            }}
+          >
+            <Plus /> Add Shadow
+          </button>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -729,5 +883,88 @@
   .duration-unit-select {
     field-sizing: content;
     min-width: 50px;
+  }
+
+  .shadow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .shadow-item {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .shadow-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .shadow-item-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    border-radius: 3px;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .remove-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  .shadow-item-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .shadow-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .add-shadow-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
   }
 </style>

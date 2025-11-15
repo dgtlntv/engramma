@@ -133,7 +133,7 @@ const StrokeStyleSchema = z.object({
   value: StrokeStyleValueSchema,
 });
 
-const ShadowItemSchema = z.object({
+export const ShadowItemSchema = z.object({
   color: ColorValueSchema,
   offsetX: DimensionValueSchema,
   offsetY: DimensionValueSchema,
@@ -141,6 +141,8 @@ const ShadowItemSchema = z.object({
   spread: DimensionValueSchema.optional(),
   inset: z.boolean().optional(),
 });
+
+export type ShadowItem = z.infer<typeof ShadowItemSchema>;
 
 const ShadowValueSchema = z.union([
   ShadowItemSchema,
