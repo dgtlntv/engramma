@@ -4,10 +4,12 @@
   import { treeState, type TreeNodeMeta } from "./state.svelte";
   import { parseColor, serializeColor } from "./color";
   import type {
+    BorderValue,
     CubicBezierValue,
     DimensionValue,
     FontFamilyValue,
     ShadowItem,
+    StrokeStyleValue,
     TransitionValue,
   } from "./schema";
   import CubicBezierEditor from "./cubic-bezier-editor.svelte";
@@ -173,6 +175,132 @@
     <option value="900">900 — black, heavy</option>
     <option value="950">950 — extra-black, ultra-black</option>
   </select>
+{/snippet}
+
+{#snippet strokeStyleEditor(
+  strokeStyle: StrokeStyleValue,
+  onChange: (value: StrokeStyleValue) => void,
+)}
+  {#if typeof strokeStyle === "string"}
+    <select
+      class="form-select"
+      value={strokeStyle}
+      onchange={(e) => {
+        const value = e.currentTarget.value;
+        if (value !== "custom") {
+          onChange(value as StrokeStyleValue);
+        } else {
+          onChange({
+            dashArray: [{ value: 2, unit: "px" }],
+            lineCap: "round",
+          });
+        }
+      }}
+    >
+      <option value="solid">Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="double">Double</option>
+      <option value="groove">Groove</option>
+      <option value="ridge">Ridge</option>
+      <option value="outset">Outset</option>
+      <option value="inset">Inset</option>
+      <option value="custom">Custom</option>
+    </select>
+  {:else if typeof strokeStyle === "object" && "dashArray" in strokeStyle}
+    <select
+      class="form-select"
+      value="custom"
+      onchange={(e) => {
+        const value = e.currentTarget.value;
+        if (value !== "custom") {
+          onChange(value as StrokeStyleValue);
+        }
+      }}
+    >
+      <option value="solid">Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="double">Double</option>
+      <option value="groove">Groove</option>
+      <option value="ridge">Ridge</option>
+      <option value="outset">Outset</option>
+      <option value="inset">Inset</option>
+      <option value="custom">Custom</option>
+    </select>
+
+    <div class="form-group">
+      <!-- svelte-ignore a11y_label_has_associated_control -->
+      <label>Line Cap</label>
+      <select
+        class="form-select"
+        value={strokeStyle.lineCap}
+        onchange={(e) => {
+          onChange({
+            ...strokeStyle,
+            lineCap: e.currentTarget.value as "round" | "butt" | "square",
+          });
+        }}
+      >
+        <option value="round">Round</option>
+        <option value="butt">Butt</option>
+        <option value="square">Square</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <!-- svelte-ignore a11y_label_has_associated_control -->
+      <label>Dash Array</label>
+      <div class="dash-array-list">
+        {#each strokeStyle.dashArray as dash, index (index)}
+          <div class="dash-array-item">
+            <div class="dash-array-item-header">
+              <span class="dash-array-item-title">Dash {index + 1}</span>
+              {#if strokeStyle.dashArray.length > 1}
+                <button
+                  class="remove-btn"
+                  aria-label="Remove dash"
+                  onclick={() => {
+                    const updated = strokeStyle.dashArray.filter(
+                      (_, i: number) => i !== index,
+                    );
+                    onChange({
+                      ...strokeStyle,
+                      dashArray: updated,
+                    });
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              {/if}
+            </div>
+            <div class="dash-array-item-body">
+              {@render dimensionEditor(dash, (newDash) => {
+                const updated = [...strokeStyle.dashArray];
+                updated[index] = newDash;
+                onChange({
+                  ...strokeStyle,
+                  dashArray: updated,
+                });
+              })}
+            </div>
+          </div>
+        {/each}
+
+        <button
+          class="add-dash-btn"
+          onclick={() => {
+            onChange({
+              ...strokeStyle,
+              dashArray: [...strokeStyle.dashArray, { value: 2, unit: "px" }],
+            });
+          }}
+        >
+          <Plus /> Add Dash
+        </button>
+      </div>
+    </div>
+  {/if}
 {/snippet}
 
 <div class="form-panel">
@@ -583,6 +711,16 @@
       </div>
     {/if}
 
+    {#if meta?.nodeType === "token" && meta.type === "strokeStyle"}
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Style</label>
+        {@render strokeStyleEditor(meta.value, (value) => {
+          updateMeta({ value });
+        })}
+      </div>
+    {/if}
+
     {#if meta?.nodeType === "token" && meta.type === "shadow"}
       {@const shadows = Array.isArray(meta.value) ? meta.value : [meta.value]}
       <div class="form-group">
@@ -733,6 +871,66 @@
             <Plus /> Add Shadow
           </button>
         </div>
+      </div>
+    {/if}
+
+    {#if meta?.nodeType === "token" && meta.type === "border"}
+      {@const border = meta.value as BorderValue}
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Color</label>
+        <div class="color-picker-wrapper">
+          <color-input
+            value={serializeColor(border.color)}
+            onopen={(event: InputEvent) => {
+              const input = event.target as HTMLInputElement;
+              updateMeta({
+                value: {
+                  ...border,
+                  color: parseColor(input.value),
+                },
+              });
+            }}
+            onclose={(event: InputEvent) => {
+              const input = event.target as HTMLInputElement;
+              updateMeta({
+                value: {
+                  ...border,
+                  color: parseColor(input.value),
+                },
+              });
+            }}
+          ></color-input>
+          <span class="color-value">
+            {serializeColor(border.color)}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Width</label>
+        {@render dimensionEditor(border.width, (width) => {
+          updateMeta({
+            value: {
+              ...border,
+              width,
+            },
+          });
+        })}
+      </div>
+
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Style</label>
+        {@render strokeStyleEditor(border.style, (style) => {
+          updateMeta({
+            value: {
+              ...border,
+              style,
+            },
+          });
+        })}
       </div>
     {/if}
   </div>
@@ -948,6 +1146,63 @@
   }
 
   .add-shadow-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  .dash-array-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dash-array-item {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .dash-array-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .dash-array-item-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .dash-array-item-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .add-dash-btn {
     display: flex;
     justify-content: center;
     align-items: center;
