@@ -8,11 +8,13 @@
     CubicBezierValue,
     DimensionValue,
     FontFamilyValue,
+    GradientValue,
     ShadowItem,
     StrokeStyleValue,
     TransitionValue,
   } from "./schema";
   import CubicBezierEditor from "./cubic-bezier-editor.svelte";
+  import GradientEditor from "./gradient-editor.svelte";
 
   let {
     selectedItems,
@@ -931,6 +933,19 @@
             },
           });
         })}
+      </div>
+    {/if}
+
+    {#if meta?.nodeType === "token" && meta.type === "gradient"}
+      <div class="form-group">
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label>Gradient</label>
+        <GradientEditor
+          value={meta.value as GradientValue}
+          onChange={(value: GradientValue) => {
+            updateMeta({ value });
+          }}
+        />
       </div>
     {/if}
   </div>
