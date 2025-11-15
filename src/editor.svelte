@@ -941,6 +941,7 @@
     display: flex;
     flex-direction: column;
     background: var(--bg-primary);
+    overflow: auto;
   }
 
   .form-header {
@@ -1175,7 +1176,6 @@
   .dash-array-item {
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    overflow: hidden;
   }
 
   .dash-array-item-header {
