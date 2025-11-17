@@ -30,7 +30,7 @@ body {
   color: var(--text-primary);
 }
 
-.field {
+.a-field {
   padding: 8px 12px;
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -48,7 +48,7 @@ body {
   }
 }
 
-.field[type="number"] {
+.a-field[type="number"] {
   -moz-appearance: textfield;
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
@@ -57,13 +57,13 @@ body {
   }
 }
 
-textarea.field {
+textarea.a-field {
   field-sizing: content;
   resize: none;
   max-height: 10lh;
 }
 
-.text-label {
+.a-label {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -72,7 +72,7 @@ textarea.field {
 }
 
 /* expects icons 20px to keep button square */
-.button {
+.a-button {
   display: flex;
   min-height: 32px;
   padding: 0 6px;
@@ -96,5 +96,42 @@ textarea.field {
   &:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
+  }
+}
+
+.a-popover {
+  margin-inline: 0;
+  margin-block: 8px;
+  min-width: 160px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.a-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 14px;
+  font-family: inherit;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--bg-hover);
+    outline: none;
+  }
+
+  &[aria-selected="true"] {
+    background: var(--accent);
+    color: white;
   }
 }

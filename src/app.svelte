@@ -234,14 +234,14 @@
         <div class="toolbar-actions">
           {#if selectedItems.size > 0}
             <button
-              class="button"
+              class="a-button"
               aria-label={`Delete ${selectedItems.size} item(s)`}
               onclick={handleDelete}
             >
               <Trash2 size={20} />
             </button>
             <button
-              class="button"
+              class="a-button"
               aria-label="Add group"
               onclick={handleAddGroup}
             >

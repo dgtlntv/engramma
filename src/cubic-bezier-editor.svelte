@@ -43,7 +43,7 @@
 
 <div class="cubic-bezier-editor">
   <select
-    class="field"
+    class="a-field"
     value={selectedPreset}
     onchange={(event) => {
       const preset = event.currentTarget.value;
@@ -66,7 +66,7 @@
 
   {#if selectedPreset === "custom"}
     <input
-      class="field"
+      class="a-field"
       type="text"
       placeholder="e.g., 0.25, 0.1, 0.25, 1"
       value={customInput}

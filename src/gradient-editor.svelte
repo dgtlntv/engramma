@@ -71,7 +71,7 @@
           <span class="gradient-stop-title">Stop {index + 1}</span>
           {#if value.length > 2}
             <button
-              class="button"
+              class="a-button"
               aria-label="Remove stop"
               onclick={() => handleRemoveStop(index)}
             >
@@ -85,7 +85,7 @@
             <div class="gradient-stop-row">
               <div class="form-group">
                 <!-- svelte-ignore a11y_label_has_associated_control -->
-                <label class="text-label">Color</label>
+                <label class="a-label">Color</label>
                 <div class="color-picker-wrapper">
                   <color-input
                     value={serializeColor(stop.color)}
@@ -105,8 +105,7 @@
               </div>
 
               <div class="form-group">
-                <label class="text-label" for="position-{index}">Position</label
-                >
+                <label class="a-label" for="position-{index}">Position</label>
                 <div class="position-input-group">
                   <input
                     id="position-{index}"
@@ -124,7 +123,7 @@
                     }}
                   />
                   <input
-                    class="field position-number"
+                    class="a-field position-number"
                     type="number"
                     min="0"
                     max="1"
@@ -146,7 +145,7 @@
       </div>
     {/each}
 
-    <button class="button" onclick={handleAddStop}>
+    <button class="a-button" onclick={handleAddStop}>
       <Plus size={20} /> Add Stop
     </button>
   </div>

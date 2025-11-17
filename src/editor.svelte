@@ -110,7 +110,7 @@
 )}
   <div class="dimension-input-group">
     <input
-      class="field dimension-value"
+      class="a-field dimension-value"
       type="number"
       value={dimension.value}
       step="0.1"
@@ -123,7 +123,7 @@
       }}
     />
     <select
-      class="field dimension-unit-select"
+      class="a-field dimension-unit-select"
       value={dimension.unit}
       onchange={(e) => {
         onChange({
@@ -143,7 +143,7 @@
   onChange: (value: FontFamilyValue) => void,
 )}
   <textarea
-    class="field"
+    class="a-field"
     placeholder="e.g., Inter, -apple-system, BlinkMacSystemFont, sans-serif"
     value={typeof fontFamily === "string" ? fontFamily : fontFamily.join(", ")}
     oninput={(e) => {
@@ -159,7 +159,7 @@
   onChange: (value: number) => void,
 )}
   <select
-    class="field"
+    class="a-field"
     value={String(normalizeFontWeight(fontWeight))}
     onchange={(e) => {
       const value = Number.parseInt(e.currentTarget.value, 10);
@@ -185,7 +185,7 @@
 )}
   {#if typeof strokeStyle === "string"}
     <select
-      class="field"
+      class="a-field"
       value={strokeStyle}
       onchange={(e) => {
         const value = e.currentTarget.value;
@@ -211,7 +211,7 @@
     </select>
   {:else if typeof strokeStyle === "object" && "dashArray" in strokeStyle}
     <select
-      class="field"
+      class="a-field"
       value="custom"
       onchange={(e) => {
         const value = e.currentTarget.value;
@@ -233,9 +233,9 @@
 
     <div class="form-group">
       <!-- svelte-ignore a11y_label_has_associated_control -->
-      <label class="text-label">Line Cap</label>
+      <label class="a-label">Line Cap</label>
       <select
-        class="field"
+        class="a-field"
         value={strokeStyle.lineCap}
         onchange={(e) => {
           onChange({
@@ -252,7 +252,7 @@
 
     <div class="form-group">
       <!-- svelte-ignore a11y_label_has_associated_control -->
-      <label class="text-label">Dash Array</label>
+      <label class="a-label">Dash Array</label>
       <div class="dash-array-list">
         {#each strokeStyle.dashArray as dash, index (index)}
           <div class="dash-array-item">
@@ -260,7 +260,7 @@
               <span class="dash-array-item-title">Dash {index + 1}</span>
               {#if strokeStyle.dashArray.length > 1}
                 <button
-                  class="button"
+                  class="a-button"
                   aria-label="Remove dash"
                   onclick={() => {
                     const updated = strokeStyle.dashArray.filter(
@@ -290,7 +290,7 @@
         {/each}
 
         <button
-          class="button"
+          class="a-button"
           onclick={() => {
             onChange({
               ...strokeStyle,
@@ -311,7 +311,7 @@
       {meta?.nodeType === "token-group" ? "Group" : "Token"}
     </h2>
     <button
-      class="button"
+      class="a-button"
       aria-label="Close"
       aria-keyshortcuts="Escape"
       onclick={() => (editingMode = false)}
@@ -322,10 +322,10 @@
 
   <div class="form-content">
     <div class="form-group">
-      <label class="text-label" for="name-input">Name</label>
+      <label class="a-label" for="name-input">Name</label>
       <input
         id="name-input"
-        class="field"
+        class="a-field"
         type="text"
         value={meta?.name}
         oninput={(e) => handleNameChange(e.currentTarget.value)}
@@ -333,17 +333,17 @@
     </div>
 
     <div class="form-group">
-      <label class="text-label" for="description-input">Description</label>
+      <label class="a-label" for="description-input">Description</label>
       <textarea
         id="description-input"
-        class="field"
+        class="a-field"
         value={meta?.description ?? ""}
         oninput={(e) => handleDescriptionChange(e.currentTarget.value)}
       ></textarea>
     </div>
 
     <div class="form-group">
-      <label class="text-label" for="deprecated-input">
+      <label class="a-label" for="deprecated-input">
         <input
           id="deprecated-input"
           type="checkbox"
@@ -354,7 +354,7 @@
       </label>
       {#if meta?.deprecated !== undefined}
         <input
-          class="field"
+          class="a-field"
           type="text"
           placeholder="Reason for deprecation"
           bind:value={
@@ -367,7 +367,7 @@
 
     {#if meta?.nodeType === "token" && meta.type}
       <div class="form-group">
-        <div class="text-label">Type</div>
+        <div class="a-label">Type</div>
         <div class="form-value">{meta.type}</div>
       </div>
     {/if}
@@ -375,7 +375,7 @@
     {#if meta?.nodeType === "token" && meta.type === "color"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Color</label>
+        <label class="a-label">Color</label>
         <div class="color-picker-wrapper">
           <color-input
             value={serializeColor(meta.value)}
@@ -399,11 +399,11 @@
     {#if meta?.nodeType === "token" && meta.type === "dimension"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Dimension</label>
+        <label class="a-label">Dimension</label>
         <div class="dimension-input-group">
           <input
             id="dimension-value-input"
-            class="field dimension-value"
+            class="a-field dimension-value"
             type="number"
             value={meta.value.value}
             oninput={(e) => {
@@ -417,7 +417,7 @@
           />
           <select
             id="dimension-unit-input"
-            class="field dimension-unit-select"
+            class="a-field dimension-unit-select"
             value={meta.value.unit}
             onchange={(e) => {
               updateMeta({
@@ -438,11 +438,11 @@
     {#if meta?.nodeType === "token" && meta.type === "duration"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Duration</label>
+        <label class="a-label">Duration</label>
         <div class="duration-input-group">
           <input
             id="duration-value-input"
-            class="field duration-value"
+            class="a-field duration-value"
             type="number"
             value={meta.value.value}
             oninput={(e) => {
@@ -456,7 +456,7 @@
           />
           <select
             id="duration-unit-input"
-            class="field duration-unit-select"
+            class="a-field duration-unit-select"
             value={meta.value.unit}
             onchange={(e) => {
               updateMeta({
@@ -476,10 +476,10 @@
 
     {#if meta?.nodeType === "token" && meta.type === "number"}
       <div class="form-group">
-        <label class="text-label" for="number-input">Value</label>
+        <label class="a-label" for="number-input">Value</label>
         <input
           id="number-input"
-          class="field"
+          class="a-field"
           type="number"
           value={meta.value}
           oninput={(e) => {
@@ -496,7 +496,7 @@
     {#if meta?.nodeType === "token" && meta.type === "fontFamily"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Font Family</label>
+        <label class="a-label">Font Family</label>
         {@render fontFamilyEditor(meta.value, (value) => {
           updateMeta({ value });
         })}
@@ -506,7 +506,7 @@
     {#if meta?.nodeType === "token" && meta.type === "fontWeight"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Font Weight</label>
+        <label class="a-label">Font Weight</label>
         {@render fontWeightEditor(meta.value, (value) => {
           updateMeta({ value });
         })}
@@ -516,7 +516,7 @@
     {#if meta?.nodeType === "token" && meta.type === "cubicBezier"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Easing Function</label>
+        <label class="a-label">Easing Function</label>
         <CubicBezierEditor
           value={meta.value as CubicBezierValue}
           onChange={(value: CubicBezierValue) => {
@@ -530,10 +530,10 @@
       <div class="transition-durations">
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Duration</label>
+          <label class="a-label">Duration</label>
           <div class="dimension-input-group">
             <input
-              class="field duration-value"
+              class="a-field duration-value"
               type="number"
               value={(meta.value as TransitionValue).duration.value}
               step="1"
@@ -554,7 +554,7 @@
               }}
             />
             <select
-              class="field duration-unit-select"
+              class="a-field duration-unit-select"
               value={(meta.value as TransitionValue).duration.unit}
               onchange={(e) => {
                 updateMeta({
@@ -576,10 +576,10 @@
 
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Delay</label>
+          <label class="a-label">Delay</label>
           <div class="dimension-input-group">
             <input
-              class="field duration-value"
+              class="a-field duration-value"
               type="number"
               value={(meta.value as TransitionValue).delay.value}
               step="1"
@@ -600,7 +600,7 @@
               }}
             />
             <select
-              class="field duration-unit-select"
+              class="a-field duration-unit-select"
               value={(meta.value as TransitionValue).delay.unit}
               onchange={(e) => {
                 updateMeta({
@@ -623,7 +623,7 @@
 
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Timing Function</label>
+        <label class="a-label">Timing Function</label>
         <CubicBezierEditor
           value={(meta.value as TransitionValue).timingFunction}
           onChange={(value: CubicBezierValue) => {
@@ -641,7 +641,7 @@
     {#if meta?.nodeType === "token" && meta.type === "typography"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Font Family</label>
+        <label class="a-label">Font Family</label>
         {@render fontFamilyEditor(meta.value.fontFamily, (fontFamily) => {
           updateMeta({
             value: {
@@ -655,7 +655,7 @@
       <div class="typography-aux">
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Font Size</label>
+          <label class="a-label">Font Size</label>
           {@render dimensionEditor(meta.value.fontSize, (fontSize) => {
             updateMeta({
               value: {
@@ -668,7 +668,7 @@
 
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Font Weight</label>
+          <label class="a-label">Font Weight</label>
           {@render fontWeightEditor(meta.value.fontWeight, (fontWeight) => {
             updateMeta({
               value: {
@@ -681,9 +681,9 @@
 
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Line Height</label>
+          <label class="a-label">Line Height</label>
           <input
-            class="field"
+            class="a-field"
             type="number"
             value={meta.value.lineHeight}
             oninput={(e) => {
@@ -704,7 +704,7 @@
 
         <div class="form-group">
           <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label class="text-label">Letter Spacing</label>
+          <label class="a-label">Letter Spacing</label>
           {@render dimensionEditor(
             meta.value.letterSpacing,
             (letterSpacing) => {
@@ -723,7 +723,7 @@
     {#if meta?.nodeType === "token" && meta.type === "strokeStyle"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Style</label>
+        <label class="a-label">Style</label>
         {@render strokeStyleEditor(meta.value, (value) => {
           updateMeta({ value });
         })}
@@ -734,7 +734,7 @@
       {@const shadows = Array.isArray(meta.value) ? meta.value : [meta.value]}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Shadow</label>
+        <label class="a-label">Shadow</label>
         <div class="shadow-list">
           {#each shadows as item, index (index)}
             <div class="shadow-item">
@@ -742,7 +742,7 @@
                 <span class="shadow-item-title">Shadow {index + 1}</span>
                 {#if shadows.length > 1}
                   <button
-                    class="button"
+                    class="a-button"
                     aria-label="Remove shadow"
                     onclick={() => {
                       const updated = shadows.filter((_, i) => i !== index);
@@ -759,7 +759,7 @@
               <div class="shadow-item-body">
                 <div class="shadow-fields-grid">
                   <div class="form-group">
-                    <label class="text-label">
+                    <label class="a-label">
                       <input
                         type="checkbox"
                         checked={item.inset ?? false}
@@ -778,7 +778,7 @@
 
                   <div class="form-group">
                     <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="text-label">Color</label>
+                    <label class="a-label">Color</label>
                     <div class="color-picker-wrapper">
                       <color-input
                         value={serializeColor(item.color)}
@@ -807,7 +807,7 @@
 
                   <div class="form-group">
                     <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="text-label">Offset X</label>
+                    <label class="a-label">Offset X</label>
                     {@render dimensionEditor(item.offsetX, (offsetX) => {
                       const updated = [...shadows];
                       updated[index].offsetX = offsetX;
@@ -819,7 +819,7 @@
 
                   <div class="form-group">
                     <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="text-label">Offset Y</label>
+                    <label class="a-label">Offset Y</label>
                     {@render dimensionEditor(item.offsetY, (offsetY) => {
                       const updated = [...shadows];
                       updated[index].offsetY = offsetY;
@@ -831,7 +831,7 @@
 
                   <div class="form-group">
                     <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="text-label">Blur</label>
+                    <label class="a-label">Blur</label>
                     {@render dimensionEditor(item.blur, (blur) => {
                       const updated = [...shadows];
                       updated[index].blur = blur;
@@ -843,7 +843,7 @@
 
                   <div class="form-group">
                     <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="text-label">Spread</label>
+                    <label class="a-label">Spread</label>
                     {@render dimensionEditor(
                       item.spread ?? { value: 0, unit: "px" },
                       (spread) => {
@@ -861,7 +861,7 @@
           {/each}
 
           <button
-            class="button"
+            class="a-button"
             onclick={() => {
               const newShadow: ShadowItem = {
                 color: {
@@ -887,7 +887,7 @@
       {@const border = meta.value as BorderValue}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Color</label>
+        <label class="a-label">Color</label>
         <div class="color-picker-wrapper">
           <color-input
             value={serializeColor(border.color)}
@@ -918,7 +918,7 @@
 
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Width</label>
+        <label class="a-label">Width</label>
         {@render dimensionEditor(border.width, (width) => {
           updateMeta({
             value: {
@@ -931,7 +931,7 @@
 
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Style</label>
+        <label class="a-label">Style</label>
         {@render strokeStyleEditor(border.style, (style) => {
           updateMeta({
             value: {
@@ -946,7 +946,7 @@
     {#if meta?.nodeType === "token" && meta.type === "gradient"}
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
-        <label class="text-label">Gradient</label>
+        <label class="a-label">Gradient</label>
         <GradientEditor
           value={meta.value as GradientValue}
           onChange={(value: GradientValue) => {

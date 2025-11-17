@@ -169,90 +169,49 @@
   };
 </script>
 
-<div class="token-type-menu-wrapper">
-  {#if inheritedType}
-    <button
-      class="button"
-      aria-label="Add token"
-      onclick={() => handleAddToken(inheritedType)}
-    >
-      <Plus size={20} />
-    </button>
-  {:else}
-    <button
-      class="button"
-      aria-label="Add token"
-      commandfor="app-add-token-menu"
-      command="toggle-popover"
-    >
-      <Plus size={20} />
-    </button>
-  {/if}
-
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_interactive_supports_focus -->
-  <div
-    id="app-add-token-menu"
-    class="token-type-menu"
-    popover="auto"
-    role="menu"
-    onclick={(event) => event.currentTarget.hidePopover()}
+{#if inheritedType}
+  <button
+    class="a-button"
+    aria-label="Add token"
+    onclick={() => handleAddToken(inheritedType)}
   >
-    {#each tokenTypes as type, index (type)}
-      <!-- svelte-ignore a11y_autofocus -->
-      <button
-        class="menu-item"
-        role="menuitem"
-        autofocus={index === 0}
-        onclick={() => handleAddToken(type)}
-      >
-        {titleCase(noCase(type))}
-      </button>
-    {/each}
-  </div>
+    <Plus size={20} />
+  </button>
+{:else}
+  <button
+    class="a-button"
+    aria-label="Add token"
+    commandfor="app-add-token-menu"
+    command="toggle-popover"
+  >
+    <Plus size={20} />
+  </button>
+{/if}
+
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_interactive_supports_focus -->
+<div
+  id="app-add-token-menu"
+  class="a-popover token-type-menu"
+  popover="auto"
+  role="menu"
+  onclick={(event) => event.currentTarget.hidePopover()}
+>
+  {#each tokenTypes as type, index (type)}
+    <!-- svelte-ignore a11y_autofocus -->
+    <button
+      class="a-item"
+      role="menuitem"
+      autofocus={index === 0}
+      onclick={() => handleAddToken(type)}
+    >
+      {titleCase(noCase(type))}
+    </button>
+  {/each}
 </div>
 
 <style>
-  .token-type-menu-wrapper {
-    position: relative;
-  }
-
   .token-type-menu {
-    position-area: center bottom;
-    margin-inline: 0;
-    margin-block: 8px;
-    min-width: 160px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .menu-item {
-    display: block;
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    color: var(--text-primary);
-    text-align: left;
-    font-size: 14px;
-    font-family: inherit;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-transform: capitalize;
-
-    &:hover,
-    &:focus {
-      background: var(--bg-hover);
-      outline: none;
-    }
-
-    &:active {
-      background: var(--accent);
-      color: white;
-    }
+    position-area: span-left bottom;
   }
 </style>
