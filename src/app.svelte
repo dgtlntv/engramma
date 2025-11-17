@@ -30,7 +30,7 @@
   const rootNodes = $derived(treeState.getChildren(undefined));
 
   let selectedItems = new SvelteSet<string>();
-  let outputMode = $state<"css" | "json" | "styleguide">("css");
+  let outputMode = $state<"styleguide" | "css" | "json">("styleguide");
   let editingMode = $state(false);
 
   const buildTreeItem = (node: TreeNode<TreeNodeMeta>): TreeItem => {
@@ -224,30 +224,6 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="container" onkeydown={handleKeyDown}>
-  <!-- Toolbar -->
-  <header class="toolbar" hidden>
-    <div class="toolbar-section">
-      <button class="toolbar-btn" title="New project">
-        <span class="icon">✚</span>
-      </button>
-      <button class="toolbar-btn" title="Open">
-        <span class="icon">📁</span>
-      </button>
-      <button class="toolbar-btn" title="Save">
-        <span class="icon">💾</span>
-      </button>
-    </div>
-
-    <div class="toolbar-section">
-      <button class="toolbar-btn" title="Export">
-        <span class="icon">⬇</span>
-      </button>
-      <button class="toolbar-btn" title="Settings">
-        <span class="icon">⚙</span>
-      </button>
-    </div>
-  </header>
-
   <!-- Main Content -->
   <div class="content">
     <!-- Left Panel: Design Tokens -->
@@ -323,53 +299,57 @@
       {#if editingMode}
         <Editor {selectedItems} bind:editingMode />
       {:else}
-        <div class="panel-header">
-          <h2 class="panel-title">
-            {outputMode === "css"
-              ? "CSS Variables"
-              : outputMode === "json"
-                ? "Design Tokens JSON"
-                : "Styleguide"}
-          </h2>
-          <div class="output-mode-switcher">
-            <button
-              class="mode-btn"
-              class:active={outputMode === "css"}
-              aria-label="Show CSS Variables"
-              onclick={() => (outputMode = "css")}
-            >
-              CSS
-            </button>
-            <button
-              class="mode-btn"
-              class:active={outputMode === "json"}
-              aria-label="Show JSON"
-              onclick={() => (outputMode = "json")}
-            >
-              JSON
-            </button>
-            <button
-              class="mode-btn"
-              class:active={outputMode === "styleguide"}
-              aria-label="Show Styleguide"
-              onclick={() => (outputMode = "styleguide")}
-            >
-              Guide
-            </button>
-          </div>
+        <div class="tablist-header" role="tablist" aria-label="Output format">
+          <button
+            role="tab"
+            aria-selected={outputMode === "styleguide"}
+            aria-controls="styleguide-tabpanel"
+            class="tab-btn"
+            onclick={() => (outputMode = "styleguide")}
+          >
+            Styleguide
+          </button>
+          <button
+            role="tab"
+            aria-selected={outputMode === "css"}
+            aria-controls="css-tabpanel"
+            class="tab-btn"
+            onclick={() => (outputMode = "css")}
+          >
+            CSS
+          </button>
+          <button
+            role="tab"
+            aria-selected={outputMode === "json"}
+            aria-controls="json-tabpanel"
+            class="tab-btn"
+            onclick={() => (outputMode = "json")}
+          >
+            JSON
+          </button>
         </div>
-
         {#if outputMode === "styleguide"}
           <iframe
+            id="styleguide-tabpanel"
             title="Design Tokens Styleguide"
             class="styleguide-iframe"
             srcdoc={styleguideOutput}
           ></iframe>
-        {:else}
+        {/if}
+        {#if outputMode === "css"}
           <textarea
+            id="css-tabpanel"
             class="css-textarea"
             readonly
-            value={outputMode === "css" ? cssOutput : jsonOutput}
+            value={cssOutput}
+          ></textarea>
+        {/if}
+        {#if outputMode === "json"}
+          <textarea
+            id="json-tabpanel"
+            class="css-textarea"
+            readonly
+            value={jsonOutput}
           ></textarea>
         {/if}
       {/if}
@@ -382,48 +362,6 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-  }
-
-  /* Toolbar */
-  .toolbar {
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    height: 56px;
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-  }
-
-  .toolbar-section {
-    display: flex;
-    gap: 4px;
-  }
-
-  .toolbar-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 18px;
-    transition: all 0.2s ease;
-  }
-
-  .toolbar-btn:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .toolbar-btn:active {
-    transform: translateY(0);
   }
 
   /* Main content */
@@ -456,7 +394,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 16px;
-    height: 60px;
+    height: 48px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     background: var(--bg-primary);
@@ -561,17 +499,29 @@
     background: white;
   }
 
-  /* Output mode switcher */
-  .output-mode-switcher {
+  .tablist-header {
     display: flex;
-    gap: 4px;
-    background: var(--bg-secondary);
-    padding: 4px;
-    border-radius: 6px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    background: var(--bg-primary);
+    height: 48px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      position-anchor: --app-selected-tab;
+      left: anchor(left);
+      right: anchor(right);
+      /* cover header border */
+      bottom: calc(anchor(bottom) - 1px);
+      border-bottom: 2px solid var(--accent);
+      transition: all 200ms;
+    }
   }
 
-  .mode-btn {
-    padding: 6px 16px;
+  /* Tab button styles */
+  .tab-btn {
+    padding: 0 16px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
@@ -579,21 +529,28 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-radius: 4px;
+    border-radius: 0;
     transition: all 0.2s ease;
-  }
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
 
-  .mode-btn:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-  }
+    &:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
 
-  .mode-btn.active {
-    background: var(--accent);
-    color: white;
-  }
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
 
-  .mode-btn.active:hover {
-    background: var(--accent-hover);
+    &[aria-selected="true"] {
+      color: var(--accent);
+      anchor-name: --app-selected-tab;
+    }
   }
 </style>

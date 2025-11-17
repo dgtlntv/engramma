@@ -84,7 +84,6 @@ textarea.field {
   border-radius: 4px;
   color: var(--text-secondary);
   transition: all 0.2s ease;
-  cursor: pointer;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -92,5 +91,10 @@ textarea.field {
   &:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
   }
 }

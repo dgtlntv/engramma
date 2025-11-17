@@ -28,11 +28,13 @@ export const generateStyleguide = (
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(0 0 0 / 0.2) #f0f0f0;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f5f5f5;
+      background: #f0f0f0;
       color: #333;
       line-height: 1.6;
     }

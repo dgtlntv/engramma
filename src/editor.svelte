@@ -970,7 +970,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 60px;
+    height: 48px;
     padding: 0 16px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
