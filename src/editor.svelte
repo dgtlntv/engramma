@@ -384,37 +384,32 @@
       <label class="a-label">Dash Array</label>
       <div class="dash-array-list">
         {#each strokeStyle.dashArray as dash, index (index)}
-          <div class="dash-array-item">
-            <div class="dash-array-item-header">
-              <span class="dash-array-item-title">Dash {index + 1}</span>
-              {#if strokeStyle.dashArray.length > 1}
-                <button
-                  class="a-button"
-                  aria-label="Remove dash"
-                  onclick={() => {
-                    const updated = strokeStyle.dashArray.filter(
-                      (_, i: number) => i !== index,
-                    );
-                    onChange({
-                      ...strokeStyle,
-                      dashArray: updated,
-                    });
-                  }}
-                >
-                  <X size={20} />
-                </button>
-              {/if}
-            </div>
-            <div class="dash-array-item-body">
-              {@render dimensionEditor(dash, (newDash) => {
-                const updated = [...strokeStyle.dashArray];
-                updated[index] = newDash;
-                onChange({
-                  ...strokeStyle,
-                  dashArray: updated,
-                });
-              })}
-            </div>
+          <div class="dash-array-item-row">
+            {@render dimensionEditor(dash, (newDash) => {
+              const updated = [...strokeStyle.dashArray];
+              updated[index] = newDash;
+              onChange({
+                ...strokeStyle,
+                dashArray: updated,
+              });
+            })}
+            {#if strokeStyle.dashArray.length > 1}
+              <button
+                class="a-button remove-dash-button"
+                aria-label="Remove dash"
+                onclick={() => {
+                  const updated = strokeStyle.dashArray.filter(
+                    (_, i: number) => i !== index,
+                  );
+                  onChange({
+                    ...strokeStyle,
+                    dashArray: updated,
+                  });
+                }}
+              >
+                <X size={20} />
+              </button>
+            {/if}
           </div>
         {/each}
 
@@ -961,141 +956,114 @@
         <div class="shadow-list">
           {#each shadows as item, index (index)}
             <div class="shadow-item">
-              <div class="shadow-item-header">
-                <span class="shadow-item-title">Shadow {index + 1}</span>
-                {#if shadows.length > 1}
-                  <button
-                    class="a-button"
-                    aria-label="Remove shadow"
+              <div class="shadow-item-row">
+                <label class="a-label inset-label">
+                  <input
+                    type="checkbox"
+                    checked={item.inset ?? false}
                     disabled={isAlias}
-                    onclick={() => {
-                      const updated = shadows.filter((_, i) => i !== index);
+                    onchange={(e) => {
+                      const updated = [...shadows];
+                      updated[index].inset =
+                        e.currentTarget.checked || undefined;
                       updateMeta({
                         value: updated.length === 1 ? updated[0] : updated,
                       });
                     }}
-                  >
-                    <X size={16} />
-                  </button>
-                {/if}
-              </div>
+                  />
+                  Inset
+                </label>
 
-              <div class="shadow-item-body">
-                <div class="shadow-fields-grid">
-                  <div class="form-group">
-                    <label class="a-label">
-                      <input
-                        type="checkbox"
-                        checked={item.inset ?? false}
-                        disabled={isAlias}
-                        onchange={(e) => {
-                          const updated = [...shadows];
-                          updated[index].inset =
-                            e.currentTarget.checked || undefined;
-                          updateMeta({
-                            value: updated.length === 1 ? updated[0] : updated,
-                          });
-                        }}
-                      />
-                      Inset
-                    </label>
-                  </div>
-
-                  <div class="form-group">
-                    <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="a-label">Color</label>
-                    <div class="color-picker-wrapper">
-                      <color-input
-                        value={serializeColor(item.color)}
-                        disabled={isAlias}
-                        onopen={(event: InputEvent) => {
-                          const input = event.target as HTMLInputElement;
-                          const updated = [...shadows];
-                          updated[index].color = parseColor(input.value);
-                          updateMeta({
-                            value: updated.length === 1 ? updated[0] : updated,
-                          });
-                        }}
-                        onclose={(event: InputEvent) => {
-                          const input = event.target as HTMLInputElement;
-                          const updated = [...shadows];
-                          updated[index].color = parseColor(input.value);
-                          updateMeta({
-                            value: updated.length === 1 ? updated[0] : updated,
-                          });
-                        }}
-                      ></color-input>
-                      <span class="color-value">
-                        {serializeColor(item.color)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="a-label">Offset X</label>
-                    {@render dimensionEditor(
-                      item.offsetX,
-                      (offsetX) => {
-                        const updated = [...shadows];
-                        updated[index].offsetX = offsetX;
-                        updateMeta({
-                          value: updated.length === 1 ? updated[0] : updated,
-                        });
-                      },
-                      isAlias,
-                    )}
-                  </div>
-
-                  <div class="form-group">
-                    <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="a-label">Offset Y</label>
-                    {@render dimensionEditor(
-                      item.offsetY,
-                      (offsetY) => {
-                        const updated = [...shadows];
-                        updated[index].offsetY = offsetY;
-                        updateMeta({
-                          value: updated.length === 1 ? updated[0] : updated,
-                        });
-                      },
-                      isAlias,
-                    )}
-                  </div>
-
-                  <div class="form-group">
-                    <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="a-label">Blur</label>
-                    {@render dimensionEditor(
-                      item.blur,
-                      (blur) => {
-                        const updated = [...shadows];
-                        updated[index].blur = blur;
-                        updateMeta({
-                          value: updated.length === 1 ? updated[0] : updated,
-                        });
-                      },
-                      isAlias,
-                    )}
-                  </div>
-
-                  <div class="form-group">
-                    <!-- svelte-ignore a11y_label_has_associated_control -->
-                    <label class="a-label">Spread</label>
-                    {@render dimensionEditor(
-                      item.spread ?? { value: 0, unit: "px" },
-                      (spread) => {
-                        const updated = [...shadows];
-                        updated[index].spread = spread;
-                        updateMeta({
-                          value: updated.length === 1 ? updated[0] : updated,
-                        });
-                      },
-                      isAlias,
-                    )}
-                  </div>
+                <div class="color-picker-wrapper">
+                  <color-input
+                    value={serializeColor(item.color)}
+                    disabled={isAlias}
+                    onopen={(event: InputEvent) => {
+                      const input = event.target as HTMLInputElement;
+                      const updated = [...shadows];
+                      updated[index].color = parseColor(input.value);
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    }}
+                    onclose={(event: InputEvent) => {
+                      const input = event.target as HTMLInputElement;
+                      const updated = [...shadows];
+                      updated[index].color = parseColor(input.value);
+                      updateMeta({
+                        value: updated.length === 1 ? updated[0] : updated,
+                      });
+                    }}
+                  ></color-input>
+                  <span class="color-value">
+                    {serializeColor(item.color)}
+                  </span>
                 </div>
+
+                {@render dimensionEditor(
+                  item.offsetX,
+                  (offsetX) => {
+                    const updated = [...shadows];
+                    updated[index].offsetX = offsetX;
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  },
+                  isAlias,
+                )}
+
+                {@render dimensionEditor(
+                  item.offsetY,
+                  (offsetY) => {
+                    const updated = [...shadows];
+                    updated[index].offsetY = offsetY;
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  },
+                  isAlias,
+                )}
+
+                {@render dimensionEditor(
+                  item.blur,
+                  (blur) => {
+                    const updated = [...shadows];
+                    updated[index].blur = blur;
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  },
+                  isAlias,
+                )}
+
+                {@render dimensionEditor(
+                  item.spread ?? { value: 0, unit: "px" },
+                  (spread) => {
+                    const updated = [...shadows];
+                    updated[index].spread = spread;
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  },
+                  isAlias,
+                )}
               </div>
+
+              {#if shadows.length > 1}
+                <button
+                  class="a-button remove-shadow-button"
+                  aria-label="Remove shadow"
+                  disabled={isAlias}
+                  onclick={() => {
+                    const updated = shadows.filter((_, i) => i !== index);
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              {/if}
             </div>
           {/each}
 
@@ -1291,39 +1259,32 @@
   }
 
   .shadow-item {
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .shadow-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .shadow-item-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .shadow-item-body {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr max-content;
     gap: 12px;
+    align-items: start;
   }
 
-  .shadow-fields-grid {
+  .shadow-item-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+    align-items: center;
+  }
+
+  .inset-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .inset-label input {
+    margin: 0;
+  }
+
+  .remove-shadow-button {
+    padding: 4px 8px;
   }
 
   .dash-array-list {
@@ -1332,33 +1293,15 @@
     gap: 12px;
   }
 
-  .dash-array-item {
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-  }
-
-  .dash-array-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .dash-array-item-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .dash-array-item-body {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
+  .dash-array-item-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
     gap: 12px;
+    align-items: center;
+  }
+
+  .remove-dash-button {
+    padding: 4px 8px;
   }
 
   .typography-aux {
