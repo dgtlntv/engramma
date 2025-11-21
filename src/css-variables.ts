@@ -56,59 +56,73 @@ export const toGradient = (value: GradientValue) => {
 };
 
 const addTransition = (
-  varName: string,
+  propertyName: string,
   value: TransitionValue,
   cssLines: string[],
 ) => {
   const duration = toDurationValue(value.duration);
   const delay = toDurationValue(value.delay);
   const timingFunction = toCubicBezierValue(value.timingFunction);
-  cssLines.push(`  ${varName}-duration: ${duration};`);
-  cssLines.push(`  ${varName}-delay: ${delay};`);
-  cssLines.push(`  ${varName}-timing-function: ${timingFunction};`);
-  cssLines.push(`  ${varName}: ${duration} ${timingFunction} ${delay};`);
+  cssLines.push(`  ${propertyName}-duration: ${duration};`);
+  cssLines.push(`  ${propertyName}-delay: ${delay};`);
+  cssLines.push(`  ${propertyName}-timing-function: ${timingFunction};`);
+  cssLines.push(`  ${propertyName}: ${duration} ${timingFunction} ${delay};`);
 };
 
 const addStrokeStyle = (
-  varName: string,
+  propertyName: string,
   value: StrokeStyleValue,
   cssLines: string[],
 ) => {
   if (typeof value === "string") {
-    cssLines.push(`  ${varName}: ${value};`);
+    cssLines.push(`  ${propertyName}: ${value};`);
   } else {
     const dashArray = value.dashArray.map(toDimensionValue).join(", ");
-    cssLines.push(`  ${varName}-dash-array: ${dashArray};`);
-    cssLines.push(`  ${varName}-line-cap: ${value.lineCap};`);
+    cssLines.push(`  ${propertyName}-dash-array: ${dashArray};`);
+    cssLines.push(`  ${propertyName}-line-cap: ${value.lineCap};`);
   }
 };
 
-const addBorder = (varName: string, value: BorderValue, cssLines: string[]) => {
+const addBorder = (
+  propertyName: string,
+  value: BorderValue,
+  cssLines: string[],
+) => {
   const color = serializeColor(value.color);
   const width = toDimensionValue(value.width);
   const style = typeof value.style === "string" ? value.style : "solid";
-  cssLines.push(`  ${varName}-color: ${color};`);
-  cssLines.push(`  ${varName}-width: ${width};`);
-  cssLines.push(`  ${varName}-style: ${style};`);
-  cssLines.push(`  ${varName}: ${width} ${style} ${color};`);
+  cssLines.push(`  ${propertyName}-color: ${color};`);
+  cssLines.push(`  ${propertyName}-width: ${width};`);
+  cssLines.push(`  ${propertyName}-style: ${style};`);
+  cssLines.push(`  ${propertyName}: ${width} ${style} ${color};`);
 };
 
 const addTypography = (
-  varName: string,
+  propertyName: string,
   value: TypographyValue,
   cssLines: string[],
 ) => {
   const fontFamily = toFontFamily(value.fontFamily);
   const fontSize = toDimensionValue(value.fontSize);
   const letterSpacing = toDimensionValue(value.letterSpacing);
-  cssLines.push(`  ${varName}-font-family: ${fontFamily};`);
-  cssLines.push(`  ${varName}-font-size: ${fontSize};`);
-  cssLines.push(`  ${varName}-font-weight: ${value.fontWeight};`);
-  cssLines.push(`  ${varName}-line-height: ${value.lineHeight};`);
-  cssLines.push(`  ${varName}-letter-spacing: ${letterSpacing};`);
+  cssLines.push(`  ${propertyName}-font-family: ${fontFamily};`);
+  cssLines.push(`  ${propertyName}-font-size: ${fontSize};`);
+  cssLines.push(`  ${propertyName}-font-weight: ${value.fontWeight};`);
+  cssLines.push(`  ${propertyName}-line-height: ${value.lineHeight};`);
+  cssLines.push(`  ${propertyName}-letter-spacing: ${letterSpacing};`);
   cssLines.push(
-    `  ${varName}: ${value.fontWeight} ${fontSize}/${value.lineHeight} ${fontFamily};`,
+    `  ${propertyName}: ${value.fontWeight} ${fontSize}/${value.lineHeight} ${fontFamily};`,
   );
+};
+
+/**
+ * Convert a token reference like "{colors.primary}" to a CSS variable like "var(--colors-primary)"
+ */
+export const referenceToVariable = (reference: string): string => {
+  // Remove curly braces and split by dots
+  const path = reference.replace(/[{}]/g, "").split(".");
+  // Convert to kebab-case and create CSS variable
+  return `var(--${kebabCase(path.join("-"))})`;
 };
 
 const processNode = (
@@ -133,47 +147,64 @@ const processNode = (
   }
 
   if (node.meta.nodeType === "token") {
+    const token = node.meta as any;
+    const propertyName = `--${kebabCase([...path, node.meta.name].join("-"))}`;
+
+    // Handle token aliases (references to other tokens)
+    if (token.extends) {
+      const variable = referenceToVariable(token.extends);
+      cssLines.push(`  ${propertyName}: ${variable};`);
+      return;
+    }
+
     const tokenValue = resolveTokenValue(node, allNodes);
-    const varName = `--${kebabCase([...path, node.meta.name].join("-"))}`;
     switch (tokenValue.type) {
       case "color":
-        cssLines.push(`  ${varName}: ${serializeColor(tokenValue.value)};`);
+        cssLines.push(
+          `  ${propertyName}: ${serializeColor(tokenValue.value)};`,
+        );
         break;
       case "dimension":
-        cssLines.push(`  ${varName}: ${toDimensionValue(tokenValue.value)};`);
+        cssLines.push(
+          `  ${propertyName}: ${toDimensionValue(tokenValue.value)};`,
+        );
         break;
       case "duration":
-        cssLines.push(`  ${varName}: ${toDurationValue(tokenValue.value)};`);
+        cssLines.push(
+          `  ${propertyName}: ${toDurationValue(tokenValue.value)};`,
+        );
         break;
       case "cubicBezier":
-        cssLines.push(`  ${varName}: ${toCubicBezierValue(tokenValue.value)};`);
+        cssLines.push(
+          `  ${propertyName}: ${toCubicBezierValue(tokenValue.value)};`,
+        );
         break;
       case "number":
-        cssLines.push(`  ${varName}: ${tokenValue.value};`);
+        cssLines.push(`  ${propertyName}: ${tokenValue.value};`);
         break;
       case "fontFamily":
-        cssLines.push(`  ${varName}: ${toFontFamily(tokenValue.value)};`);
+        cssLines.push(`  ${propertyName}: ${toFontFamily(tokenValue.value)};`);
         break;
       case "fontWeight":
-        cssLines.push(`  ${varName}: ${tokenValue.value};`);
+        cssLines.push(`  ${propertyName}: ${tokenValue.value};`);
         break;
       case "shadow":
-        cssLines.push(`  ${varName}: ${toShadow(tokenValue.value)};`);
+        cssLines.push(`  ${propertyName}: ${toShadow(tokenValue.value)};`);
         break;
       case "gradient":
-        cssLines.push(`  ${varName}: ${toGradient(tokenValue.value)};`);
+        cssLines.push(`  ${propertyName}: ${toGradient(tokenValue.value)};`);
         break;
       case "transition":
-        addTransition(varName, tokenValue.value, cssLines);
+        addTransition(propertyName, tokenValue.value, cssLines);
         break;
       case "strokeStyle":
-        addStrokeStyle(varName, tokenValue.value, cssLines);
+        addStrokeStyle(propertyName, tokenValue.value, cssLines);
         break;
       case "border":
-        addBorder(varName, tokenValue.value, cssLines);
+        addBorder(propertyName, tokenValue.value, cssLines);
         break;
       case "typography":
-        addTypography(varName, tokenValue.value, cssLines);
+        addTypography(propertyName, tokenValue.value, cssLines);
         break;
       default:
         tokenValue satisfies never;

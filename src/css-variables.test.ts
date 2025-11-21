@@ -353,4 +353,129 @@ describe("generateCssVariables", () => {
     const lines = css.split("\n");
     expect(lines[1]).toMatch(/^  --my-color:/);
   });
+
+  test("generates nested var() for token alias with reference", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        primary: {
+          $value: { colorSpace: "srgb", components: [0, 0.4, 0.8] },
+        },
+      },
+      myAlias: {
+        $type: "color",
+        $value: "{colors.primary}",
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--my-alias: var(--colors-primary);");
+  });
+
+  test("generates nested var() for nested token alias", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        primary: {
+          $value: { colorSpace: "srgb", components: [0, 0.4, 0.8] },
+        },
+      },
+      theme: {
+        $type: "color",
+        accent: {
+          $value: "{colors.primary}",
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--theme-accent: var(--colors-primary);");
+  });
+
+  test("generates nested var() for dimension alias", () => {
+    const parsed = parseDesignTokens({
+      spacing: {
+        $type: "dimension",
+        base: {
+          $value: { value: 8, unit: "px" },
+        },
+      },
+      mySpacing: {
+        $type: "dimension",
+        $value: "{spacing.base}",
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--my-spacing: var(--spacing-base);");
+  });
+
+  test("generates nested var() for deeply nested token alias", () => {
+    const parsed = parseDesignTokens({
+      design: {
+        colors: {
+          $type: "color",
+          primary: {
+            $value: { colorSpace: "srgb", components: [0, 0.4, 0.8] },
+          },
+        },
+      },
+      aliases: {
+        $type: "color",
+        buttonColor: {
+          $value: "{design.colors.primary}",
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain(
+      "--aliases-button-color: var(--design-colors-primary);",
+    );
+  });
+
+  test("handles multiple aliases referencing same token", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        primary: {
+          $value: { colorSpace: "srgb", components: [0, 0.4, 0.8] },
+        },
+      },
+      primary: {
+        $type: "color",
+        $value: "{colors.primary}",
+      },
+      brand: {
+        $type: "color",
+        $value: "{colors.primary}",
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--primary: var(--colors-primary);");
+    expect(css).toContain("--brand: var(--colors-primary);");
+  });
+
+  test("can chain aliases through var references", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        primary: {
+          $value: { colorSpace: "srgb", components: [0, 0.4, 0.8] },
+        },
+      },
+      theme: {
+        $type: "color",
+        brand: {
+          $value: "{colors.primary}",
+        },
+      },
+      ui: {
+        $type: "color",
+        button: {
+          $value: "{theme.brand}",
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--colors-primary: rgb(0% 40% 80%);");
+    expect(css).toContain("--theme-brand: var(--colors-primary);");
+    expect(css).toContain("--ui-button: var(--theme-brand);");
+  });
 });
