@@ -31,6 +31,8 @@
   import { serializeDesignTokens } from "./tokens";
   import { generateCssVariables } from "./css-variables";
   import { serializeColor } from "./color";
+  import { titleCase } from "title-case";
+  import { noCase } from "change-case";
 
   onMount(() => {
     return startKeyUX(window, [
@@ -43,7 +45,6 @@
 
   let selectedItems = new SvelteSet<string>();
   let outputMode = $state<"styleguide" | "css" | "json">("styleguide");
-  let editingMode = $state(false);
 
   const buildTreeItem = (node: TreeNode<TreeNodeMeta>): TreeItem => {
     const children = treeState.getChildren(node.nodeId);
@@ -184,7 +185,6 @@
     // select and open editor for the new token
     selectedItems.clear();
     selectedItems.add(tokenNodeId);
-    editingMode = true;
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -194,17 +194,11 @@
     ) {
       return;
     }
+    if (event.key === "Enter") {
+      document.getElementById("app-node-editor")?.showPopover();
+    }
     if (event.key === "Backspace") {
       handleDelete();
-    }
-    // when node editor is open -> hide
-    // otherwise remove selection
-    if (event.key === "Escape") {
-      if (editingMode) {
-        editingMode = false;
-      } else {
-        selectedItems.clear();
-      }
     }
   };
 
@@ -233,15 +227,16 @@
   };
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="container" onkeydown={handleKeyDown}>
+<svelte:document onkeydown={handleKeyDown} />
+
+<div class="container">
   <!-- Main Content -->
   <div class="content">
     <!-- Left Panel: Design Tokens -->
     <aside class="panel left-panel">
       <div class="panel-header">
         <AppMenu />
-        <h2 class="panel-title">Design Tokens</h2>
+        <h2 class="a-panel-title">Design Tokens</h2>
         <div class="toolbar-actions">
           {#if selectedItems.size > 0}
             <button
@@ -249,14 +244,14 @@
               aria-label={`Delete ${selectedItems.size} item(s)`}
               onclick={handleDelete}
             >
-              <Trash2 size={20} />
+              <Trash2 size={16} />
             </button>
             <button
               class="a-button"
               aria-label="Add group"
               onclick={handleAddGroup}
             >
-              <Folder size={20} />
+              <Folder size={16} />
             </button>
           {/if}
           <AddToken {selectedItems} onTokenAdded={handleTokenAdded} />
@@ -277,16 +272,17 @@
           {/if}
           <span class="token-name">{item.name}</span>
           {#if node?.meta.type}
-            <div class="token-hint">{node?.meta.type}</div>
+            <div class="token-hint">{titleCase(noCase(node.meta.type))}</div>
           {/if}
           <button
-            class="edit-btn"
+            class="a-small-button edit-button"
+            aria-label="Edit"
+            commandfor="app-node-editor"
+            command="show-popover"
             onclick={() => {
-              editingMode = true;
               selectedItems.clear();
               selectedItems.add(item.id);
             }}
-            aria-label="Edit"
           >
             <Settings size={16} />
           </button>
@@ -308,62 +304,59 @@
       </div>
     </aside>
 
+    <Editor id="app-node-editor" {selectedItems} />
+
     <!-- Right Panel: CSS Variables / JSON -->
     <main class="panel right-panel">
-      <!-- Editor Panel -->
-      {#if editingMode}
-        <Editor {selectedItems} bind:editingMode />
-      {:else}
-        <div class="tablist-header" role="tablist" aria-label="Output format">
-          <button
-            role="tab"
-            aria-selected={outputMode === "styleguide"}
-            aria-controls="styleguide-tabpanel"
-            class="tab-btn"
-            onclick={() => (outputMode = "styleguide")}
-          >
-            Styleguide
-          </button>
-          <button
-            role="tab"
-            aria-selected={outputMode === "css"}
-            aria-controls="css-tabpanel"
-            class="tab-btn"
-            onclick={() => (outputMode = "css")}
-          >
-            CSS
-          </button>
-          <button
-            role="tab"
-            aria-selected={outputMode === "json"}
-            aria-controls="json-tabpanel"
-            class="tab-btn"
-            onclick={() => (outputMode = "json")}
-          >
-            JSON
-          </button>
+      <div class="tablist-header" role="tablist" aria-label="Output format">
+        <button
+          role="tab"
+          aria-selected={outputMode === "styleguide"}
+          aria-controls="styleguide-tabpanel"
+          class="tab-btn"
+          onclick={() => (outputMode = "styleguide")}
+        >
+          Styleguide
+        </button>
+        <button
+          role="tab"
+          aria-selected={outputMode === "css"}
+          aria-controls="css-tabpanel"
+          class="tab-btn"
+          onclick={() => (outputMode = "css")}
+        >
+          CSS
+        </button>
+        <button
+          role="tab"
+          aria-selected={outputMode === "json"}
+          aria-controls="json-tabpanel"
+          class="tab-btn"
+          onclick={() => (outputMode = "json")}
+        >
+          JSON
+        </button>
+      </div>
+      {#if outputMode === "styleguide"}
+        <div id="styleguide-tabpanel" class="styleguide-panel">
+          <Styleguide {selectedItems} />
         </div>
-        {#if outputMode === "styleguide"}
-          <div id="styleguide-tabpanel" class="styleguide-panel">
-            <Styleguide {selectedItems} />
-          </div>
-        {/if}
-        {#if outputMode === "css"}
-          <textarea
-            id="css-tabpanel"
-            class="css-textarea"
-            readonly
-            value={cssOutput}
-          ></textarea>
-        {/if}
-        {#if outputMode === "json"}
-          <textarea
-            id="json-tabpanel"
-            class="css-textarea"
-            readonly
-            value={jsonOutput}
-          ></textarea>
-        {/if}
+      {/if}
+      {#if outputMode === "css"}
+        <textarea
+          id="css-tabpanel"
+          class="css-textarea"
+          readonly
+          value={cssOutput}
+        ></textarea>
+      {/if}
+      {#if outputMode === "json"}
+        <textarea
+          id="json-tabpanel"
+          class="css-textarea"
+          readonly
+          value={jsonOutput}
+        ></textarea>
       {/if}
     </main>
   </div>
@@ -385,15 +378,16 @@
 
   /* Panels */
   .panel {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: max-content 1fr;
     background: var(--bg-primary);
     border-right: 1px solid var(--border-color);
   }
 
   .left-panel {
-    width: 50%;
+    width: max(320px, 30%);
     border-right: 1px solid var(--border-color);
+    anchor-name: --app-left-panel;
   }
 
   .right-panel {
@@ -405,12 +399,12 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding: 0 8px 0 12px;
-    height: 48px;
+    padding: 0 12px;
+    height: var(--panel-header-height);
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     background: var(--bg-primary);
-    gap: 12px;
+    gap: 8px;
   }
 
   .toolbar-actions {
@@ -418,15 +412,6 @@
     gap: 8px;
     align-items: center;
     margin-left: auto;
-  }
-
-  .panel-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .tokens-container {
@@ -438,7 +423,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 8px;
     transition: all 0.2s ease;
   }
 
@@ -463,27 +447,9 @@
     color: var(--text-primary);
   }
 
-  .edit-btn {
+  .edit-button {
     pointer-events: auto;
     visibility: var(--tree-view-item-hover-visibility);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    color: var(--text-primary);
-    opacity: 0.6;
-    transition: all 0.2s ease;
-    margin-left: 4px;
-  }
-
-  .edit-btn:hover {
-    background: var(--bg-hover);
-    color: var(--accent);
   }
 
   /* CSS Textarea */
@@ -516,7 +482,7 @@
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     background: var(--bg-primary);
-    height: 48px;
+    height: var(--panel-header-height);
 
     &::after {
       content: "";
@@ -533,7 +499,7 @@
 
   /* Tab button styles */
   .tab-btn {
-    padding: 0 16px;
+    padding: 0 12px;
     border: none;
     background: transparent;
     color: var(--text-secondary);

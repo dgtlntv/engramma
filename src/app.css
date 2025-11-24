@@ -6,7 +6,7 @@
     ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
     "DejaVu Sans Mono", monospace;
   --bg-primary: #2c2c2c;
-  --bg-secondary: #323232;
+  --bg-secondary: #393939;
   --bg-tertiary: #383838;
   --bg-hover: #404040;
   --border-color: #454545;
@@ -14,8 +14,10 @@
   --text-secondary: #999999;
   --accent: #18a0fb;
   --accent-hover: #27affe;
+  --panel-header-height: 40px;
 
   font-family: var(--typography-geometric-humanist);
+  accent-color: var(--bg-secondary);
 }
 
 * {
@@ -31,9 +33,16 @@ body {
 }
 
 .a-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.a-panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -49,14 +58,19 @@ color-input {
 
 .a-field,
 color-input::part(input) {
-  padding: 5px 12px 6px;
-  border: 1px solid var(--border-color);
+  /* fit input into minimal available space */
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid transparent;
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-radius: 4px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s ease;
+  &:disabled {
+    color: var(--text-secondary);
+  }
 }
 
 .a-field:focus,
@@ -83,11 +97,19 @@ textarea.a-field {
   max-height: 10lh;
 }
 
-/* expects icons 20px to keep button square */
+.a-checkbox {
+  /* 28px is the size of text input */
+  margin: 6px 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-color);
+}
+
+/* expects icons 16px to keep button square */
 .a-button,
 color-input::part(trigger) {
   display: flex;
-  min-height: 32px;
+  min-height: 28px;
   padding: 0 5px;
   gap: 4px;
   align-items: center;
@@ -116,31 +138,55 @@ color-input::part(trigger):focus-visible {
   box-shadow: 0 0 0 2px rgb(0 0 0 / 0.1);
 }
 
+.a-small-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: var(--text-primary);
+  opacity: 0.5;
+  transition: opacity 150ms;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .a-popover {
+  margin: 0;
+  min-width: 160px;
+  background: var(--bg-primary);
+  border: 0;
+  padding: 0;
+  box-shadow:
+    0 2px 5px 0 rgb(0 0 0 / 35%),
+    inset 0 0 0.5px 0 rgb(255 255 255 / 35%),
+    0 10px 16px 0 rgb(0 0 0 / 35%),
+    inset 0 0.5px 0 0 rgb(255 255 255 / 8%);
+}
+
+.a-menu {
   position-area: center bottom;
   position-try-fallbacks: flip-block;
   margin-inline: 0;
   margin-block: 8px;
-  min-width: 160px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .a-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: 5px 12px;
   border: none;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
-  border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: 150ms;
   text-decoration: none;
 
   &:hover,

@@ -16,11 +16,16 @@
   } from "./schema";
   import CubicBezierEditor from "./cubic-bezier-editor.svelte";
   import GradientEditor from "./gradient-editor.svelte";
+  import type { HTMLAttributes } from "svelte/elements";
 
   let {
+    id,
     selectedItems,
-    editingMode = $bindable(),
-  }: { selectedItems: SvelteSet<string>; editingMode: boolean } = $props();
+    ...rest
+  }: HTMLAttributes<HTMLDivElement> & {
+    id: string;
+    selectedItems: SvelteSet<string>;
+  } = $props();
 
   const fontWeightMap: Record<string, number> = {
     thin: 100,
@@ -400,7 +405,7 @@
             })}
             {#if strokeStyle.dashArray.length > 1}
               <button
-                class="a-button remove-dash-button"
+                class="a-button"
                 aria-label="Remove dash"
                 onclick={() => {
                   const updated = strokeStyle.dashArray.filter(
@@ -412,7 +417,7 @@
                   });
                 }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             {/if}
           </div>
@@ -434,18 +439,18 @@
   {/if}
 {/snippet}
 
-<div class="form-panel">
+<div {id} popover="auto" class="a-popover editor-popover" {...rest}>
   <div class="form-header">
-    <h2 class="form-title">
+    <h2 class="a-panel-title">
       {meta?.nodeType === "token-group" ? "Group" : "Token"}
     </h2>
     <button
       class="a-button"
       aria-label="Close"
-      aria-keyshortcuts="Escape"
-      onclick={() => (editingMode = false)}
+      commandfor={id}
+      command="hide-popover"
     >
-      <X size={20} />
+      <X size={16} />
     </button>
   </div>
 
@@ -472,39 +477,39 @@
     </div>
 
     <div class="form-group">
-      <label class="a-label" for="deprecated-input">
+      <div class="form-checkbox-group">
         <input
           id="deprecated-input"
+          class="a-checkbox"
           type="checkbox"
           checked={meta?.deprecated !== undefined}
           onchange={(e) => handleDeprecatedChange(e.currentTarget.checked)}
         />
-        Deprecated
-      </label>
+        <label class="a-label" for="deprecated-input"> Deprecated </label>
+      </div>
       {#if meta?.deprecated !== undefined}
-        <input
+        <textarea
           class="a-field"
-          type="text"
           placeholder="Reason for deprecation"
           bind:value={
             () => (typeof meta.deprecated === "string" ? meta.deprecated : ""),
             (reason) => handleDeprecatedChange(reason)
           }
-        />
+        ></textarea>
       {/if}
     </div>
 
     {#if meta?.nodeType === "token" && meta.type}
       <div class="form-group">
         <div class="a-label">Type</div>
-        <div class="form-value">{meta.type}</div>
+        <div class="a-field">{meta.type}</div>
       </div>
     {/if}
 
     {#if meta?.nodeType === "token" && availableTokens.length > 0}
       <div class="form-group">
         <label class="a-label" for="alias-input">Alias Token</label>
-        <div class="combobox-container">
+        <div class="alias-container">
           <input
             id="alias-input"
             class="a-field alias-input"
@@ -518,6 +523,7 @@
               aliasPopoverElement?.showPopover();
             }}
             onkeydown={handleAliasKeyDown}
+            onclick={() => aliasPopoverElement?.showPopover()}
             onfocus={() => aliasPopoverElement?.showPopover()}
             onblur={() => {
               // Clear search after a brief delay to allow click handling
@@ -541,34 +547,34 @@
                 }
               }}
             >
-              <X size={20} />
+              <X size={16} />
             </button>
           {/if}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_interactive_supports_focus -->
-          <div
-            bind:this={aliasPopoverElement}
-            class="a-popover alias-popover"
-            popover="manual"
-            role="menu"
-          >
-            {#each filteredAliasTokens as token, index (token.nodeId)}
-              <button
-                class="a-item"
-                class:selected={index === selectedAliasIndex}
-                role="menuitem"
-                onclick={(e) => {
-                  e.stopPropagation();
-                  makeAlias(token.nodeId);
-                  aliasSearchInput = "";
-                  selectedAliasIndex = 0;
-                  aliasPopoverElement?.hidePopover();
-                }}
-              >
-                {token.path.join(" > ")}
-              </button>
-            {/each}
-          </div>
+        </div>
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_interactive_supports_focus -->
+        <div
+          bind:this={aliasPopoverElement}
+          class="a-popover a-menu alias-popover"
+          popover="manual"
+          role="menu"
+        >
+          {#each filteredAliasTokens as token, index (token.nodeId)}
+            <button
+              class="a-item"
+              class:selected={index === selectedAliasIndex}
+              role="menuitem"
+              onclick={(e) => {
+                e.stopPropagation();
+                makeAlias(token.nodeId);
+                aliasSearchInput = "";
+                selectedAliasIndex = 0;
+                aliasPopoverElement?.hidePopover();
+              }}
+            >
+              {token.path.join(" > ")}
+            </button>
+          {/each}
         </div>
       </div>
     {/if}
@@ -956,92 +962,24 @@
         <div class="shadow-list">
           {#each shadows as item, index (index)}
             <div class="shadow-item">
-              <div class="shadow-item-row">
-                <label class="a-label inset-label">
-                  <input
-                    type="checkbox"
-                    checked={item.inset ?? false}
-                    disabled={isAlias}
-                    onchange={(e) => {
-                      const updated = [...shadows];
-                      updated[index].inset =
-                        e.currentTarget.checked || undefined;
-                      updateMeta({
-                        value: updated.length === 1 ? updated[0] : updated,
-                      });
-                    }}
-                  />
+              <div class="form-checkbox-group">
+                <input
+                  id="shadow-inset-{index}"
+                  class="a-checkbox"
+                  type="checkbox"
+                  checked={item.inset ?? false}
+                  disabled={isAlias}
+                  onchange={(e) => {
+                    const updated = [...shadows];
+                    updated[index].inset = e.currentTarget.checked || undefined;
+                    updateMeta({
+                      value: updated.length === 1 ? updated[0] : updated,
+                    });
+                  }}
+                />
+                <label for="shadow-inset-{index}" class="a-label">
                   Inset
                 </label>
-
-                <color-input
-                  value={serializeColor(item.color)}
-                  disabled={isAlias}
-                  onopen={(event: InputEvent) => {
-                    const input = event.target as HTMLInputElement;
-                    const updated = [...shadows];
-                    updated[index].color = parseColor(input.value);
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  }}
-                  onclose={(event: InputEvent) => {
-                    const input = event.target as HTMLInputElement;
-                    const updated = [...shadows];
-                    updated[index].color = parseColor(input.value);
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  }}
-                ></color-input>
-
-                {@render dimensionEditor(
-                  item.offsetX,
-                  (offsetX) => {
-                    const updated = [...shadows];
-                    updated[index].offsetX = offsetX;
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  },
-                  isAlias,
-                )}
-
-                {@render dimensionEditor(
-                  item.offsetY,
-                  (offsetY) => {
-                    const updated = [...shadows];
-                    updated[index].offsetY = offsetY;
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  },
-                  isAlias,
-                )}
-
-                {@render dimensionEditor(
-                  item.blur,
-                  (blur) => {
-                    const updated = [...shadows];
-                    updated[index].blur = blur;
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  },
-                  isAlias,
-                )}
-
-                {@render dimensionEditor(
-                  item.spread ?? { value: 0, unit: "px" },
-                  (spread) => {
-                    const updated = [...shadows];
-                    updated[index].spread = spread;
-                    updateMeta({
-                      value: updated.length === 1 ? updated[0] : updated,
-                    });
-                  },
-                  isAlias,
-                )}
               </div>
 
               {#if shadows.length > 1}
@@ -1059,6 +997,76 @@
                   <X size={16} />
                 </button>
               {/if}
+
+              <color-input
+                class="shadow-color"
+                value={serializeColor(item.color)}
+                disabled={isAlias}
+                onopen={(event: InputEvent) => {
+                  const input = event.target as HTMLInputElement;
+                  const updated = [...shadows];
+                  updated[index].color = parseColor(input.value);
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                }}
+                onclose={(event: InputEvent) => {
+                  const input = event.target as HTMLInputElement;
+                  const updated = [...shadows];
+                  updated[index].color = parseColor(input.value);
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                }}
+              ></color-input>
+
+              {@render dimensionEditor(
+                item.offsetX,
+                (offsetX) => {
+                  const updated = [...shadows];
+                  updated[index].offsetX = offsetX;
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                },
+                isAlias,
+              )}
+
+              {@render dimensionEditor(
+                item.offsetY,
+                (offsetY) => {
+                  const updated = [...shadows];
+                  updated[index].offsetY = offsetY;
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                },
+                isAlias,
+              )}
+
+              {@render dimensionEditor(
+                item.blur,
+                (blur) => {
+                  const updated = [...shadows];
+                  updated[index].blur = blur;
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                },
+                isAlias,
+              )}
+
+              {@render dimensionEditor(
+                item.spread ?? { value: 0, unit: "px" },
+                (spread) => {
+                  const updated = [...shadows];
+                  updated[index].spread = spread;
+                  updateMeta({
+                    value: updated.length === 1 ? updated[0] : updated,
+                  });
+                },
+                isAlias,
+              )}
             </div>
           {/each}
 
@@ -1151,10 +1159,14 @@
 </div>
 
 <style>
-  .form-panel {
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-primary);
+  .editor-popover:popover-open {
+    top: calc(var(--panel-header-height) + 16px);
+    bottom: 16px;
+    max-height: calc(100dvh - var(--panel-header-height) - 16px - 16px);
+    width: 360px;
+    left: anchor(right --app-left-panel);
+    display: grid;
+    grid-template-rows: max-content 1fr;
     overflow: auto;
   }
 
@@ -1162,47 +1174,35 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 48px;
-    padding: 0 16px;
+    height: var(--panel-header-height);
+    padding: 0 12px;
     border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-  }
-
-  .form-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .form-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
     overflow-y: auto;
-    flex: 1;
   }
 
   .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    gap: 4px;
   }
 
-  .form-value {
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
-    font-size: 14px;
-    color: var(--text-secondary);
+  .form-checkbox-group {
+    display: grid;
+    gap: 4px;
+    align-items: center;
+    grid-template-columns: max-content 1fr;
   }
 
   .dimension-input-group {
+    /* fit input into minimal available space */
+    min-width: 0;
     display: flex;
-    gap: 8px;
+    gap: 4px;
   }
 
   .dimension-value {
@@ -1211,12 +1211,13 @@
 
   .dimension-unit-select {
     field-sizing: content;
-    min-width: 60px;
   }
 
   .duration-input-group {
+    /* fit input into minimal available space */
+    min-width: 0;
     display: flex;
-    gap: 8px;
+    gap: 4px;
   }
 
   .duration-value {
@@ -1225,82 +1226,65 @@
 
   .duration-unit-select {
     field-sizing: content;
-    min-width: 50px;
+  }
+
+  .transition-durations {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .shadow-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 12px;
   }
 
   .shadow-item {
     display: grid;
-    grid-template-columns: 1fr max-content;
-    gap: 12px;
-    align-items: start;
-  }
-
-  .shadow-item-row {
-    display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
   }
 
-  .inset-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-  }
-
-  .inset-label input {
-    margin: 0;
+  .shadow-color {
+    grid-column: 1 / 3;
   }
 
   .remove-shadow-button {
-    padding: 4px 8px;
+    justify-self: end;
   }
 
   .dash-array-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
 
   .dash-array-item-row {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 12px;
+    gap: 4px;
     align-items: center;
   }
 
-  .remove-dash-button {
-    padding: 4px 8px;
-  }
-
   .typography-aux {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .transition-durations {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .combobox-container {
-    position: relative;
+    min-width: 0;
     display: grid;
     gap: 8px;
-    grid-template-columns: 1fr max-content;
+    grid-template-columns: 1fr 1fr;
   }
 
   .a-item.selected {
     background: var(--bg-hover);
+  }
+
+  .alias-container {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    &:has(button) {
+      grid-template-columns: 1fr max-content;
+    }
   }
 
   .alias-input {
@@ -1311,5 +1295,6 @@
   .alias-popover {
     position-anchor: --editor-alias-input;
     width: anchor-size(width);
+    margin: 2px 0;
   }
 </style>

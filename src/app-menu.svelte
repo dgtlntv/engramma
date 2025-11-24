@@ -60,14 +60,14 @@
   commandfor="app-menu"
   command="toggle-popover"
 >
-  <Menu size={20} />
+  <Menu size={16} />
 </button>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_interactive_supports_focus -->
 <div
   id="app-menu"
-  class="a-popover app-menu"
+  class="a-popover a-menu app-menu"
   popover="auto"
   role="menu"
   onclick={(event) => event.currentTarget.hidePopover()}
@@ -111,7 +111,7 @@
     commandfor="app-menu-about"
     command="close"
   >
-    <X size={20} />
+    <X size={16} />
   </button>
   <h2>About</h2>
   <p>
@@ -144,7 +144,7 @@
     border-radius: 8px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    padding: 32px;
+    padding: 28px;
     max-width: 500px;
     box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
 

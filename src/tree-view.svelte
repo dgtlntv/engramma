@@ -441,7 +441,7 @@
         tabindex="-1"
         onclick={selectItem}
       ></button>
-      <button class="toggle" tabindex="-1" onclick={toggleItem}>
+      <button class="a-small-button toggle" tabindex="-1" onclick={toggleItem}>
         <ChevronDown size={16} />
       </button>
       <div class="item">
@@ -482,6 +482,11 @@
   onkeydown={handleKeyDown}
   {@attach setupTreeMonitor}
 >
+  <button
+    class="deselect"
+    aria-label="Deselect items"
+    onclick={() => selectedItems.clear()}
+  ></button>
   {#each data as root, position (root.id)}
     {@render item(root, 1, position)}
   {/each}
@@ -489,13 +494,23 @@
 
 <style>
   [role="tree"] {
+    position: relative;
     padding: 8px 0;
-    height: stretch;
+    min-width: max-content;
+    min-height: stretch;
+
     &:focus-visible,
     &:has(:focus-visible) {
       outline: none;
       background-color: var(--bg-secondary);
     }
+  }
+
+  .deselect {
+    position: absolute;
+    inset: 0;
+    background-color: transparent;
+    border: 0;
   }
 
   [role="treeitem"] {
@@ -546,8 +561,7 @@
     display: flex;
     align-items: center;
     transition: 200ms;
-    padding: 0 8px;
-    padding-left: calc(8px + (var(--tree-view-level) - 1) * 12px);
+    padding-left: calc((var(--tree-view-level) - 1) * 12px);
     background-color: var(--tree-view-bg);
     color: var(--text-primary);
     --tree-view-item-hover-visibility: hidden;
@@ -570,25 +584,10 @@
 
   .toggle {
     isolation: isolate;
-    color: var(--text-primary);
-    border: 0;
-    padding: 0;
-    background-color: transparent;
     visibility: var(--tree-view-toggle-visibility);
     rotate: var(--tree-view-toggle-rotate);
-    width: 24px;
-    height: stretch;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 200ms;
     /* the state is fully controlled with keyboard */
     outline: none;
-    opacity: 0.5;
-
-    &:hover {
-      opacity: 1;
-    }
   }
 
   .item {

@@ -118,19 +118,19 @@
 
         {#if value.length > 2}
           <button
-            class="a-button remove-button"
+            class="a-button"
             aria-label="Remove stop"
             {disabled}
             onclick={() => handleRemoveStop(index)}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         {/if}
       </div>
     {/each}
 
     <button class="a-button" {disabled} onclick={handleAddStop}>
-      <Plus size={20} /> Add Stop
+      <Plus size={16} /> Add Stop
     </button>
   </div>
 </div>
@@ -152,14 +152,22 @@
   .gradient-stops-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
   }
 
   .gradient-stop-row {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
+  }
+
+  color-input {
+    gap: 0;
+  }
+
+  color-input::part(input) {
+    display: none;
   }
 
   .position-input-group {
@@ -183,10 +191,5 @@
   .position-percent {
     font-size: 14px;
     color: var(--text-secondary);
-    min-width: 20px;
-  }
-
-  .remove-button {
-    padding: 4px 8px;
   }
 </style>

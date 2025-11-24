@@ -175,7 +175,7 @@
     aria-label="Add token"
     onclick={() => handleAddToken(inheritedType)}
   >
-    <Plus size={20} />
+    <Plus size={16} />
   </button>
 {:else}
   <button
@@ -184,7 +184,7 @@
     commandfor="app-add-token-menu"
     command="toggle-popover"
   >
-    <Plus size={20} />
+    <Plus size={16} />
   </button>
 {/if}
 
@@ -192,7 +192,7 @@
 <!-- svelte-ignore a11y_interactive_supports_focus -->
 <div
   id="app-add-token-menu"
-  class="a-popover token-type-menu"
+  class="a-popover a-menu token-type-menu"
   popover="auto"
   role="menu"
   onclick={(event) => event.currentTarget.hidePopover()}
