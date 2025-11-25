@@ -236,7 +236,7 @@
     <aside class="panel left-panel">
       <div class="panel-header">
         <AppMenu />
-        <h2 class="a-panel-title">Design Tokens</h2>
+        <h1 class="a-panel-title">Engramma</h1>
         <div class="toolbar-actions">
           {#if selectedItems.size > 0}
             <button

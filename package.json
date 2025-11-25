@@ -1,6 +1,6 @@
 {
   "packageManager": "pnpm@10.20.0",
-  "name": "tools-for-web",
+  "name": "engramma",
   "author": "Bogdan Chadkin",
   "license": "MIT",
   "type": "module",

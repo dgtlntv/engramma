@@ -88,7 +88,7 @@
   <a
     class="a-item"
     role="menuitem"
-    href="https://github.com/TrySound/tools-for-web"
+    href="https://github.com/TrySound/engramma"
     target="_blank"
     rel="noopener noreferrer"
   >
@@ -115,8 +115,8 @@
   </button>
   <h2>About</h2>
   <p>
-    Design Tokens App is an open source playground for designing, organizing,
-    and exporting design tokens into CSS variables.
+    Engramma is an open source playground for designing, organizing, and
+    exporting design tokens into CSS variables.
   </p>
   <p>
     Created and maintained by Bogdan Chadkin aka
