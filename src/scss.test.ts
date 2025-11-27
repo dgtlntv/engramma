@@ -1,5 +1,5 @@
 import { test, expect, describe } from "vitest";
-import { generateCssVariables } from "./css-variables";
+import { generateScssVariables } from "./scss";
 import { parseDesignTokens } from "./tokens";
 import type { TreeNode } from "./store";
 import type { GroupMeta, TokenMeta } from "./state.svelte";
@@ -15,46 +15,46 @@ const nodesToMap = (nodes: TreeNode<TreeNodeMeta>[]) => {
   return map;
 };
 
-describe("generateCssVariables", () => {
-  test("generates empty CSS for empty nodes", () => {
-    const result = generateCssVariables(new Map());
-    expect(result).toBe(":root {\n}");
+describe("generateScssVariables", () => {
+  test("generates empty SCSS for empty nodes", () => {
+    const result = generateScssVariables(new Map());
+    expect(result).toBe("");
   });
 
-  test("generates CSS variables for simple color token", () => {
+  test("generates SCSS variables for simple color token", () => {
     const parsed = parseDesignTokens({
       myColor: {
         $type: "color",
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--my-color: rgb(100% 0% 0%);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$my-color: rgb(100% 0% 0%);");
   });
 
-  test("generates CSS variables for color with alpha", () => {
+  test("generates SCSS variables for color with alpha", () => {
     const parsed = parseDesignTokens({
       myColor: {
         $type: "color",
         $value: { colorSpace: "srgb", components: [0, 0, 0], alpha: 0.5 },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--my-color: rgb(0% 0% 0% / 0.5);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$my-color: rgb(0% 0% 0% / 0.5);");
   });
 
-  test("generates CSS variables for dimension token", () => {
+  test("generates SCSS variables for dimension token", () => {
     const parsed = parseDesignTokens({
       spacing: {
         $type: "dimension",
         $value: { value: 16, unit: "px" },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--spacing: 16px;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$spacing: 16px;");
   });
 
-  test("generates CSS variables for grouped tokens", () => {
+  test("generates SCSS variables for grouped tokens", () => {
     const parsed = parseDesignTokens({
       colors: {
         $type: "color",
@@ -66,78 +66,78 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--colors-primary:");
-    expect(css).toContain("--colors-secondary:");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$colors-primary:");
+    expect(scss).toContain("$colors-secondary:");
   });
 
-  test("generates CSS variables for number token", () => {
+  test("generates SCSS variables for number token", () => {
     const parsed = parseDesignTokens({
       myNumber: {
         $type: "number",
         $value: 42,
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--my-number: 42;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$my-number: 42;");
   });
 
-  test("generates CSS variables for duration token", () => {
+  test("generates SCSS variables for duration token", () => {
     const parsed = parseDesignTokens({
       fast: {
         $type: "duration",
         $value: { value: 100, unit: "ms" },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--fast: 100ms;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$fast: 100ms;");
   });
 
-  test("generates CSS variables for cubicBezier token", () => {
+  test("generates SCSS variables for cubicBezier token", () => {
     const parsed = parseDesignTokens({
       ease: {
         $type: "cubicBezier",
         $value: [0.25, 0.1, 0.25, 1],
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--ease: cubic-bezier(0.25, 0.1, 0.25, 1);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$ease: cubic-bezier(0.25, 0.1, 0.25, 1);");
   });
 
-  test("generates CSS variables for fontFamily token as string", () => {
+  test("generates SCSS variables for fontFamily token as string", () => {
     const parsed = parseDesignTokens({
       sans: {
         $type: "fontFamily",
         $value: "Arial, sans-serif",
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--sans: Arial, sans-serif;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$sans: Arial, sans-serif;");
   });
 
-  test("generates CSS variables for fontFamily token as array", () => {
+  test("generates SCSS variables for fontFamily token as array", () => {
     const parsed = parseDesignTokens({
       sans: {
         $type: "fontFamily",
         $value: ["Arial", "Helvetica", "sans-serif"],
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--sans: Arial, Helvetica, sans-serif;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$sans: Arial, Helvetica, sans-serif;");
   });
 
-  test("generates CSS variables for fontWeight token", () => {
+  test("generates SCSS variables for fontWeight token", () => {
     const parsed = parseDesignTokens({
       bold: {
         $type: "fontWeight",
         $value: 700,
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--bold: 700;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$bold: 700;");
   });
 
-  test("generates CSS variables for transition composite token", () => {
+  test("generates SCSS variables for transition composite token", () => {
     const parsed = parseDesignTokens({
       fast: {
         $type: "transition",
@@ -148,22 +148,22 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--fast: 100ms cubic-bezier(0.42, 0, 0.58, 1) 0ms;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$fast: 100ms cubic-bezier(0.42, 0, 0.58, 1) 0ms;");
   });
 
-  test("generates CSS variables for strokeStyle as string", () => {
+  test("generates SCSS variables for strokeStyle as string", () => {
     const parsed = parseDesignTokens({
       solid: {
         $type: "strokeStyle",
         $value: "solid",
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--solid: solid;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$solid: solid;");
   });
 
-  test("generates CSS variables for strokeStyle with dashArray", () => {
+  test("generates SCSS variables for strokeStyle with dashArray", () => {
     const parsed = parseDesignTokens({
       dashed: {
         $type: "strokeStyle",
@@ -176,12 +176,12 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--dashed-dash-array: 4px, 2px;");
-    expect(css).toContain("--dashed-line-cap: round;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$dashed-dash-array: 4px, 2px;");
+    expect(scss).toContain("$dashed-line-cap: round;");
   });
 
-  test("generates CSS variables for shadow token", () => {
+  test("generates SCSS variables for shadow token", () => {
     const parsed = parseDesignTokens({
       sm: {
         $type: "shadow",
@@ -194,11 +194,11 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--sm: 1px 2px 4px 0px rgb(0% 0% 0% / 0.1);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$sm: 1px 2px 4px 0px rgb(0% 0% 0% / 0.1);");
   });
 
-  test("generates CSS variables for inset shadow", () => {
+  test("generates SCSS variables for inset shadow", () => {
     const parsed = parseDesignTokens({
       inset: {
         $type: "shadow",
@@ -211,11 +211,11 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("inset 0px 2px 4px");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("inset 0px 2px 4px");
   });
 
-  test("generates CSS variables for multiple shadows", () => {
+  test("generates SCSS variables for multiple shadows", () => {
     const parsed = parseDesignTokens({
       multiple: {
         $type: "shadow",
@@ -235,13 +235,13 @@ describe("generateCssVariables", () => {
         ],
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--multiple:");
-    expect(css).toContain("rgb(0% 0% 0% / 0.1)");
-    expect(css).toContain("rgb(0% 0% 0% / 0.05)");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$multiple:");
+    expect(scss).toContain("rgb(0% 0% 0% / 0.1)");
+    expect(scss).toContain("rgb(0% 0% 0% / 0.05)");
   });
 
-  test("generates CSS variables for border token", () => {
+  test("generates SCSS variables for border token", () => {
     const parsed = parseDesignTokens({
       thin: {
         $type: "border",
@@ -252,11 +252,11 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--thin: 1px solid rgb(90% 90% 90%);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$thin: 1px solid rgb(90% 90% 90%);");
   });
 
-  test("generates CSS variables for typography token", () => {
+  test("generates SCSS variables for typography token", () => {
     const parsed = parseDesignTokens({
       h1: {
         $type: "typography",
@@ -269,16 +269,16 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--h1-font-family: Inter, sans-serif;");
-    expect(css).toContain("--h1-font-size: 32px;");
-    expect(css).toContain("--h1-font-weight: 700;");
-    expect(css).toContain("--h1-line-height: 1.2;");
-    expect(css).toContain("--h1-letter-spacing: -0.02px;");
-    expect(css).toContain("--h1: 700 32px/1.2 Inter, sans-serif;");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$h1-font-family: Inter, sans-serif;");
+    expect(scss).toContain("$h1-font-size: 32px;");
+    expect(scss).toContain("$h1-font-weight: 700;");
+    expect(scss).toContain("$h1-line-height: 1.2;");
+    expect(scss).toContain("$h1-letter-spacing: -0.02px;");
+    expect(scss).toContain("$h1: 700 32px/1.2 Inter, sans-serif;");
   });
 
-  test("generates CSS variables for gradient token", () => {
+  test("generates SCSS variables for gradient token", () => {
     const parsed = parseDesignTokens({
       primary: {
         $type: "gradient",
@@ -294,13 +294,13 @@ describe("generateCssVariables", () => {
         ],
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain(
-      "--primary: linear-gradient(90deg, rgb(0% 40% 80%) 0%, rgb(10% 50% 90%) 100%);",
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain(
+      "$primary: linear-gradient(90deg, rgb(0% 40% 80%) 0%, rgb(10% 50% 90%) 100%);",
     );
   });
 
-  test("generates CSS for multiple nested groups", () => {
+  test("generates SCSS for multiple nested groups", () => {
     const parsed = parseDesignTokens({
       design: {
         colors: {
@@ -317,36 +317,12 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--design-colors-primary:");
-    expect(css).toContain("--design-spacing-sm:");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$design-colors-primary:");
+    expect(scss).toContain("$design-spacing-sm:");
   });
 
-  test("generates CSS that starts and ends with :root", () => {
-    const parsed = parseDesignTokens({
-      color: {
-        $type: "color",
-        $value: { colorSpace: "srgb", components: [1, 0, 0] },
-      },
-    });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toMatch(/^:root \{/);
-    expect(css).toMatch(/\}$/);
-  });
-
-  test("generates valid CSS with proper indentation", () => {
-    const parsed = parseDesignTokens({
-      myColor: {
-        $type: "color",
-        $value: { colorSpace: "srgb", components: [1, 0, 0] },
-      },
-    });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    const lines = css.split("\n");
-    expect(lines[1]).toMatch(/^  --my-color:/);
-  });
-
-  test("generates nested var() for token alias with reference", () => {
+  test("generates SCSS variables for token alias with reference", () => {
     const parsed = parseDesignTokens({
       colors: {
         $type: "color",
@@ -359,11 +335,11 @@ describe("generateCssVariables", () => {
         $value: "{colors.primary}",
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--my-alias: var(--colors-primary);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$my-alias: $colors-primary;");
   });
 
-  test("generates nested var() for nested token alias", () => {
+  test("generates SCSS variables for nested token alias", () => {
     const parsed = parseDesignTokens({
       colors: {
         $type: "color",
@@ -378,11 +354,11 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--theme-accent: var(--colors-primary);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$theme-accent: $colors-primary;");
   });
 
-  test("generates nested var() for dimension alias", () => {
+  test("generates SCSS variables for dimension alias", () => {
     const parsed = parseDesignTokens({
       spacing: {
         $type: "dimension",
@@ -395,11 +371,11 @@ describe("generateCssVariables", () => {
         $value: "{spacing.base}",
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--my-spacing: var(--spacing-base);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$my-spacing: $spacing-base;");
   });
 
-  test("generates nested var() for deeply nested token alias", () => {
+  test("generates SCSS variables for deeply nested token alias", () => {
     const parsed = parseDesignTokens({
       design: {
         colors: {
@@ -416,10 +392,8 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain(
-      "--aliases-button-color: var(--design-colors-primary);",
-    );
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$aliases-button-color: $design-colors-primary;");
   });
 
   test("handles multiple aliases referencing same token", () => {
@@ -439,12 +413,12 @@ describe("generateCssVariables", () => {
         $value: "{colors.primary}",
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--primary: var(--colors-primary);");
-    expect(css).toContain("--brand: var(--colors-primary);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$primary: $colors-primary;");
+    expect(scss).toContain("$brand: $colors-primary;");
   });
 
-  test("can chain aliases through var references", () => {
+  test("can chain aliases through variable references", () => {
     const parsed = parseDesignTokens({
       colors: {
         $type: "color",
@@ -465,9 +439,9 @@ describe("generateCssVariables", () => {
         },
       },
     });
-    const css = generateCssVariables(nodesToMap(parsed.nodes));
-    expect(css).toContain("--colors-primary: rgb(0% 40% 80%);");
-    expect(css).toContain("--theme-brand: var(--colors-primary);");
-    expect(css).toContain("--ui-button: var(--theme-brand);");
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$colors-primary: rgb(0% 40% 80%);");
+    expect(scss).toContain("$theme-brand: $colors-primary;");
+    expect(scss).toContain("$ui-button: $theme-brand;");
   });
 });

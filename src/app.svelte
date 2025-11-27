@@ -29,6 +29,7 @@
   import AddToken from "./add-token.svelte";
   import AppMenu from "./app-menu.svelte";
   import Styleguide from "./styleguide.svelte";
+  import Code from "./code.svelte";
   import type { TreeNode } from "./store";
   import {
     resolveTokenValue,
@@ -37,6 +38,7 @@
   } from "./state.svelte";
   import { serializeDesignTokens } from "./tokens";
   import { generateCssVariables } from "./css-variables";
+  import { generateScssVariables } from "./scss";
   import { serializeColor } from "./color";
   import { titleCase } from "title-case";
   import { noCase } from "change-case";
@@ -51,7 +53,7 @@
   const rootNodes = $derived(treeState.getChildren(undefined));
 
   let selectedItems = new SvelteSet<string>();
-  let outputMode = $state<"styleguide" | "css" | "json">("styleguide");
+  let outputMode = $state<"styleguide" | "css" | "scss" | "json">("styleguide");
 
   const buildTreeItem = (node: TreeNode<TreeNodeMeta>): TreeItem => {
     const children = treeState.getChildren(node.nodeId);
@@ -115,6 +117,7 @@
     filterNodesToSelected(treeState.nodes(), selectedItems),
   );
   const cssOutput = $derived(generateCssVariables(allSelectedNodes));
+  const scssOutput = $derived(generateScssVariables(allSelectedNodes));
   const jsonOutput = $derived(
     stringify(serializeDesignTokens(allSelectedNodes)),
   );
@@ -389,6 +392,15 @@
         </button>
         <button
           role="tab"
+          aria-selected={outputMode === "scss"}
+          aria-controls="scss-tabpanel"
+          class="tab-btn"
+          onclick={() => (outputMode = "scss")}
+        >
+          SCSS
+        </button>
+        <button
+          role="tab"
           aria-selected={outputMode === "json"}
           aria-controls="json-tabpanel"
           class="tab-btn"
@@ -403,20 +415,19 @@
         </div>
       {/if}
       {#if outputMode === "css"}
-        <textarea
-          id="css-tabpanel"
-          class="css-textarea"
-          readonly
-          value={cssOutput}
-        ></textarea>
+        <div id="css-tabpanel" class="code-panel">
+          <Code code={cssOutput} language="css" />
+        </div>
+      {/if}
+      {#if outputMode === "scss"}
+        <div id="scss-tabpanel" class="code-panel">
+          <Code code={scssOutput} language="scss" />
+        </div>
       {/if}
       {#if outputMode === "json"}
-        <textarea
-          id="json-tabpanel"
-          class="css-textarea"
-          readonly
-          value={jsonOutput}
-        ></textarea>
+        <div id="json-tabpanel" class="code-panel">
+          <Code code={jsonOutput} language="json" />
+        </div>
       {/if}
     </main>
   </div>
@@ -512,28 +523,12 @@
     visibility: var(--tree-view-item-hover-visibility);
   }
 
-  /* CSS Textarea */
-  .css-textarea {
-    flex: 1;
-    padding: 16px;
-    border: none;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--typography-monospace-code);
-    font-size: 13px;
-    line-height: 1.6;
-    resize: none;
-    outline: none;
+  .code-panel {
+    overflow: hidden;
+    display: grid;
   }
 
-  .css-textarea::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.6;
-  }
-
-  /* Styleguide panel */
   .styleguide-panel {
-    flex: 1;
     overflow: hidden;
   }
 

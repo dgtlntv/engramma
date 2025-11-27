@@ -1,7 +1,6 @@
-import { kebabCase } from "change-case";
+import { kebabCase, noCase } from "change-case";
 import { compareTreeNodes, type TreeNode } from "./store";
-import type { TreeNodeMeta } from "./state.svelte";
-import { resolveTokenValue } from "./state.svelte";
+import { type TreeNodeMeta, resolveTokenValue } from "./state.svelte";
 import { serializeColor } from "./color";
 import type {
   BorderValue,
@@ -14,9 +13,8 @@ import type {
   StrokeStyleValue,
   TransitionValue,
   TypographyValue,
+  Value,
 } from "./schema";
-
-// https://www.designtokens.org/tr/2025.10/color
 
 export const toDimensionValue = (value: DimensionValue) => {
   return `${value.value}${value.unit}`;
@@ -55,62 +53,84 @@ export const toGradient = (value: GradientValue) => {
   return `linear-gradient(90deg, ${stops.join(", ")})`;
 };
 
-const addTransition = (
-  propertyName: string,
-  value: TransitionValue,
-  cssLines: string[],
-) => {
+const toStrokeStyleValue = (value: StrokeStyleValue) => {
+  return typeof value === "string" ? value : "solid";
+};
+
+const toBorderValue = (value: BorderValue) => {
+  const style = toStrokeStyleValue(value.style);
+  const width = toDimensionValue(value.width);
+  const color = serializeColor(value.color);
+  return `${width} ${style} ${color}`;
+};
+
+const toTransitionValue = (value: TransitionValue) => {
   const duration = toDurationValue(value.duration);
-  const delay = toDurationValue(value.delay);
   const timingFunction = toCubicBezierValue(value.timingFunction);
-  cssLines.push(`  ${propertyName}-duration: ${duration};`);
-  cssLines.push(`  ${propertyName}-delay: ${delay};`);
-  cssLines.push(`  ${propertyName}-timing-function: ${timingFunction};`);
-  cssLines.push(`  ${propertyName}: ${duration} ${timingFunction} ${delay};`);
+  const delay = toDurationValue(value.delay);
+  return `${duration} ${timingFunction} ${delay}`;
+};
+
+export const toStyleValue = (tokenValue: Value): undefined | string => {
+  switch (tokenValue.type) {
+    case "fontFamily":
+      return toFontFamily(tokenValue.value);
+    case "color":
+      return serializeColor(tokenValue.value);
+    case "shadow":
+      return toShadow(tokenValue.value);
+    case "duration":
+      return toDurationValue(tokenValue.value);
+    case "dimension":
+      return toDimensionValue(tokenValue.value);
+    case "fontWeight":
+    case "number":
+      return `${tokenValue.value}`;
+    case "cubicBezier":
+      return toCubicBezierValue(tokenValue.value);
+    case "strokeStyle":
+      return toStrokeStyleValue(tokenValue.value);
+    case "border":
+      return toBorderValue(tokenValue.value);
+    case "transition":
+      return toTransitionValue(tokenValue.value);
+    case "gradient":
+      return toGradient(tokenValue.value);
+    case "typography":
+      return;
+    default:
+      tokenValue satisfies never;
+  }
 };
 
 const addStrokeStyle = (
   propertyName: string,
   value: StrokeStyleValue,
-  cssLines: string[],
+  lines: string[],
 ) => {
   if (typeof value === "string") {
-    cssLines.push(`  ${propertyName}: ${value};`);
+    lines.push(`  ${propertyName}: ${value};`);
   } else {
     const dashArray = value.dashArray.map(toDimensionValue).join(", ");
-    cssLines.push(`  ${propertyName}-dash-array: ${dashArray};`);
-    cssLines.push(`  ${propertyName}-line-cap: ${value.lineCap};`);
+    lines.push(`  ${propertyName}-dash-array: ${dashArray};`);
+    lines.push(`  ${propertyName}-line-cap: ${value.lineCap};`);
   }
-};
-
-const addBorder = (
-  propertyName: string,
-  value: BorderValue,
-  cssLines: string[],
-) => {
-  const color = serializeColor(value.color);
-  const width = toDimensionValue(value.width);
-  const style = typeof value.style === "string" ? value.style : "solid";
-  cssLines.push(`  ${propertyName}-color: ${color};`);
-  cssLines.push(`  ${propertyName}-width: ${width};`);
-  cssLines.push(`  ${propertyName}-style: ${style};`);
-  cssLines.push(`  ${propertyName}: ${width} ${style} ${color};`);
 };
 
 const addTypography = (
   propertyName: string,
   value: TypographyValue,
-  cssLines: string[],
+  lines: string[],
 ) => {
   const fontFamily = toFontFamily(value.fontFamily);
   const fontSize = toDimensionValue(value.fontSize);
   const letterSpacing = toDimensionValue(value.letterSpacing);
-  cssLines.push(`  ${propertyName}-font-family: ${fontFamily};`);
-  cssLines.push(`  ${propertyName}-font-size: ${fontSize};`);
-  cssLines.push(`  ${propertyName}-font-weight: ${value.fontWeight};`);
-  cssLines.push(`  ${propertyName}-line-height: ${value.lineHeight};`);
-  cssLines.push(`  ${propertyName}-letter-spacing: ${letterSpacing};`);
-  cssLines.push(
+  lines.push(`  ${propertyName}-font-family: ${fontFamily};`);
+  lines.push(`  ${propertyName}-font-size: ${fontSize};`);
+  lines.push(`  ${propertyName}-font-weight: ${value.fontWeight};`);
+  lines.push(`  ${propertyName}-line-height: ${value.lineHeight};`);
+  lines.push(`  ${propertyName}-letter-spacing: ${letterSpacing};`);
+  lines.push(
     `  ${propertyName}: ${value.fontWeight} ${fontSize}/${value.lineHeight} ${fontFamily};`,
   );
 };
@@ -122,7 +142,7 @@ export const referenceToVariable = (reference: string): string => {
   // Remove curly braces and split by dots
   const path = reference.replace(/[{}]/g, "").split(".");
   // Convert to kebab-case and create CSS variable
-  return `var(--${kebabCase(path.join("-"))})`;
+  return `var(--${kebabCase(noCase(path.join("-")))})`;
 };
 
 const processNode = (
@@ -130,7 +150,7 @@ const processNode = (
   path: string[],
   childrenByParent: Map<string | undefined, TreeNode<TreeNodeMeta>[]>,
   allNodes: Map<string, TreeNode<TreeNodeMeta>>,
-  cssLines: string[],
+  lines: string[],
 ) => {
   // group is only added to variable name
   if (node.meta.nodeType === "token-group") {
@@ -141,7 +161,7 @@ const processNode = (
         [...path, node.meta.name],
         childrenByParent,
         allNodes,
-        cssLines,
+        lines,
       );
     }
   }
@@ -149,62 +169,32 @@ const processNode = (
   if (node.meta.nodeType === "token") {
     const token = node.meta as any;
     const propertyName = `--${kebabCase([...path, node.meta.name].join("-"))}`;
-
     // Handle token aliases (references to other tokens)
     if (token.extends) {
       const variable = referenceToVariable(token.extends);
-      cssLines.push(`  ${propertyName}: ${variable};`);
+      lines.push(`  ${propertyName}: ${variable};`);
       return;
     }
-
     const tokenValue = resolveTokenValue(node, allNodes);
     switch (tokenValue.type) {
       case "color":
-        cssLines.push(
-          `  ${propertyName}: ${serializeColor(tokenValue.value)};`,
-        );
-        break;
       case "dimension":
-        cssLines.push(
-          `  ${propertyName}: ${toDimensionValue(tokenValue.value)};`,
-        );
-        break;
       case "duration":
-        cssLines.push(
-          `  ${propertyName}: ${toDurationValue(tokenValue.value)};`,
-        );
-        break;
       case "cubicBezier":
-        cssLines.push(
-          `  ${propertyName}: ${toCubicBezierValue(tokenValue.value)};`,
-        );
-        break;
       case "number":
-        cssLines.push(`  ${propertyName}: ${tokenValue.value};`);
-        break;
       case "fontFamily":
-        cssLines.push(`  ${propertyName}: ${toFontFamily(tokenValue.value)};`);
-        break;
       case "fontWeight":
-        cssLines.push(`  ${propertyName}: ${tokenValue.value};`);
-        break;
       case "shadow":
-        cssLines.push(`  ${propertyName}: ${toShadow(tokenValue.value)};`);
-        break;
       case "gradient":
-        cssLines.push(`  ${propertyName}: ${toGradient(tokenValue.value)};`);
-        break;
+      case "border":
       case "transition":
-        addTransition(propertyName, tokenValue.value, cssLines);
+        lines.push(`  ${propertyName}: ${toStyleValue(tokenValue)};`);
         break;
       case "strokeStyle":
-        addStrokeStyle(propertyName, tokenValue.value, cssLines);
-        break;
-      case "border":
-        addBorder(propertyName, tokenValue.value, cssLines);
+        addStrokeStyle(propertyName, tokenValue.value, lines);
         break;
       case "typography":
-        addTypography(propertyName, tokenValue.value, cssLines);
+        addTypography(propertyName, tokenValue.value, lines);
         break;
       default:
         tokenValue satisfies never;
@@ -216,7 +206,7 @@ const processNode = (
 export const generateCssVariables = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
 ): string => {
-  const cssLines: string[] = [];
+  const lines: string[] = [];
   const childrenByParent = new Map<
     string | undefined,
     TreeNode<TreeNodeMeta>[]
@@ -231,11 +221,11 @@ export const generateCssVariables = (
     children.sort(compareTreeNodes);
   }
   // render css variables in root element
-  cssLines.push(":root {");
+  lines.push(":root {");
   const rootChildren = childrenByParent.get(undefined) ?? [];
   for (const node of rootChildren) {
-    processNode(node, [], childrenByParent, nodes, cssLines);
+    processNode(node, [], childrenByParent, nodes, lines);
   }
-  cssLines.push("}");
-  return cssLines.join("\n");
+  lines.push("}");
+  return lines.join("\n");
 };
