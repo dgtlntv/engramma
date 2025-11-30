@@ -1,10 +1,14 @@
 <script lang="ts">
+  import { titleCase } from "title-case";
+  import { noCase } from "change-case";
+  import type { HTMLAttributes } from "svelte/elements";
   import type { SvelteSet } from "svelte/reactivity";
   import { Plus, X } from "@lucide/svelte";
   import {
     treeState,
     resolveTokenValue,
     isAliasCircular,
+    findTokenType,
     type TreeNodeMeta,
   } from "./state.svelte";
   import { parseColor, serializeColor } from "./color";
@@ -13,10 +17,11 @@
     FontFamilyValue,
     ShadowItem,
     StrokeStyleValue,
+    Value,
   } from "./schema";
   import CubicBezierEditor from "./cubic-bezier-editor.svelte";
   import GradientEditor from "./gradient-editor.svelte";
-  import type { HTMLAttributes } from "svelte/elements";
+  import type { TreeNode } from "./store";
 
   let {
     id,
@@ -85,13 +90,61 @@
     }
   });
 
+  const getDescendantTypes = (
+    node: TreeNode<TreeNodeMeta>,
+    types = new Set<Value["type"]>(),
+  ) => {
+    for (const child of treeState.getChildren(node.nodeId)) {
+      if (child.meta.type) {
+        types.add(child.meta.type);
+      }
+      getDescendantTypes(child, types);
+    }
+    return types;
+  };
+
+  const getAvailableGroupTypes = (
+    node: TreeNode<TreeNodeMeta>,
+  ): ("mixed" | Value["type"])[] => {
+    const inheritedType = findTokenType(node, treeState.nodes());
+    // cannot change inherited type
+    if (inheritedType && node.meta.type === undefined) {
+      return [inheritedType];
+    }
+    const descendantTypes = getDescendantTypes(node);
+    // group without tokens can have any type
+    if (descendantTypes.size === 0) {
+      return [
+        "mixed",
+        "color",
+        "dimension",
+        "duration",
+        "number",
+        "fontFamily",
+        "fontWeight",
+        "cubicBezier",
+        "transition",
+        "strokeStyle",
+        "shadow",
+        "border",
+        "typography",
+        "gradient",
+      ];
+    }
+    if (descendantTypes.size === 1) {
+      return ["mixed", Array.from(descendantTypes)[0]];
+    }
+    return ["mixed"];
+  };
+
   const updateMeta = (newMeta: Partial<TreeNodeMeta>) => {
     if (node?.meta) {
       treeState.transact((tx) => {
-        tx.set({
+        const updatedNode = {
           ...node,
           meta: { ...node.meta, ...(newMeta as typeof node.meta) },
-        });
+        };
+        tx.set(updatedNode);
       });
     }
   };
@@ -476,6 +529,35 @@
       ></textarea>
     </div>
 
+    {#if node?.meta?.nodeType === "token-group"}
+      {@const availableTypes = getAvailableGroupTypes(node)}
+      <div class="form-group">
+        <label class="a-label" for="type-select">Type</label>
+        <select
+          id="type-select"
+          class="a-field"
+          value={node.meta.type ?? availableTypes[0]}
+          onchange={(e) => {
+            const value = e.currentTarget.value;
+            updateMeta({
+              type: value === "mixed" ? undefined : (value as Value["type"]),
+            });
+          }}
+        >
+          {#each availableTypes as type}
+            <option value={type}>{titleCase(noCase(type))}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
+
+    {#if meta?.nodeType === "token" && tokenValue}
+      <div class="form-group">
+        <div class="a-label">Type</div>
+        <div class="a-field">{tokenValue.type}</div>
+      </div>
+    {/if}
+
     <div class="form-group">
       <div class="form-checkbox-group">
         <input
@@ -498,13 +580,6 @@
         ></textarea>
       {/if}
     </div>
-
-    {#if meta?.nodeType === "token" && meta.type}
-      <div class="form-group">
-        <div class="a-label">Type</div>
-        <div class="a-field">{meta.type}</div>
-      </div>
-    {/if}
 
     {#if meta?.nodeType === "token" && availableTokens.length > 0}
       <div class="form-group">

@@ -59,6 +59,8 @@
   import { serializeColor } from "./color";
   import type { Value } from "./schema";
 
+  const zeroIndex = generateKeyBetween(null, null);
+
   onMount(() => {
     return startKeyUX(window, [
       hotkeyKeyUX([hotkeyMacCompat()]),
@@ -168,23 +170,19 @@
   };
 
   const handleAddGroup = () => {
-    if (selectedItems.size === 0) {
-      return;
-    }
     const firstSelectedId = Array.from(selectedItems)[0];
     const firstSelectedNode = treeState.getNode(firstSelectedId);
-    if (!firstSelectedNode) {
-      return;
-    }
     // determine parent and index for new group
     let parentId: string | undefined;
     let insertAfterIndex: string;
-    if (firstSelectedNode.meta.nodeType === "token-group") {
+    if (
+      firstSelectedNode === undefined ||
+      firstSelectedNode.meta.nodeType === "token-group"
+    ) {
       parentId = firstSelectedId;
       // add at the end of the group
       const children = treeState.getChildren(firstSelectedId);
-      const lastChildIndex =
-        children.length > 0 ? children[children.length - 1].index : null;
+      const lastChildIndex = children.at(-1)?.index ?? zeroIndex;
       insertAfterIndex = generateKeyBetween(lastChildIndex, null);
     } else {
       // add after the token
@@ -235,7 +233,7 @@
   ) => {
     // get the children of the new parent to calculate the new index
     const newParentChildren = treeState.getChildren(newParentId);
-    const prevIndex = newParentChildren[position - 1]?.index ?? null;
+    const prevIndex = newParentChildren[position - 1]?.index ?? zeroIndex;
     const nextIndex = newParentChildren[position]?.index ?? null;
     treeState.transact((tx) => {
       // move each item to the new parent
@@ -325,14 +323,14 @@
             >
               <Trash2 size={16} />
             </button>
-            <button
-              class="a-button"
-              aria-label="Add group"
-              onclick={handleAddGroup}
-            >
-              <Folder size={16} />
-            </button>
           {/if}
+          <button
+            class="a-button"
+            aria-label="Add group"
+            onclick={handleAddGroup}
+          >
+            <Folder size={16} />
+          </button>
           <AddToken {selectedItems} onTokenAdded={handleTokenAdded} />
         </div>
       </div>

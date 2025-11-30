@@ -91,6 +91,10 @@ color-input::part(input):focus {
   }
 }
 
+select.a-field {
+  height: 28px;
+}
+
 textarea.a-field {
   field-sizing: content;
   resize: none;

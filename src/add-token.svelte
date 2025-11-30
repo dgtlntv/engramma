@@ -1,6 +1,6 @@
 <script lang="ts">
   import { generateKeyBetween } from "fractional-indexing";
-  import { treeState, type TreeNodeMeta } from "./state.svelte";
+  import { findTokenType, treeState, type TreeNodeMeta } from "./state.svelte";
   import type { TreeNode } from "./store";
   import { Plus } from "@lucide/svelte";
   import type { GradientValue, Value } from "./schema";
@@ -13,6 +13,8 @@
   }
 
   let { selectedItems, onTokenAdded }: Props = $props();
+
+  const zeroIndex = generateKeyBetween(null, null);
 
   const tokenTypes: Value["type"][] = [
     "color",
@@ -31,18 +33,15 @@
   ];
 
   const inheritedType = $derived.by(() => {
-    // traverse up the ancestors to find a group with a type
-    let currentNodeId = Array.from(selectedItems).at(0);
-    while (currentNodeId) {
-      const node = treeState.getNode(currentNodeId);
-      if (node?.meta.nodeType === "token-group" && node.meta.type) {
-        return node.meta.type;
+    if (selectedItems.size > 0) {
+      const node = treeState.getNode(Array.from(selectedItems)[0]);
+      if (node) {
+        return findTokenType(node, treeState.nodes());
       }
-      currentNodeId = node?.parentId;
     }
   });
 
-  const getDefaultValue = <Type extends Value["type"]>(type: Type): Value => {
+  const getDefaultValue = (type: Value["type"]): Value => {
     switch (type) {
       case "color":
         return {
@@ -126,16 +125,15 @@
       // no selection: add to root at the end
       parentId = undefined;
       const rootChildren = treeState.getChildren(undefined);
-      const lastRootIndex = rootChildren.at(-1)?.index;
-      insertAfterIndex = generateKeyBetween(lastRootIndex ?? null, null);
+      const lastRootIndex = rootChildren.at(-1)?.index ?? zeroIndex;
+      insertAfterIndex = generateKeyBetween(lastRootIndex, null);
     } else {
       const selectedNode = treeState.getNode(Array.from(selectedItems)[0]);
       if (selectedNode?.meta.nodeType === "token-group") {
         parentId = selectedNode.nodeId;
         // Add at the end of the group
         const children = treeState.getChildren(selectedNode.nodeId);
-        const lastChildIndex =
-          children.length > 0 ? children[children.length - 1].index : null;
+        const lastChildIndex = children.at(-1)?.index ?? zeroIndex;
         insertAfterIndex = generateKeyBetween(lastChildIndex, null);
       }
       if (selectedNode?.meta.nodeType === "token") {
