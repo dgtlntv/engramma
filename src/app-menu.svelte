@@ -1,9 +1,15 @@
 <script lang="ts">
-  import { Menu, Plus, X } from "@lucide/svelte";
+  import { Menu, X } from "@lucide/svelte";
   import { treeState } from "./state.svelte";
   import { serializeDesignTokens } from "./tokens";
   import { parseDesignTokens } from "./tokens";
   import stringify from "json-stringify-pretty-compact";
+
+  const createNewProject = async () => {
+    treeState.transact((tx) => {
+      tx.clear();
+    });
+  };
 
   const importFromClipboard = async () => {
     try {
@@ -73,12 +79,10 @@
   onclick={(event) => event.currentTarget.hidePopover()}
 >
   <!-- svelte-ignore a11y_autofocus -->
-  <button
-    class="a-item"
-    role="menuitem"
-    autofocus
-    onclick={importFromClipboard}
-  >
+  <button class="a-item" role="menuitem" autofocus onclick={createNewProject}>
+    New Project
+  </button>
+  <button class="a-item" role="menuitem" onclick={importFromClipboard}>
     Import
   </button>
   <button class="a-item" role="menuitem" onclick={exportIntoClipboard}>
