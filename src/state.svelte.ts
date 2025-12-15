@@ -18,7 +18,7 @@ export type TokenMeta = {
   nodeType: "token";
   name: string;
   type: Value["type"];
-  value: RawValue["value"];
+  value: string | RawValue["value"];
   description?: string;
   deprecated?: boolean | string;
   extensions?: Record<string, unknown>;
@@ -48,18 +48,22 @@ export const findTokenType = (
   return undefined;
 };
 
+type ResolveContext = {
+  nodes: Map<string, TreeNode<TreeNodeMeta>>;
+  resolvingStack: Set<string>;
+};
+
 /**
  * Helper function to resolve a single token reference
  */
-const resolveTokenReference = (
+const getToken = (
+  ctx: ResolveContext,
   reference: string,
-  nodes: Map<string, TreeNode<TreeNodeMeta>>,
-  resolvingStack: Set<string>,
 ): TreeNode<TreeNodeMeta> => {
   // check for circular references
-  if (resolvingStack.has(reference)) {
+  if (ctx.resolvingStack.has(reference)) {
     throw new Error(
-      `Circular reference detected: ${Array.from(resolvingStack).join(
+      `Circular reference detected: ${Array.from(ctx.resolvingStack).join(
         " -> ",
       )} -> ${reference}`,
     );
@@ -69,7 +73,7 @@ const resolveTokenReference = (
   if (segments.length === 0) {
     throw new Error(`Invalid reference format: "${reference}"`);
   }
-  const nodesList = Array.from(nodes.values());
+  const nodesList = Array.from(ctx.nodes.values());
   let currentNodeId: string | undefined;
   // navigate through remaining segments
   for (const segment of segments) {
@@ -80,7 +84,7 @@ const resolveTokenReference = (
     currentNodeId = nextNode?.nodeId;
   }
   // final token node
-  const tokenNode = currentNodeId ? nodes.get(currentNodeId) : undefined;
+  const tokenNode = currentNodeId ? ctx.nodes.get(currentNodeId) : undefined;
   if (!tokenNode || tokenNode.meta.nodeType !== "token") {
     throw new Error(
       `Final token node not found while resolving "${reference}"`,
@@ -89,140 +93,88 @@ const resolveTokenReference = (
   return tokenNode;
 };
 
-const resolveRawValue = <
+const resolveRef = <
   Input extends RawValue,
-  Output extends Extract<Value, { type: Input["type"] }>,
+  Output extends Extract<Value, { type: Input["type"] }>["value"],
 >(
-  tokenValue: Input,
-  nodes: Map<string, TreeNode<TreeNodeMeta>>,
-  resolvingStack: Set<string>,
+  ctx: ResolveContext,
+  type: Input["type"],
+  value: string | Output,
 ): Output => {
-  if (isTokenReference(tokenValue.value)) {
-    const reference = tokenValue.value;
-    const tokenNode = resolveTokenReference(reference, nodes, resolvingStack);
-    const newStack = new Set(resolvingStack);
-    newStack.add(reference);
-    return resolveTokenValue(tokenNode, nodes, newStack) as Output;
+  if (!isTokenReference(value)) {
+    return value;
   }
+  const tokenNode = getToken(ctx, value);
+  const newStack = new Set(ctx.resolvingStack);
+  newStack.add(value);
+  const tokenValue = resolveTokenValue(tokenNode, ctx.nodes, newStack);
+  if (tokenValue.type !== type) {
+    throw Error(
+      `${value} is expected to have ${type} type, received ${tokenValue.type}`,
+    );
+  }
+  return tokenValue.value as Output;
+};
+
+const resolveRawValue = (ctx: ResolveContext, tokenValue: RawValue): Value => {
   switch (tokenValue.type) {
-    case "transition":
+    case "transition": {
+      const { value } = tokenValue;
       return {
         type: "transition",
         value: {
-          duration: resolveRawValue(
-            { type: "duration", value: tokenValue.value.duration },
-            nodes,
-            resolvingStack,
-          ).value,
-          delay: resolveRawValue(
-            { type: "duration", value: tokenValue.value.delay },
-            nodes,
-            resolvingStack,
-          ).value,
-          timingFunction: resolveRawValue(
-            { type: "cubicBezier", value: tokenValue.value.timingFunction },
-            nodes,
-            resolvingStack,
-          ).value,
+          duration: resolveRef(ctx, "duration", value.duration),
+          delay: resolveRef(ctx, "duration", value.delay),
+          timingFunction: resolveRef(ctx, "cubicBezier", value.timingFunction),
         },
-      } satisfies Value as Output;
-    case "border":
+      };
+    }
+    case "border": {
+      const { value } = tokenValue;
       return {
         type: "border",
         value: {
-          color: resolveRawValue(
-            { type: "color", value: tokenValue.value.color },
-            nodes,
-            resolvingStack,
-          ).value,
-          width: resolveRawValue(
-            { type: "dimension", value: tokenValue.value.width },
-            nodes,
-            resolvingStack,
-          ).value,
-          style: resolveRawValue(
-            { type: "strokeStyle", value: tokenValue.value.style },
-            nodes,
-            resolvingStack,
-          ).value,
+          color: resolveRef(ctx, "color", value.color),
+          width: resolveRef(ctx, "dimension", value.width),
+          style: resolveRef(ctx, "strokeStyle", value.style),
         },
-      } satisfies Value as Output;
+      };
+    }
     case "shadow":
       return {
         type: "shadow",
         value: tokenValue.value.map((shadow) => ({
-          color: resolveRawValue(
-            { type: "color", value: shadow.color },
-            nodes,
-            resolvingStack,
-          ).value,
-          offsetX: resolveRawValue(
-            { type: "dimension", value: shadow.offsetX },
-            nodes,
-            resolvingStack,
-          ).value,
-          offsetY: resolveRawValue(
-            { type: "dimension", value: shadow.offsetY },
-            nodes,
-            resolvingStack,
-          ).value,
-          blur: resolveRawValue(
-            { type: "dimension", value: shadow.blur },
-            nodes,
-            resolvingStack,
-          ).value,
-          spread: resolveRawValue(
-            { type: "dimension", value: shadow.spread },
-            nodes,
-            resolvingStack,
-          ).value,
+          color: resolveRef(ctx, "color", shadow.color),
+          offsetX: resolveRef(ctx, "dimension", shadow.offsetX),
+          offsetY: resolveRef(ctx, "dimension", shadow.offsetY),
+          blur: resolveRef(ctx, "dimension", shadow.blur),
+          spread: resolveRef(ctx, "dimension", shadow.spread),
           inset: shadow.inset,
         })),
-      } satisfies Value as Output;
-    case "typography":
+      };
+    case "typography": {
+      const { value } = tokenValue;
       return {
         type: "typography",
         value: {
-          fontFamily: resolveRawValue(
-            { type: "fontFamily", value: tokenValue.value.fontFamily },
-            nodes,
-            resolvingStack,
-          ).value,
-          fontSize: resolveRawValue(
-            { type: "dimension", value: tokenValue.value.fontSize },
-            nodes,
-            resolvingStack,
-          ).value,
-          fontWeight: resolveRawValue(
-            { type: "fontWeight", value: tokenValue.value.fontWeight },
-            nodes,
-            resolvingStack,
-          ).value,
-          letterSpacing: resolveRawValue(
-            { type: "dimension", value: tokenValue.value.letterSpacing },
-            nodes,
-            resolvingStack,
-          ).value,
-          lineHeight: resolveRawValue(
-            { type: "number", value: tokenValue.value.lineHeight },
-            nodes,
-            resolvingStack,
-          ).value,
+          fontFamily: resolveRef(ctx, "fontFamily", value.fontFamily),
+          fontSize: resolveRef(ctx, "dimension", value.fontSize),
+          fontWeight: resolveRef(ctx, "fontWeight", value.fontWeight),
+          letterSpacing: resolveRef(ctx, "dimension", value.letterSpacing),
+          lineHeight: resolveRef(ctx, "number", value.lineHeight),
         },
-      } satisfies Value as Output;
+      };
+    }
     case "gradient":
       return {
         type: "gradient",
         value: tokenValue.value.map((gradient) => ({
-          color: resolveRawValue(
-            { type: "color", value: gradient.color },
-            nodes,
-            resolvingStack,
-          ).value,
+          color: resolveRef(ctx, "color", gradient.color),
           position: gradient.position,
         })),
-      } satisfies Value as Output;
+      };
     default:
+      // primitive tokens
       tokenValue.type satisfies
         | "number"
         | "color"
@@ -232,7 +184,7 @@ const resolveRawValue = <
         | "fontFamily"
         | "fontWeight"
         | "strokeStyle";
-      return { type: tokenValue.type, value: tokenValue.value } as Output;
+      return tokenValue;
   }
 };
 
@@ -251,6 +203,7 @@ export const resolveTokenValue = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
   resolvingStack: Set<string> = new Set(),
 ): Value => {
+  const ctx = { nodes, resolvingStack };
   if (node.meta.nodeType !== "token") {
     throw new Error("resolveTokenValue requires a token node");
   }
@@ -260,7 +213,7 @@ export const resolveTokenValue = (
   if (isTokenReference(token.value)) {
     // Handle token reference
     const reference = token.value;
-    const tokenNode = resolveTokenReference(reference, nodes, resolvingStack);
+    const tokenNode = getToken(ctx, reference);
     // resolve token further if it's also a reference
     const newStack = new Set(resolvingStack);
     newStack.add(reference);
@@ -271,11 +224,10 @@ export const resolveTokenValue = (
     throw new Error(`Token "${token.name}" has no determinable type`);
   }
   // Resolve any component-level references in composite values
-  const resolvedValue = resolveRawValue(
-    { type: resolvedType, value: node.meta.value } as RawValue,
-    nodes,
-    resolvingStack,
-  );
+  const resolvedValue = resolveRawValue(ctx, {
+    type: resolvedType,
+    value: node.meta.value,
+  } as RawValue);
   // Validate resolved value
   const parsed = ValueSchema.safeParse(resolvedValue);
   if (!parsed.success) {
