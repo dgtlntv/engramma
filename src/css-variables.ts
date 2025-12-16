@@ -1,21 +1,22 @@
 import { kebabCase, noCase } from "change-case";
 import { compareTreeNodes, type TreeNode } from "./store";
-import { type TreeNodeMeta, resolveTokenValue } from "./state.svelte";
+import { type GroupMeta, type TokenMeta } from "./state.svelte";
 import { isTokenReference } from "./tokens";
 import { serializeColor } from "./color";
 import type {
-  BorderValue,
   CubicBezierValue,
   DimensionValue,
   DurationValue,
   FontFamilyValue,
-  GradientValue,
-  ShadowValue,
   StrokeStyleValue,
-  TransitionValue,
-  TypographyValue,
-  Value,
+  RawBorderValue,
+  RawGradientValue,
+  RawShadowValue,
+  RawTransitionValue,
+  RawTypographyValue,
 } from "./schema";
+
+type TreeNodeMeta = GroupMeta | TokenMeta;
 
 export const toDimensionValue = (value: DimensionValue) => {
   return `${value.value}${value.unit}`;
@@ -29,90 +30,80 @@ export const toCubicBezierValue = (value: CubicBezierValue) => {
   return `cubic-bezier(${value.join(", ")})`;
 };
 
-export const toFontFamily = (value: FontFamilyValue) => {
+export const toFontFamilyValue = (value: FontFamilyValue) => {
   return Array.isArray(value) ? value.join(", ") : value;
-};
-
-export const toShadow = (value: ShadowValue) => {
-  const shadows = Array.isArray(value) ? value : [value];
-  const shadowStrings = shadows.map((shadow) => {
-    const color = serializeColor(shadow.color);
-    const inset = shadow.inset ? "inset " : "";
-    const offsetX = toDimensionValue(shadow.offsetX);
-    const offsetY = toDimensionValue(shadow.offsetY);
-    const blur = toDimensionValue(shadow.blur);
-    const spread = shadow.spread ? toDimensionValue(shadow.spread) : "";
-    return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`;
-  });
-  return shadowStrings.join(", ");
-};
-
-export const toGradient = (value: GradientValue) => {
-  const stops = value.map(
-    (stop) => `${serializeColor(stop.color)} ${stop.position * 100}%`,
-  );
-  return `linear-gradient(90deg, ${stops.join(", ")})`;
 };
 
 const toStrokeStyleValue = (value: StrokeStyleValue) => {
   return typeof value === "string" ? value : "solid";
 };
 
-const toBorderValue = (value: BorderValue) => {
-  const style = toStrokeStyleValue(value.style);
-  const width = toDimensionValue(value.width);
-  const color = serializeColor(value.color);
+/**
+ * Convert a value or reference to a string or nested var()
+ */
+const valueOrVar = <T>(
+  value: T | string,
+  converter: (v: T) => string,
+): string => {
+  if (isTokenReference(value)) {
+    return referenceToVariable(value);
+  }
+  return converter(value as T);
+};
+
+export const toShadowValue = (value: RawShadowValue) => {
+  const shadows = Array.isArray(value) ? value : [value];
+  const shadowStrings = shadows.map((shadow) => {
+    const color = valueOrVar(shadow.color, serializeColor);
+    const inset = shadow.inset ? "inset " : "";
+    const offsetX = valueOrVar(shadow.offsetX, toDimensionValue);
+    const offsetY = valueOrVar(shadow.offsetY, toDimensionValue);
+    const blur = valueOrVar(shadow.blur, toDimensionValue);
+    const spread = shadow.spread
+      ? valueOrVar(shadow.spread, toDimensionValue)
+      : "";
+    return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`;
+  });
+  return shadowStrings.join(", ");
+};
+
+export const toGradientValue = (value: RawGradientValue) => {
+  const stops = value.map((stop) => {
+    const color = valueOrVar(stop.color, serializeColor);
+    return `${color} ${stop.position * 100}%`;
+  });
+  return `linear-gradient(90deg, ${stops.join(", ")})`;
+};
+
+const toBorderValue = (value: RawBorderValue) => {
+  const style = valueOrVar(value.style, toStrokeStyleValue);
+  const width = valueOrVar(value.width, toDimensionValue);
+  const color = valueOrVar(value.color, serializeColor);
   return `${width} ${style} ${color}`;
 };
 
-const toTransitionValue = (value: TransitionValue) => {
-  const duration = toDurationValue(value.duration);
-  const timingFunction = toCubicBezierValue(value.timingFunction);
-  const delay = toDurationValue(value.delay);
+const toTransitionValue = (value: RawTransitionValue) => {
+  const duration = valueOrVar(value.duration, toDurationValue);
+  const timingFunction = valueOrVar(value.timingFunction, toCubicBezierValue);
+  const delay = valueOrVar(value.delay, toDurationValue);
   return `${duration} ${timingFunction} ${delay}`;
-};
-
-export const toStyleValue = (tokenValue: Value): undefined | string => {
-  switch (tokenValue.type) {
-    case "fontFamily":
-      return toFontFamily(tokenValue.value);
-    case "color":
-      return serializeColor(tokenValue.value);
-    case "shadow":
-      return toShadow(tokenValue.value);
-    case "duration":
-      return toDurationValue(tokenValue.value);
-    case "dimension":
-      return toDimensionValue(tokenValue.value);
-    case "fontWeight":
-    case "number":
-      return `${tokenValue.value}`;
-    case "cubicBezier":
-      return toCubicBezierValue(tokenValue.value);
-    case "strokeStyle":
-      return toStrokeStyleValue(tokenValue.value);
-    case "border":
-      return toBorderValue(tokenValue.value);
-    case "transition":
-      return toTransitionValue(tokenValue.value);
-    case "gradient":
-      return toGradient(tokenValue.value);
-    case "typography":
-      return;
-    default:
-      tokenValue satisfies never;
-  }
 };
 
 const addStrokeStyle = (
   propertyName: string,
-  value: StrokeStyleValue,
+  value: StrokeStyleValue | string,
   lines: string[],
 ) => {
+  if (isTokenReference(value)) {
+    lines.push(`  ${propertyName}: ${referenceToVariable(value)};`);
+    return;
+  }
   if (typeof value === "string") {
     lines.push(`  ${propertyName}: ${value};`);
   } else {
-    const dashArray = value.dashArray.map(toDimensionValue).join(", ");
+    const dashArray = value.dashArray
+      .map((d) => valueOrVar(d, toDimensionValue))
+      .join(", ");
     lines.push(`  ${propertyName}-dash-array: ${dashArray};`);
     lines.push(`  ${propertyName}-line-cap: ${value.lineCap};`);
   }
@@ -120,19 +111,21 @@ const addStrokeStyle = (
 
 const addTypography = (
   propertyName: string,
-  value: TypographyValue,
+  value: RawTypographyValue,
   lines: string[],
 ) => {
-  const fontFamily = toFontFamily(value.fontFamily);
-  const fontSize = toDimensionValue(value.fontSize);
-  const letterSpacing = toDimensionValue(value.letterSpacing);
+  const fontFamily = valueOrVar(value.fontFamily, toFontFamilyValue);
+  const fontSize = valueOrVar(value.fontSize, toDimensionValue);
+  const letterSpacing = valueOrVar(value.letterSpacing, toDimensionValue);
+  const fontWeight = valueOrVar(value.fontWeight, (v) => `${v}`);
+  const lineHeight = valueOrVar(value.lineHeight, (v) => `${v}`);
   lines.push(`  ${propertyName}-font-family: ${fontFamily};`);
   lines.push(`  ${propertyName}-font-size: ${fontSize};`);
-  lines.push(`  ${propertyName}-font-weight: ${value.fontWeight};`);
-  lines.push(`  ${propertyName}-line-height: ${value.lineHeight};`);
+  lines.push(`  ${propertyName}-font-weight: ${fontWeight};`);
+  lines.push(`  ${propertyName}-line-height: ${lineHeight};`);
   lines.push(`  ${propertyName}-letter-spacing: ${letterSpacing};`);
   lines.push(
-    `  ${propertyName}: ${value.fontWeight} ${fontSize}/${value.lineHeight} ${fontFamily};`,
+    `  ${propertyName}: ${fontWeight} ${fontSize}/${lineHeight} ${fontFamily};`,
   );
 };
 
@@ -150,20 +143,13 @@ const processNode = (
   node: TreeNode<TreeNodeMeta>,
   path: string[],
   childrenByParent: Map<string | undefined, TreeNode<TreeNodeMeta>[]>,
-  allNodes: Map<string, TreeNode<TreeNodeMeta>>,
   lines: string[],
 ) => {
   // group is only added to variable name
   if (node.meta.nodeType === "token-group") {
     const children = childrenByParent.get(node.nodeId) ?? [];
     for (const child of children) {
-      processNode(
-        child,
-        [...path, node.meta.name],
-        childrenByParent,
-        allNodes,
-        lines,
-      );
+      processNode(child, [...path, node.meta.name], childrenByParent, lines);
     }
   }
 
@@ -176,29 +162,46 @@ const processNode = (
       lines.push(`  ${propertyName}: ${variable};`);
       return;
     }
-    const tokenValue = resolveTokenValue(node, allNodes);
-    switch (tokenValue.type) {
+    switch (token.type) {
       case "color":
+        lines.push(`  ${propertyName}: ${serializeColor(token.value)};`);
+        break;
       case "dimension":
+        lines.push(`  ${propertyName}: ${toDimensionValue(token.value)};`);
+        break;
       case "duration":
+        lines.push(`  ${propertyName}: ${toDurationValue(token.value)};`);
+        break;
       case "cubicBezier":
+        lines.push(`  ${propertyName}: ${toCubicBezierValue(token.value)};`);
+        break;
       case "number":
-      case "fontFamily":
       case "fontWeight":
+        lines.push(`  ${propertyName}: ${token.value};`);
+        break;
+      case "fontFamily":
+        lines.push(`  ${propertyName}: ${toFontFamilyValue(token.value)};`);
+        break;
       case "shadow":
+        lines.push(`  ${propertyName}: ${toShadowValue(token.value)};`);
+        break;
       case "gradient":
+        lines.push(`  ${propertyName}: ${toGradientValue(token.value)};`);
+        break;
       case "border":
+        lines.push(`  ${propertyName}: ${toBorderValue(token.value)};`);
+        break;
       case "transition":
-        lines.push(`  ${propertyName}: ${toStyleValue(tokenValue)};`);
+        lines.push(`  ${propertyName}: ${toTransitionValue(token.value)};`);
         break;
       case "strokeStyle":
-        addStrokeStyle(propertyName, tokenValue.value, lines);
+        addStrokeStyle(propertyName, token.value, lines);
         break;
       case "typography":
-        addTypography(propertyName, tokenValue.value, lines);
+        addTypography(propertyName, token.value, lines);
         break;
       default:
-        tokenValue satisfies never;
+        token satisfies never;
         break;
     }
   }
@@ -225,7 +228,7 @@ export const generateCssVariables = (
   lines.push(":root {");
   const rootChildren = childrenByParent.get(undefined) ?? [];
   for (const node of rootChildren) {
-    processNode(node, [], childrenByParent, nodes, lines);
+    processNode(node, [], childrenByParent, lines);
   }
   lines.push("}");
   return lines.join("\n");

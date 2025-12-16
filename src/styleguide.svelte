@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TokenMeta, TreeNodeMeta } from "./state.svelte";
+  import type { TreeNodeMeta } from "./state.svelte";
   import { treeState, resolveTokenValue } from "./state.svelte";
   import type { TreeNode } from "./store";
   import { serializeColor } from "./color";
@@ -8,9 +8,9 @@
     toCubicBezierValue,
     toDimensionValue,
     toDurationValue,
-    toFontFamily,
-    toGradient,
-    toShadow,
+    toFontFamilyValue,
+    toGradientValue,
+    toShadowValue,
   } from "./css-variables";
   import { noCase } from "change-case";
   import { titleCase } from "title-case";
@@ -201,7 +201,7 @@
     {:else if tokenValue.type === "number"}
       <div class="number-value">{tokenValue.value}</div>
     {:else if tokenValue.type === "fontFamily"}
-      {@const fontFamily = toFontFamily(tokenValue.value)}
+      {@const fontFamily = toFontFamilyValue(tokenValue.value)}
       <div class="font-family-preview" style="font-family: {fontFamily};">
         Aa Bb Cc 123
       </div>
@@ -233,7 +233,7 @@
       </div>
     {:else if tokenValue.type === "typography"}
       {@const typo = tokenValue.value}
-      {@const fontFamily = toFontFamily(typo.fontFamily)}
+      {@const fontFamily = toFontFamilyValue(typo.fontFamily)}
       <div class="typography-preview">
         <div
           class="typography-sample"
@@ -255,7 +255,7 @@
         Letter Spacing: {toDimensionValue(typo.letterSpacing)}
       </div>
     {:else if tokenValue.type === "gradient"}
-      {@const gradient = toGradient(tokenValue.value)}
+      {@const gradient = toGradientValue(tokenValue.value)}
       <div class="gradient-preview" style="background: {gradient};"></div>
       <div class="color-value">{gradient}</div>
     {:else if tokenValue.type === "shadow"}
@@ -264,7 +264,7 @@
         : [tokenValue.value]}
       <div
         class="shadow-preview"
-        style="box-shadow: {toShadow(tokenValue.value)};"
+        style="box-shadow: {toShadowValue(tokenValue.value)};"
       ></div>
       <div class="typography-info">{shadows.length} shadow(s)</div>
     {:else if tokenValue.type === "border"}

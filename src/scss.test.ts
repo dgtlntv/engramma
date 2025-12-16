@@ -447,4 +447,138 @@ describe("generateScssVariables", () => {
     expect(scss).toContain("$theme-brand: $colors-primary;");
     expect(scss).toContain("$ui-button: $theme-brand;");
   });
+
+  test("generates SCSS variables for composite shadow with color reference", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        shadow: {
+          $value: { colorSpace: "srgb", components: [0, 0, 0], alpha: 0.1 },
+        },
+      },
+      shadows: {
+        $type: "shadow",
+        card: {
+          $value: {
+            color: "{colors.shadow}",
+            offsetX: { value: 0, unit: "px" },
+            offsetY: { value: 2, unit: "px" },
+            blur: { value: 4, unit: "px" },
+            spread: { value: 0, unit: "px" },
+          },
+        },
+      },
+    });
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$colors-shadow: rgb(0% 0% 0% / 0.1);");
+    expect(scss).toContain("$shadows-card: 0px 2px 4px 0px $colors-shadow;");
+  });
+
+  test("generates SCSS variables for composite border with references", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        border: {
+          $value: { colorSpace: "srgb", components: [0.5, 0.5, 0.5] },
+        },
+      },
+      dimensions: {
+        $type: "dimension",
+        thin: {
+          $value: { value: 1, unit: "px" },
+        },
+      },
+      borders: {
+        $type: "border",
+        default: {
+          $value: {
+            color: "{colors.border}",
+            width: "{dimensions.thin}",
+            style: "solid",
+          },
+        },
+      },
+    });
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$colors-border: rgb(50% 50% 50%);");
+    expect(scss).toContain("$dimensions-thin: 1px;");
+    expect(scss).toContain(
+      "$borders-default: $dimensions-thin solid $colors-border;",
+    );
+  });
+
+  test("generates SCSS variables for transition with references", () => {
+    const parsed = parseDesignTokens({
+      durations: {
+        $type: "duration",
+        fast: {
+          $value: { value: 150, unit: "ms" },
+        },
+      },
+      easings: {
+        $type: "cubicBezier",
+        smooth: {
+          $value: [0.4, 0, 0.2, 1],
+        },
+      },
+      transitions: {
+        $type: "transition",
+        fadeIn: {
+          $value: {
+            duration: "{durations.fast}",
+            delay: { value: 0, unit: "ms" },
+            timingFunction: "{easings.smooth}",
+          },
+        },
+      },
+    });
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$durations-fast: 150ms;");
+    expect(scss).toContain("$easings-smooth: cubic-bezier(0.4, 0, 0.2, 1);");
+    expect(scss).toContain(
+      "$transitions-fade-in: $durations-fast $easings-smooth 0ms;",
+    );
+  });
+
+  test("generates SCSS variables for typography with references", () => {
+    const parsed = parseDesignTokens({
+      fonts: {
+        $type: "fontFamily",
+        body: {
+          $value: "Inter, sans-serif",
+        },
+      },
+      sizes: {
+        $type: "dimension",
+        base: {
+          $value: { value: 16, unit: "px" },
+        },
+      },
+      weights: {
+        $type: "fontWeight",
+        normal: {
+          $value: 400,
+        },
+      },
+      typography: {
+        $type: "typography",
+        body: {
+          $value: {
+            fontFamily: "{fonts.body}",
+            fontSize: "{sizes.base}",
+            fontWeight: "{weights.normal}",
+            lineHeight: 1.5,
+            letterSpacing: { value: 0, unit: "px" },
+          },
+        },
+      },
+    });
+    const scss = generateScssVariables(nodesToMap(parsed.nodes));
+    expect(scss).toContain("$typography-body-font-family: $fonts-body");
+    expect(scss).toContain("$typography-body-font-size: $sizes-base");
+    expect(scss).toContain("$typography-body-font-weight: $weights-normal");
+    expect(scss).toContain(
+      "$typography-body: $weights-normal $sizes-base/1.5 $fonts-body",
+    );
+  });
 });

@@ -473,4 +473,142 @@ describe("generateCssVariables", () => {
     expect(css).toContain("--theme-brand: var(--colors-primary);");
     expect(css).toContain("--ui-button: var(--theme-brand);");
   });
+
+  test("generates nested var() for composite shadow with color reference", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        shadow: {
+          $value: { colorSpace: "srgb", components: [0, 0, 0], alpha: 0.1 },
+        },
+      },
+      shadows: {
+        $type: "shadow",
+        card: {
+          $value: {
+            color: "{colors.shadow}",
+            offsetX: { value: 0, unit: "px" },
+            offsetY: { value: 2, unit: "px" },
+            blur: { value: 4, unit: "px" },
+            spread: { value: 0, unit: "px" },
+          },
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--colors-shadow: rgb(0% 0% 0% / 0.1);");
+    expect(css).toContain(
+      "--shadows-card: 0px 2px 4px 0px var(--colors-shadow);",
+    );
+  });
+
+  test("generates nested var() for composite border with references", () => {
+    const parsed = parseDesignTokens({
+      colors: {
+        $type: "color",
+        border: {
+          $value: { colorSpace: "srgb", components: [0.5, 0.5, 0.5] },
+        },
+      },
+      dimensions: {
+        $type: "dimension",
+        thin: {
+          $value: { value: 1, unit: "px" },
+        },
+      },
+      borders: {
+        $type: "border",
+        default: {
+          $value: {
+            color: "{colors.border}",
+            width: "{dimensions.thin}",
+            style: "solid",
+          },
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--colors-border: rgb(50% 50% 50%);");
+    expect(css).toContain("--dimensions-thin: 1px;");
+    expect(css).toContain(
+      "--borders-default: var(--dimensions-thin) solid var(--colors-border);",
+    );
+  });
+
+  test("generates nested var() for transition with references", () => {
+    const parsed = parseDesignTokens({
+      durations: {
+        $type: "duration",
+        fast: {
+          $value: { value: 150, unit: "ms" },
+        },
+      },
+      easings: {
+        $type: "cubicBezier",
+        smooth: {
+          $value: [0.4, 0, 0.2, 1],
+        },
+      },
+      transitions: {
+        $type: "transition",
+        fadeIn: {
+          $value: {
+            duration: "{durations.fast}",
+            delay: { value: 0, unit: "ms" },
+            timingFunction: "{easings.smooth}",
+          },
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--durations-fast: 150ms;");
+    expect(css).toContain("--easings-smooth: cubic-bezier(0.4, 0, 0.2, 1);");
+    expect(css).toContain(
+      "--transitions-fade-in: var(--durations-fast) var(--easings-smooth) 0ms;",
+    );
+  });
+
+  test("generates nested var() for typography with references", () => {
+    const parsed = parseDesignTokens({
+      fonts: {
+        $type: "fontFamily",
+        body: {
+          $value: "Inter, sans-serif",
+        },
+      },
+      sizes: {
+        $type: "dimension",
+        base: {
+          $value: { value: 16, unit: "px" },
+        },
+      },
+      weights: {
+        $type: "fontWeight",
+        normal: {
+          $value: 400,
+        },
+      },
+      typography: {
+        $type: "typography",
+        body: {
+          $value: {
+            fontFamily: "{fonts.body}",
+            fontSize: "{sizes.base}",
+            fontWeight: "{weights.normal}",
+            lineHeight: 1.5,
+            letterSpacing: { value: 0, unit: "px" },
+          },
+        },
+      },
+    });
+    const css = generateCssVariables(nodesToMap(parsed.nodes));
+    expect(css).toContain("--typography-body-font-family: var(--fonts-body)");
+    expect(css).toContain("--typography-body-font-size: var(--sizes-base)");
+    expect(css).toContain(
+      "--typography-body-font-weight: var(--weights-normal)",
+    );
+    expect(css).toContain(
+      "--typography-body: var(--weights-normal) var(--sizes-base)/1.5 var(--fonts-body)",
+    );
+  });
 });
