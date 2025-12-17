@@ -356,11 +356,16 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
       // token node
 
       const token = intermediaryNode.payload;
-      const typeAndValue = parseTokenTypeAndValue(
-        path,
-        intermediaryNode.type,
-        token,
-      );
+      let typeAndValue;
+      try {
+        typeAndValue = parseTokenTypeAndValue(
+          path,
+          intermediaryNode.type,
+          token,
+        );
+      } catch {
+        // the next error is good enough
+      }
       if (!typeAndValue) {
         recordError(path, "Token type cannot be determined");
         continue;

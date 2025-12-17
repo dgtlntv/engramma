@@ -1592,4 +1592,41 @@ describe("serializeDesignTokens", () => {
     const serialized = serializeDesignTokens(nodesToMap(parsed.nodes));
     expect(serialized).toEqual(input);
   });
+
+  test("catches validation errors during token type parsing", () => {
+    const result = parseDesignTokens({
+      weight: {
+        $type: "fontWeight",
+        $value: "900",
+      },
+    });
+    expect(result.nodes).toHaveLength(0);
+    expect(result.errors).toEqual([
+      {
+        path: "weight",
+        message: "Token type cannot be determined",
+      },
+    ]);
+  });
+
+  test("allows valid tokens even when other tokens have validation errors", () => {
+    const result = parseDesignTokens({
+      validColor: {
+        $type: "color",
+        $value: { colorSpace: "srgb", components: [1, 0, 0] },
+      },
+      invalidBorder: {
+        $type: "border",
+        $value: {
+          color: "not-a-color",
+          width: { value: 1, unit: "px" },
+          style: "solid",
+        },
+      },
+    });
+    expect(result.nodes).toHaveLength(1);
+    expect(result.nodes[0].meta.name).toBe("validColor");
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].path).toBe("invalidBorder");
+  });
 });

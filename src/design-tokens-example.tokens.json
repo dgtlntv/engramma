@@ -263,7 +263,7 @@
       "$value": 700
     },
     "blackString": {
-      "$value": "900",
+      "$value": "heavy",
       "$description": "Font weight as string"
     }
   },
