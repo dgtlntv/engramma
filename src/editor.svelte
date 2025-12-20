@@ -25,6 +25,7 @@
   import GradientEditor from "./gradient-editor.svelte";
   import AliasToken from "./alias-token.svelte";
   import type { TreeNode } from "./store";
+  import type { Snippet } from "svelte";
 
   let {
     id,
@@ -289,11 +290,12 @@
 {#snippet strokeStyleEditor(
   strokeStyle: StrokeStyleValue,
   onChange: (value: StrokeStyleValue) => void,
+  aliasButton?: Snippet,
 )}
-  {#if typeof strokeStyle === "string"}
+  <div class="input-with-button">
     <select
       class="a-field"
-      value={strokeStyle}
+      value={typeof strokeStyle === "string" ? strokeStyle : "custom"}
       onchange={(e) => {
         const value = e.currentTarget.value;
         if (value !== "custom") {
@@ -316,28 +318,10 @@
       <option value="inset">Inset</option>
       <option value="custom">Custom</option>
     </select>
-  {:else if typeof strokeStyle === "object" && "dashArray" in strokeStyle}
-    <select
-      class="a-field"
-      value="custom"
-      onchange={(e) => {
-        const value = e.currentTarget.value;
-        if (value !== "custom") {
-          onChange(value as StrokeStyleValue);
-        }
-      }}
-    >
-      <option value="solid">Solid</option>
-      <option value="dashed">Dashed</option>
-      <option value="dotted">Dotted</option>
-      <option value="double">Double</option>
-      <option value="groove">Groove</option>
-      <option value="ridge">Ridge</option>
-      <option value="outset">Outset</option>
-      <option value="inset">Inset</option>
-      <option value="custom">Custom</option>
-    </select>
+    {@render aliasButton?.()}
+  </div>
 
+  {#if typeof strokeStyle !== "string"}
     <div class="form-group">
       <label class="a-label" for="stroke-style-line-cap">Line Cap</label>
       <select
@@ -1055,12 +1039,7 @@
       <div class="form-group">
         <!-- svelte-ignore a11y_label_has_associated_control -->
         <label class="a-label">Style</label>
-        <div class="input-with-button">
-          {@render strokeStyleEditor(resolvedValue.value.style, (style) => {
-            updateMeta({
-              value: { ...rawValue.value, style },
-            });
-          })}
+        {#snippet borderStyleAliasButton()}
           <AliasToken
             type="strokeStyle"
             value={rawValue.value.style}
@@ -1073,7 +1052,16 @@
               });
             }}
           />
-        </div>
+        {/snippet}
+        {@render strokeStyleEditor(
+          resolvedValue.value.style,
+          (style) => {
+            updateMeta({
+              value: { ...rawValue.value, style },
+            });
+          },
+          borderStyleAliasButton,
+        )}
       </div>
     {/if}
 
@@ -1112,6 +1100,7 @@
   .input-with-button {
     display: grid;
     gap: 4px;
+    align-items: start;
     &:has(:global(button)) {
       grid-template-columns: 1fr max-content;
     }
