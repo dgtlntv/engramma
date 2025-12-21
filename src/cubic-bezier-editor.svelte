@@ -4,12 +4,11 @@
   interface Props {
     value: CubicBezierValue;
     onChange: (value: CubicBezierValue) => void;
-    disabled?: boolean;
   }
 
-  const { value, onChange, disabled = false }: Props = $props();
+  const { value, onChange }: Props = $props();
 
-  const easingPresets: Record<string, [number, number, number, number]> = {
+  const easingPresets: Record<string, CubicBezierValue> = {
     ease: [0.25, 0.1, 0.25, 1],
     "ease-in": [0.42, 0, 1, 1],
     "ease-out": [0, 0, 0.58, 1],
@@ -17,27 +16,44 @@
     linear: [0, 0, 1, 1],
   };
 
+  const areCubicBezierSame = (a: CubicBezierValue, b: CubicBezierValue) => {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+  };
+
   const getPresetName = (bezierValue: CubicBezierValue): string => {
     for (const [name, preset] of Object.entries(easingPresets)) {
-      if (
-        preset[0] === bezierValue[0] &&
-        preset[1] === bezierValue[1] &&
-        preset[2] === bezierValue[2] &&
-        preset[3] === bezierValue[3]
-      ) {
+      if (areCubicBezierSame(preset, bezierValue)) {
         return name;
       }
     }
     return "custom";
   };
 
-  let selectedPreset = $state(getPresetName(value));
-  let customInput = $state(value.join(", "));
+  let inputValue = $state(value.join(", "));
+  let isCustomSelected = $state(getPresetName(value) === "custom");
 
+  const parseInputValue = (inputValue: string) => {
+    const parts = inputValue
+      .trim()
+      .split(",")
+      .map((p) => Number.parseFloat(p.trim()));
+    if (parts.length !== 4) {
+      return;
+    }
+    for (const part of parts) {
+      if (Number.isNaN(part) || part < 0) {
+        return;
+      }
+    }
+    return parts as CubicBezierValue;
+  };
+
+  // update state when value is changed externally
   $effect(() => {
-    // Update customInput when value changes externally and is custom
-    if (selectedPreset === "custom") {
-      customInput = value.join(", ");
+    const parsed = parseInputValue(inputValue);
+    if (parsed && !areCubicBezierSame(value, parsed)) {
+      inputValue = value.join(", ");
+      isCustomSelected = getPresetName(parsed) === "custom";
     }
   });
 </script>
@@ -45,17 +61,16 @@
 <div class="cubic-bezier-editor">
   <select
     class="a-field"
-    value={selectedPreset}
-    {disabled}
+    value={getPresetName(value)}
     onchange={(event) => {
       const preset = event.currentTarget.value;
       if (preset === "custom") {
-        customInput = value.join(", ");
+        inputValue = value.join(", ");
+        isCustomSelected = true;
       } else {
-        const bezierValue = easingPresets[preset];
-        onChange(bezierValue);
+        onChange(easingPresets[preset]);
+        isCustomSelected = false;
       }
-      selectedPreset = preset;
     }}
   >
     <option value="ease">ease</option>
@@ -66,27 +81,21 @@
     <option value="custom">custom</option>
   </select>
 
-  {#if selectedPreset === "custom"}
+  {#if isCustomSelected}
     <input
       class="a-field"
       type="text"
-      {disabled}
       placeholder="e.g., 0.25, 0.1, 0.25, 1"
-      value={customInput}
-      oninput={(e) => {
-        customInput = e.currentTarget.value;
-        const input = customInput.trim();
-        const parts = input.split(",").map((p) => Number.parseFloat(p.trim()));
-        if (parts.length !== 4) {
-          return;
-        }
-        for (const part of parts) {
-          if (Number.isNaN(part) || part < 0) {
-            return;
+      bind:value={
+        () => inputValue,
+        (newValue) => {
+          inputValue = newValue;
+          const parsed = parseInputValue(newValue);
+          if (parsed) {
+            onChange(parsed);
           }
         }
-        onChange(parts as CubicBezierValue);
-      }}
+      }
     />
   {/if}
 </div>
