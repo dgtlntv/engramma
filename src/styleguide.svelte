@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { noCase } from "change-case";
+  import { noCase, snakeCase } from "change-case";
   import { titleCase } from "title-case";
   import type { TokenMeta, TreeNodeMeta } from "./state.svelte";
   import { treeState, resolveTokenValue } from "./state.svelte";
@@ -67,6 +67,8 @@
   {@const x2 = padding + cubicBezier[2] * scale}
   {@const y2 = padding + (1 - cubicBezier[3]) * scale}
   {@const path = `M ${padding} ${padding + scale} C ${x1} ${y1} ${x2} ${y2} ${padding + scale} ${padding}`}
+  <!-- firefox breaks when id is kebab case -->
+  {@const motionId = snakeCase(noCase(`${id}-motion`))}
   <svg
     viewBox="0 0 {size} {size}"
     class="cubic-bezier-preview"
@@ -103,12 +105,12 @@
       <path id="{id}-motion-path" d={path} fill="none" stroke="none" />
       <circle r="5" fill="#4f46e5" class="curve-impulse">
         <animateMotion
-          id="{id}-motion"
+          id={motionId}
           dur={durationValue}
           calcMode="spline"
           keyTimes="0; 1"
           keySplines={cubicBezier.join(" ")}
-          begin="0s; {id}-motion.end + {delayValue}"
+          begin="0s; {motionId}.end + {delayValue}"
           fill="freeze"
         >
           <mpath href="#{id}-motion-path" />
