@@ -265,8 +265,40 @@
     const button = (event.target as HTMLElement).closest(
       "button[commandfor]",
     ) as null | HTMLButtonElement;
-    if (button && button?.commandForElement) {
+    if (button?.commandForElement) {
       const target = button.commandForElement;
+      // closed state is not always triggers beforetoggle
+      cleanupPositioningAutoUpdate?.();
+      const updatePosition = () => {
+        computePosition(button, target, {
+          middleware: [
+            offset(8),
+            shift({ padding: 12 }),
+            autoPlacement({ allowedPlacements: ["top", "bottom"] }),
+          ],
+        }).then(({ x, y }) => {
+          target.style.setProperty("margin", "0px");
+          target.style.setProperty("left", `${x}px`);
+          target.style.setProperty("top", `${y}px`);
+        });
+      };
+      cleanupPositioningAutoUpdate = autoUpdate(button, target, updatePosition);
+    }
+  };
+
+  const handleDocumentMouseOver = (event: MouseEvent) => {
+    // ignore if anchor-positioning is already supported
+    if ("anchorName" in document.documentElement.style) {
+      return;
+    }
+    const button = (event.target as HTMLElement).closest(
+      "button[interestfor]",
+    ) as null | HTMLButtonElement;
+    const interestFor = button?.getAttribute("interestfor");
+    const target = interestFor
+      ? document.getElementById(interestFor)
+      : undefined;
+    if (button && target) {
       // closed state is not always triggers beforetoggle
       cleanupPositioningAutoUpdate?.();
       const updatePosition = () => {
@@ -289,6 +321,7 @@
 
 <svelte:document
   onclickcapture={handleDocumentClick}
+  onmouseovercapture={handleDocumentMouseOver}
   onkeydown={handleKeyDown}
 />
 
