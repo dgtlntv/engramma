@@ -76,6 +76,10 @@
     );
   });
 
+  const selectedIndex = $derived(
+    filteredAliasTokens.findIndex((item) => item.nodeId === nodeRef?.ref),
+  );
+
   const handleAliasKeyDown = (event: KeyboardEvent) => {
     if (!filteredAliasTokens.length) return;
     switch (event.key) {
@@ -216,7 +220,8 @@
         id="{key}-item-{token.nodeId}"
         class="a-item"
         role="option"
-        aria-selected={index === highlightedIndex}
+        data-highlighted={index === highlightedIndex}
+        aria-selected={index === selectedIndex}
         type="button"
         onclick={() => handleSelectAlias(token.nodeId)}
       >
@@ -249,7 +254,7 @@
     max-height: 200px;
   }
 
-  .a-item[aria-selected="true"] {
+  .a-item[data-highlighted="true"]:not([aria-selected="true"]) {
     background: var(--bg-hover);
   }
 

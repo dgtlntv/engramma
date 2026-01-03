@@ -204,8 +204,8 @@
         });
       }}
     >
-      <option value="px">px</option>
-      <option value="rem">rem</option>
+      <option class="a-item" value="px">px</option>
+      <option class="a-item" value="rem">rem</option>
     </select>
   </div>
 {/snippet}
@@ -240,8 +240,8 @@
         });
       }}
     >
-      <option value="ms">ms</option>
-      <option value="s">s</option>
+      <option class="a-item" value="ms">ms</option>
+      <option class="a-item" value="s">s</option>
     </select>
   </div>
 {/snippet}
@@ -274,16 +274,16 @@
       onChange(value);
     }}
   >
-    <option value="100">100 — thin, hairline</option>
-    <option value="200">200 — extra-light, ultra-light</option>
-    <option value="300">300 — light</option>
-    <option value="400">400 — normal, regular, book</option>
-    <option value="500">500 — medium</option>
-    <option value="600">600 — semi-bold, demi-bold</option>
-    <option value="700">700 — bold</option>
-    <option value="800">800 — extra-bold, ultra-bold</option>
-    <option value="900">900 — black, heavy</option>
-    <option value="950">950 — extra-black, ultra-black</option>
+    <option class="a-item" value="100">100 — thin, hairline</option>
+    <option class="a-item" value="200">200 — extra-light, ultra-light</option>
+    <option class="a-item" value="300">300 — light</option>
+    <option class="a-item" value="400">400 — normal, regular, book</option>
+    <option class="a-item" value="500">500 — medium</option>
+    <option class="a-item" value="600">600 — semi-bold, demi-bold</option>
+    <option class="a-item" value="700">700 — bold</option>
+    <option class="a-item" value="800">800 — extra-bold, ultra-bold</option>
+    <option class="a-item" value="900">900 — black, heavy</option>
+    <option class="a-item" value="950">950 — extra-black, ultra-black</option>
   </select>
 {/snippet}
 
@@ -308,15 +308,15 @@
         }
       }}
     >
-      <option value="solid">Solid</option>
-      <option value="dashed">Dashed</option>
-      <option value="dotted">Dotted</option>
-      <option value="double">Double</option>
-      <option value="groove">Groove</option>
-      <option value="ridge">Ridge</option>
-      <option value="outset">Outset</option>
-      <option value="inset">Inset</option>
-      <option value="custom">Custom</option>
+      <option class="a-item" value="solid">Solid</option>
+      <option class="a-item" value="dashed">Dashed</option>
+      <option class="a-item" value="dotted">Dotted</option>
+      <option class="a-item" value="double">Double</option>
+      <option class="a-item" value="groove">Groove</option>
+      <option class="a-item" value="ridge">Ridge</option>
+      <option class="a-item" value="outset">Outset</option>
+      <option class="a-item" value="inset">Inset</option>
+      <option class="a-item" value="custom">Custom</option>
     </select>
     {@render aliasButton?.()}
   </div>
@@ -335,9 +335,9 @@
           });
         }}
       >
-        <option value="round">Round</option>
-        <option value="butt">Butt</option>
-        <option value="square">Square</option>
+        <option class="a-item" value="round">Round</option>
+        <option class="a-item" value="butt">Butt</option>
+        <option class="a-item" value="square">Square</option>
       </select>
     </div>
 
@@ -467,7 +467,9 @@
             }}
           >
             {#each availableTypes as type}
-              <option value={type}>{titleCase(noCase(type))}</option>
+              <option class="a-item" value={type}>
+                {titleCase(noCase(type))}
+              </option>
             {/each}
           </select>
         </div>
@@ -1217,9 +1219,5 @@
     display: grid;
     gap: 8px;
     grid-template-columns: 1fr 1fr;
-  }
-
-  .a-item.selected {
-    background: var(--bg-hover);
   }
 </style>

@@ -125,6 +125,29 @@ body {
 
   select.a-field {
     height: 28px;
+    appearance: base-select;
+
+    &::picker(select) {
+      appearance: base-select;
+      width: anchor-size(inline);
+      position-area: bottom;
+      position-try-fallbacks: flip-block;
+      border: 0;
+      padding: 0;
+      margin-inline: 0;
+      margin-block: 8px;
+      background: var(--bg-primary);
+      box-shadow: var(--popover-shadow);
+    }
+
+    &::picker-icon {
+      color: var(--text-secondary);
+      transition: 0.2s rotate;
+    }
+
+    &:open::picker-icon {
+      rotate: 180deg;
+    }
   }
 
   textarea.a-field {
@@ -248,9 +271,14 @@ body {
       outline: none;
     }
 
-    &[aria-selected="true"] {
+    &[aria-selected="true"],
+    &:checked {
       background: var(--accent);
       color: white;
+    }
+
+    &:where(option)::checkmark {
+      display: none;
     }
   }
 

@@ -73,12 +73,12 @@
       }
     }}
   >
-    <option value="ease">ease</option>
-    <option value="ease-in">ease-in</option>
-    <option value="ease-out">ease-out</option>
-    <option value="ease-in-out">ease-in-out</option>
-    <option value="linear">linear</option>
-    <option value="custom">custom</option>
+    <option class="a-item" value="ease">ease</option>
+    <option class="a-item" value="ease-in">ease-in</option>
+    <option class="a-item" value="ease-out">ease-out</option>
+    <option class="a-item" value="ease-in-out">ease-in-out</option>
+    <option class="a-item" value="linear">linear</option>
+    <option class="a-item" value="custom">custom</option>
   </select>
 
   {#if isCustomSelected}
