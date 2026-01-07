@@ -350,23 +350,23 @@ export class TreeState<Meta> {
 
   #updateUrl(): void {
     const allNodes = this.#store.nodes() as Map<string, TreeNode<TreeNodeMeta>>;
+    const newNodes = new Map<string, TreeNode<TokenMeta | GroupMeta>>();
     // remove set node from data and serialize as DTCG format module
     // @todo use resolve serializer when implemented
     const setIds = new Set<undefined | string>();
     for (const node of allNodes.values()) {
       if (node.meta.nodeType === "token-set") {
         setIds.add(node.nodeId);
-        allNodes.delete(node.nodeId);
+      } else {
+        newNodes.set(node.nodeId, node as TreeNode<TokenMeta | GroupMeta>);
       }
     }
-    for (const node of allNodes.values()) {
+    for (const node of newNodes.values()) {
       if (setIds.has(node.parentId)) {
-        node.parentId = undefined;
+        newNodes.set(node.nodeId, { ...node, parentId: undefined });
       }
     }
-    const serialized = serializeDesignTokens(
-      allNodes as Map<string, TreeNode<TokenMeta | GroupMeta>>,
-    );
+    const serialized = serializeDesignTokens(newNodes);
     setDataInUrl(serialized).catch((error) => {
       console.error("Failed to sync design tokens to URL:", error);
     });

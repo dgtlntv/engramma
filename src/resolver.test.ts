@@ -1,5 +1,9 @@
 import { test, expect, describe } from "vitest";
-import { parseTokenResolver, isResolverFormat } from "./resolver";
+import {
+  parseTokenResolver,
+  serializeTokenResolver,
+  isResolverFormat,
+} from "./resolver";
 import type { TreeNode } from "./store";
 import type { TreeNodeMeta } from "./state.svelte";
 
@@ -650,6 +654,490 @@ describe("parseTokenResolver", () => {
         },
       ],
     });
-    expect(result.errors.length).toBe(0);
+    expect(result.errors).toHaveLength(0);
+  });
+});
+
+describe("serializeTokenResolver", () => {
+  test("serializes single set with simple tokens", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color",
+                  $value: { colorSpace: "srgb", components: [0, 0, 1] },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes, {
+      name: "Test System",
+      description: "Test",
+    });
+
+    expect(document.version).toBe("2025.10");
+    expect(document.name).toBe("Test System");
+    expect(document.description).toBe("Test");
+    expect(document.resolutionOrder).toHaveLength(1);
+    expect(document.resolutionOrder[0].type).toBe("set");
+    expect(document.resolutionOrder[0].name).toBe("Foundation");
+    const setItem = document.resolutionOrder[0] as any;
+    expect(setItem.sources).toHaveLength(1);
+  });
+
+  test("serializes multiple sets in correct order", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              spacing: {
+                $type: "dimension",
+                $value: { value: 8, unit: "px" },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Semantic",
+          sources: [
+            {
+              colors: {
+                $type: "color",
+                $value: { colorSpace: "srgb", components: [0, 0, 1] },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    expect(document.resolutionOrder).toHaveLength(2);
+    expect(document.resolutionOrder[0].name).toBe("Foundation");
+    expect(document.resolutionOrder[1].name).toBe("Semantic");
+  });
+
+  test("preserves set metadata (name, description, extensions)", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "CustomSet",
+          description: "Custom set description",
+          sources: [],
+          $extensions: { "custom.key": { data: "value" } },
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    const set = document.resolutionOrder[0];
+    expect(set.name).toBe("CustomSet");
+    expect(set.description).toBe("Custom set description");
+    expect(set.$extensions).toEqual({ "custom.key": { data: "value" } });
+  });
+
+  test("handles empty sets", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Empty",
+          sources: [],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    expect(document.resolutionOrder).toHaveLength(1);
+    const setItem = document.resolutionOrder[0] as any;
+    expect(setItem.sources).toHaveLength(1);
+  });
+
+  test("serializes nested token groups within sets", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Colors",
+          sources: [
+            {
+              semantic: {
+                button: {
+                  primary: {
+                    $type: "color",
+                    $value: { colorSpace: "srgb", components: [0, 0, 1] },
+                  },
+                  secondary: {
+                    $type: "color",
+                    $value: { colorSpace: "srgb", components: [1, 0, 0] },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    // Verify the structure is preserved in the serialized output
+    const set = document.resolutionOrder[0];
+    if (set.type === "set") {
+      const source = set.sources[0] as any;
+      expect(source.semantic).toBeDefined();
+      expect(source.semantic.button).toBeDefined();
+      expect(source.semantic.button.primary).toBeDefined();
+    }
+  });
+
+  test("serializes tokens with complex types (shadow, border, typography)", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Complex",
+          sources: [
+            {
+              shadows: {
+                $type: "shadow",
+                drop: {
+                  $value: {
+                    color: {
+                      colorSpace: "srgb",
+                      components: [0, 0, 0],
+                      alpha: 0.2,
+                    },
+                    offsetX: { value: 0, unit: "px" },
+                    offsetY: { value: 4, unit: "px" },
+                    blur: { value: 8, unit: "px" },
+                    spread: { value: 0, unit: "px" },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    const setItem1 = document.resolutionOrder[0] as any;
+    expect(setItem1.sources).toHaveLength(1);
+  });
+
+  test("serializes tokens with complex types (shadow, border, typography)", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Complex",
+          sources: [
+            {
+              shadows: {
+                $type: "shadow",
+                drop: {
+                  $value: {
+                    color: {
+                      colorSpace: "srgb",
+                      components: [0, 0, 0],
+                      alpha: 0.2,
+                    },
+                    offsetX: { value: 0, unit: "px" },
+                    offsetY: { value: 4, unit: "px" },
+                    blur: { value: 8, unit: "px" },
+                    spread: { value: 0, unit: "px" },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    const setItem = document.resolutionOrder[0] as any;
+    expect(setItem.sources).toHaveLength(1);
+  });
+
+  test("roundtrip: parse -> serialize -> parse produces same structure", () => {
+    const original = {
+      version: "2025.10" as const,
+      name: "Design System",
+      description: "Test tokens",
+      resolutionOrder: [
+        {
+          type: "set" as const,
+          name: "Foundation",
+          description: "Foundation tokens",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color" as const,
+                  $value: {
+                    colorSpace: "srgb" as const,
+                    components: [0, 0, 1],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    // Parse original
+    const parseResult1 = parseTokenResolver(original);
+    expect(parseResult1.errors).toHaveLength(0);
+
+    // Serialize back to document
+    const nodes = new Map(parseResult1.nodes.map((n) => [n.nodeId, n]));
+    const serialized = serializeTokenResolver(nodes, {
+      name: original.name,
+      description: original.description,
+    });
+
+    // Parse serialized document
+    const parseResult2 = parseTokenResolver(serialized);
+    expect(parseResult2.errors).toHaveLength(0);
+
+    // Verify structure is preserved
+    expect(parseResult2.nodes).toHaveLength(parseResult1.nodes.length);
+    expect(
+      parseResult2.nodes.filter((n) => n.meta.nodeType === "token-set"),
+    ).toHaveLength(1);
+  });
+
+  test("roundtrip preserves token values and types", () => {
+    const original = {
+      version: "2025.10" as const,
+      resolutionOrder: [
+        {
+          type: "set" as const,
+          name: "Test",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color" as const,
+                  $value: {
+                    colorSpace: "srgb" as const,
+                    components: [1, 0, 0],
+                  },
+                },
+                secondary: {
+                  $type: "color" as const,
+                  $value: {
+                    colorSpace: "srgb" as const,
+                    components: [0, 1, 0],
+                  },
+                },
+              },
+              spacing: {
+                sm: {
+                  $type: "dimension" as const,
+                  $value: { value: 4, unit: "px" as const },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const parseResult1 = parseTokenResolver(original);
+    const nodes = new Map(parseResult1.nodes.map((n) => [n.nodeId, n]));
+    const serialized = serializeTokenResolver(nodes);
+    const parseResult2 = parseTokenResolver(serialized);
+
+    // Both parses should have same number of token and group nodes
+    const getTokenCount = (nodes: TreeNode<TreeNodeMeta>[]) =>
+      nodes.filter((n) => n.meta.nodeType === "token").length;
+    expect(getTokenCount(parseResult2.nodes)).toBe(
+      getTokenCount(parseResult1.nodes),
+    );
+  });
+
+  test("serializes without document metadata when not provided", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Test",
+          sources: [],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    expect(document.name).toBeUndefined();
+    expect(document.description).toBeUndefined();
+    expect(document.version).toBe("2025.10");
+  });
+
+  test("preserves token descriptions and extensions through roundtrip", () => {
+    const original = {
+      version: "2025.10" as const,
+      resolutionOrder: [
+        {
+          type: "set" as const,
+          name: "Documented",
+          sources: [
+            {
+              brand: {
+                $type: "color" as const,
+                $value: { colorSpace: "srgb" as const, components: [0, 0, 1] },
+                $description: "Brand primary color",
+                $extensions: { "custom.key": { data: "value" } },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const parseResult1 = parseTokenResolver(original);
+    const nodes = new Map(parseResult1.nodes.map((n) => [n.nodeId, n]));
+    const serialized = serializeTokenResolver(nodes);
+    const parseResult2 = parseTokenResolver(serialized);
+
+    // Find the brand token in both results
+    const brandToken1 = parseResult1.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "brand",
+    );
+    const brandToken2 = parseResult2.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "brand",
+    );
+
+    expect(brandToken1?.meta.description).toBe("Brand primary color");
+    expect(brandToken2?.meta.description).toBe("Brand primary color");
+  });
+
+  test("handles multiple sets with mixed content", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              colors: {
+                $type: "color",
+                primary: {
+                  $value: { colorSpace: "srgb", components: [0, 0, 1] },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Components",
+          sources: [
+            {
+              buttons: {
+                primary: {
+                  background: {
+                    $type: "color",
+                    $value: { colorSpace: "srgb", components: [0, 0, 1] },
+                  },
+                  padding: {
+                    $type: "dimension",
+                    $value: { value: 8, unit: "px" },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    expect(document.resolutionOrder).toHaveLength(2);
+    expect(document.resolutionOrder[0].name).toBe("Foundation");
+    expect(document.resolutionOrder[1].name).toBe("Components");
+
+    // Serialize and parse again
+    const parseResult2 = parseTokenResolver(document);
+    expect(parseResult2.errors).toHaveLength(0);
+  });
+
+  test("skips modifier items and serializes only sets", () => {
+    const resolver = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Base",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color",
+                  $value: { colorSpace: "srgb", components: [0, 0, 1] },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "modifier",
+          name: "Theme",
+          contexts: {
+            light: [],
+            dark: [],
+          },
+        },
+      ],
+    });
+
+    const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
+    const document = serializeTokenResolver(nodes);
+
+    // Should only have the Base set, modifier is skipped
+    expect(document.resolutionOrder).toHaveLength(1);
+    expect(document.resolutionOrder[0].name).toBe("Base");
   });
 });

@@ -412,7 +412,7 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
 
 export const serializeDesignTokens = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
-): Record<string, unknown> => {
+): Record<string, Token | Group> => {
   const childrenMap = new Map<string | undefined, TreeNode<TreeNodeMeta>[]>();
   const nodeIdToPath = new Map<string, string>();
 
@@ -479,10 +479,10 @@ export const serializeDesignTokens = (
     }
 
     meta satisfies never;
-    throw Error("Asset impossible branch");
+    throw Error("Assert impossible branch");
   };
 
-  const result: Record<string, unknown> = {};
+  const result: Record<string, Token | Group> = {};
   const rootChildren = childrenMap.get(undefined) ?? [];
   for (const node of rootChildren) {
     result[node.meta.name] = serializeNode(node, undefined);

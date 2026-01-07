@@ -5,8 +5,14 @@ import {
   type ResolverDocument,
   type ResolverSet,
 } from "./dtcg.schema";
-import { parseDesignTokens } from "./tokens";
-import type { SetMeta, TreeNodeMeta } from "./state.svelte";
+import { parseDesignTokens, serializeDesignTokens } from "./tokens";
+import { compareTreeNodes } from "./store";
+import type {
+  GroupMeta,
+  SetMeta,
+  TokenMeta,
+  TreeNodeMeta,
+} from "./state.svelte";
 import type { TreeNode } from "./store";
 
 type ParseResult = {
@@ -143,5 +149,85 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
   return {
     nodes: allNodes,
     errors: collectedErrors,
+  };
+};
+
+/**
+ * Serializes tree nodes back into a ResolverDocument following the Design Tokens Resolver Module 2025.10 specification.
+ *
+ * This function converts a tree structure (as produced by parseTokenResolver) back into a valid resolver document.
+ * Each token-set node at the root level becomes a Set in the resolutionOrder array.
+ *
+ * @param nodes - Map of all tree nodes (nodeId → TreeNode)
+ * @param metadata - Optional document-level metadata (name and description)
+ * @returns A valid ResolverDocument with sets organized in resolutionOrder
+ *
+ * @example
+ * ```typescript
+ * const resolver = parseTokenResolver(jsonData);
+ * const document = serializeTokenResolver(
+ *   new Map(resolver.nodes.map(n => [n.nodeId, n])),
+ *   { name: "My Design System", description: "..." }
+ * );
+ * ```
+ */
+export const serializeTokenResolver = (
+  nodes: Map<string, TreeNode<TreeNodeMeta>>,
+  metadata?: { name?: string; description?: string },
+): ResolverDocument => {
+  const setNodes: Array<TreeNode<SetMeta>> = [];
+  for (const node of nodes.values()) {
+    if (node.parentId === undefined && node.meta.nodeType === "token-set") {
+      setNodes.push(node as TreeNode<SetMeta>);
+    }
+  }
+
+  // Sort by index to maintain document order
+  setNodes.sort(compareTreeNodes);
+  const resolutionOrder: ResolverSet[] = [];
+  for (const setNode of setNodes) {
+    // Create a filtered map containing only this set's descendants (excluding the set node itself)
+    // serializeDesignTokens expects token and group nodes, not token-set nodes
+    const setSubtree = new Map<string, TreeNode<TreeNodeMeta>>();
+    const collectDescendants = (nodeId: string | undefined) => {
+      let node = nodeId ? nodes.get(nodeId) : undefined;
+      if (!node) {
+        return;
+      }
+      // Skip the token-set node itself, only collect token and group children
+      if (node.meta.nodeType !== "token-set") {
+        // Re-parent direct children of token-set to root (undefined)
+        if (node.parentId === setNode.nodeId) {
+          // avoid mutating original nodes
+          node = { ...node, parentId: undefined };
+        }
+        setSubtree.set(node.nodeId, node);
+      }
+      // Recursively collect all children
+      for (const child of nodes.values()) {
+        if (child.parentId === nodeId) {
+          collectDescendants(child.nodeId);
+        }
+      }
+    };
+
+    collectDescendants(setNode.nodeId);
+    const source = serializeDesignTokens(
+      setSubtree as Map<string, TreeNode<TokenMeta | GroupMeta>>,
+    );
+    resolutionOrder.push({
+      type: "set",
+      name: setNode.meta.name,
+      description: setNode.meta.description,
+      $extensions: setNode.meta.extensions,
+      sources: [source],
+    });
+  }
+
+  return {
+    version: "2025.10",
+    name: metadata?.name,
+    description: metadata?.description,
+    resolutionOrder,
   };
 };

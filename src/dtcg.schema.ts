@@ -259,7 +259,7 @@ export type TypographyValue = z.infer<typeof typographyValue>;
 // Single source is a Record where keys are group/token names
 // values are Group or Token objects
 export const resolverSourceSchema = z.record(
-  nameSchema,
+  z.string(),
   // avoid checking to not cut of nested groups and tokens
   // but enforce as a type
   z.unknown() as z.ZodType<Token | Group>,

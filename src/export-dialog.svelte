@@ -5,35 +5,35 @@
   import { generateCssVariables } from "./css-variables";
   import { generateScssVariables } from "./scss";
   import { serializeDesignTokens } from "./tokens";
+  import { serializeTokenResolver } from "./resolver";
   import Code from "./code.svelte";
   import type { TreeNode } from "./store";
 
-  let exportMode = $state<"json" | "css" | "scss">("json");
+  let exportMode = $state<"json" | "css" | "scss" | "resolver">("json");
 
   const nodes = $derived(treeState.nodes());
   const jsonOutput = $derived.by(() => {
-    const filteredNodes = new Map(nodes);
+    const filteredNodes = new Map<string, TreeNode<TokenMeta | GroupMeta>>();
     // remove set node from data and serialize as DTCG format module
     const setIds = new Set<undefined | string>();
-    for (const node of filteredNodes.values()) {
+    for (const node of nodes.values()) {
       if (node.meta.nodeType === "token-set") {
         setIds.add(node.nodeId);
-        filteredNodes.delete(node.nodeId);
+      } else {
+        filteredNodes.set(node.nodeId, node as TreeNode<TokenMeta | GroupMeta>);
       }
     }
     for (const node of filteredNodes.values()) {
       if (setIds.has(node.parentId)) {
-        node.parentId = undefined;
+        // avoid mutating nodes
+        filteredNodes.set(node.nodeId, { ...node, parentId: undefined });
       }
     }
-    return stringify(
-      serializeDesignTokens(
-        filteredNodes as Map<string, TreeNode<TokenMeta | GroupMeta>>,
-      ),
-    );
+    return stringify(serializeDesignTokens(filteredNodes));
   });
   const cssOutput = $derived(generateCssVariables(nodes));
   const scssOutput = $derived(generateScssVariables(nodes));
+  const resolverOutput = $derived(stringify(serializeTokenResolver(nodes)));
 </script>
 
 <dialog id="export-dialog" class="dialog" closedby="any">
@@ -47,6 +47,15 @@
         onclick={() => (exportMode = "json")}
       >
         Export JSON
+      </button>
+      <button
+        role="tab"
+        aria-selected={exportMode === "resolver"}
+        aria-controls="export-dialog-resolver"
+        class="a-tab"
+        onclick={() => (exportMode = "resolver")}
+      >
+        Export Resolver JSON
       </button>
       <button
         role="tab"
@@ -90,6 +99,11 @@
   {#if exportMode === "scss"}
     <div id="export-dialog-scss" class="code-panel">
       <Code code={scssOutput} language="scss" />
+    </div>
+  {/if}
+  {#if exportMode === "resolver"}
+    <div id="export-dialog-resolver" class="code-panel">
+      <Code code={resolverOutput} language="json" />
     </div>
   {/if}
 </dialog>
