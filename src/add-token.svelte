@@ -177,6 +177,7 @@
   <button
     class="a-button"
     aria-label="Add token"
+    interestfor="add-token-tooltip"
     onclick={() => handleAddToken(inheritedType)}
   >
     <Plus size={16} />
@@ -185,12 +186,21 @@
   <button
     class="a-button"
     aria-label="Add token"
+    interestfor="add-token-tooltip"
     commandfor="app-add-token-menu"
     command="toggle-popover"
   >
     <Plus size={16} />
   </button>
 {/if}
+
+<div id="add-token-tooltip" popover="hint" class="a-tooltip">
+  {#if inheritedType}
+    Add a new {noCase(inheritedType)} token
+  {:else}
+    Add a new token
+  {/if}
+</div>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_interactive_supports_focus -->

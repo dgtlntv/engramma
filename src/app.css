@@ -253,7 +253,7 @@ body {
     margin-block: 8px;
     border-radius: 4px;
     box-shadow: var(--popover-shadow);
-    position-area: center top;
+    position-area: top;
     position-try-fallbacks: flip-block;
   }
 

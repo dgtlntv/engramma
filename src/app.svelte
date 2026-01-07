@@ -323,21 +323,37 @@
             <button
               class="a-button"
               aria-label={`Delete ${selectedItems.size} item(s)`}
+              interestfor="app-delete-tooltip"
               onclick={handleDelete}
             >
               <Trash2 size={16} />
             </button>
+            <div id="app-delete-tooltip" popover="hint" class="a-tooltip">
+              Delete selected items
+            </div>
           {/if}
-          <button class="a-button" aria-label="Add set" onclick={handleAddSet}>
+          <button
+            class="a-button"
+            aria-label="Add set"
+            interestfor="app-add-set-tooltip"
+            onclick={handleAddSet}
+          >
             <ListPlus size={16} />
           </button>
+          <div id="app-add-set-tooltip" popover="hint" class="a-tooltip">
+            Add a new token set
+          </div>
           <button
             class="a-button"
             aria-label="Add group"
+            interestfor="app-add-group-tooltip"
             onclick={handleAddGroup}
           >
             <Folder size={16} />
           </button>
+          <div id="app-add-group-tooltip" popover="hint" class="a-tooltip">
+            Add a new group
+          </div>
           <AddToken {selectedItems} onTokenAdded={handleTokenAdded} />
         </div>
       </div>
