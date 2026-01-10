@@ -44,6 +44,8 @@ body {
   margin: 0;
   background: var(--bg-primary);
   color: var(--text-primary);
+  height: 100dvh;
+  overflow: hidden;
 }
 
 @layer atoms {
@@ -77,6 +79,9 @@ body {
     color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
   }
 
   color-input {

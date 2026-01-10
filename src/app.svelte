@@ -279,9 +279,8 @@
   onkeydown={handleKeyDown}
 />
 
-<div class="container">
-  <!-- Main Content -->
-  <div class="content">
+<div class="app">
+  <div class="horizontal-container">
     <!-- Left Panel: Design Tokens -->
     <aside class="panel left-panel">
       <div class="panel-header">
@@ -411,17 +410,24 @@
 </div>
 
 <style>
-  .container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+  .app {
+    container-type: inline-size;
+    width: 100%;
+    height: 100%;
+    display: grid;
   }
 
-  /* Main content */
-  .content {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
+  .horizontal-container {
+    display: grid;
+    grid-template-columns: max(320px, 30%) 1fr;
+    grid-template-rows: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+
+    @container (width <= 720px) {
+      grid-template-columns: 100cqw 100cqw;
+    }
   }
 
   /* Panels */
@@ -429,34 +435,27 @@
     display: grid;
     grid-template-rows: var(--panel-header-height) 1fr;
     background: var(--bg-primary);
-    border-right: 1px solid var(--border-color);
+    scroll-snap-align: center;
   }
 
   .left-panel {
-    width: max(320px, 30%);
     border-right: 1px solid var(--border-color);
-    anchor-name: --app-left-panel;
-  }
-
-  .right-panel {
-    flex: 1;
-    border-right: none;
   }
 
   .panel-header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 8px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     background: var(--bg-primary);
     gap: 8px;
+    overflow: hidden;
   }
 
   .toolbar-actions {
     display: flex;
-    gap: 8px;
     align-items: center;
     margin-left: auto;
   }

@@ -1107,13 +1107,21 @@
     top: calc(var(--panel-header-height) + 16px);
     bottom: auto;
     right: auto;
-    max-height: calc(100dvh - var(--panel-header-height) - 16px - 16px);
+    max-height: calc(100cqh - var(--panel-header-height) - 16px - 16px);
     width: 360px;
     left: max(320px, 30%);
     display: grid;
     /* collapse heading and content in safari */
     grid-template-rows: max-content max-content;
     overflow: auto;
+
+    @container (width <= 720px) {
+      margin: auto;
+      inset: 8px;
+      width: auto;
+      height: auto;
+      max-height: none;
+    }
   }
 
   .input-with-button {
