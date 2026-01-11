@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engramma - Design Tokens Editor</title>
+    <meta
+      name="description"
+      content="A web-based design tokens editor and converter for building design systems. Create, preview, and export design tokens in standard formats with preview of colors, typography, spacing, and more."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://app.engramma.dev/logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div class="logo">
+      <h1 class="logo-name">
+        <span class="logo-name-top">Engramma</span>
+        <span class="logo-name-middle" aria-hidden="true">Engramma</span>
+        <span class="logo-name-bottom" aria-hidden="true">Engramma</span>
+      </h1>
+      <p class="logo-description">A home for your design tokens</p>
+    </div>
+    <a href="https://app.engramma.dev" class="cta-button">Try Engramma</a>
+    <script type="module">
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams.has("logo-only")) {
+        document.querySelector(".cta-button")?.remove();
+      }
+    </script>
+  </body>
+</html>

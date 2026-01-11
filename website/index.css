@@ -1,0 +1,100 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  min-height: 100dvh;
+  font-family: Inter, sans-serif;
+  text-align: center;
+  background-color: #1e1e1e;
+}
+
+.logo-name {
+  margin: 0;
+  /*
+   * based on https://fluidtypography.com
+   * viewport range: 320 - 1280
+   * font size range: 40 - 200
+   **/
+  font-size: clamp(2.5rem, 16.667vw + -0.833rem, 12.5rem);
+  font-weight: bold;
+  text-shadow:
+    -2px -2px #ff0000,
+    2px 2px #00ffff;
+  color: #ffeeff;
+  display: grid;
+  margin-bottom: 4%;
+  --top-left: 35%;
+  --top-right: 50%;
+  --bottom-left: 75%;
+  --bottom-right: 65%;
+}
+
+.logo-name-top {
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
+  translate: -2px 0;
+  clip-path: polygon(0 0, 100% 0, 100% var(--top-right), 0 var(--top-left));
+}
+
+.logo-name-middle {
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
+  /* 2 - 10 */
+  translate: calc(-1em / 20) 0;
+  clip-path: polygon(
+    0 calc(var(--top-left) + 1%),
+    100% calc(var(--top-right) + 1%),
+    100% calc(var(--bottom-right) - 1%),
+    0 calc(var(--bottom-left) - 1%)
+  );
+}
+
+.logo-name-bottom {
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
+  clip-path: polygon(
+    0 var(--bottom-left),
+    100% var(--bottom-right),
+    100% 100%,
+    0 100%
+  );
+}
+
+.logo-description {
+  margin: 0;
+  /*
+   * based on https://fluidtypography.com
+   * viewport range: 320 - 1280
+   * font size range: 20 - 50
+   **/
+  font-size: clamp(1.25rem, 3.125vw + 0.625rem, 3.125rem);
+  color: #adfcff;
+}
+
+/* CTA Button Styling */
+.cta-button {
+  margin-top: 40px;
+  justify-self: center;
+  padding: 12px 32px;
+  font-size: 20px;
+  text-decoration: none;
+  color: #e6e6e6;
+  background: #18a0fb;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  background: #27affe;
+  box-shadow:
+    0 0 20px rgba(24, 160, 251, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
