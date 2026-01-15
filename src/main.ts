@@ -4,7 +4,7 @@ import App from "./app.svelte";
 import "./app.css";
 import { parseDesignTokens } from "./tokens";
 import { treeState, type SetMeta } from "./state.svelte";
-import designTokens from "./design-tokens-example.tokens.json";
+import designTokens from "./design-tokens-example.resolver.json";
 import { getDataFromUrl } from "./url-data";
 import type { TreeNode } from "./store";
 import { isResolverFormat, parseTokenResolver } from "./resolver";

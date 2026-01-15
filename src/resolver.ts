@@ -5,7 +5,12 @@ import {
   type ResolverDocument,
   type ResolverSet,
 } from "./dtcg.schema";
-import { parseDesignTokens, serializeDesignTokens } from "./tokens";
+import {
+  serializeDesignTokens,
+  extractIntermediaryNodes,
+  resolveIntermediaryNodes,
+  type IntermediaryNode,
+} from "./tokens";
 import { compareTreeNodes } from "./store";
 import type {
   GroupMeta,
@@ -75,6 +80,9 @@ export const isResolverFormat = (obj: unknown): boolean => {
 // Parse resolver document containing sets and modifiers in resolutionOrder
 // Creates separate root token-sets for each Set item
 // Only processes Set items; Modifier items are silently skipped
+// Supports cross-set token aliases through two-phase resolution:
+// Phase 1: Extract intermediary nodes from all sets (collect what tokens/groups exist)
+// Phase 2: Resolve with all accumulated nodes available (enables cross-set references)
 export const parseTokenResolver = (input: unknown): ParseResult => {
   // Validate resolver document structure
   const validation = resolverDocumentSchema.safeParse(input);
@@ -93,39 +101,61 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
   const lastChildIndexPerParent = new Map<string | undefined, string>();
   const zeroIndex = generateKeyBetween(null, null);
 
-  // Process each Set in resolutionOrder
-  for (let i = 0; i < resolverDoc.resolutionOrder.length; i++) {
-    const item = resolverDoc.resolutionOrder[i];
+  // PHASE 1: Extract intermediary nodes from all sets
+  // This collects all tokens/groups with their paths, without resolving references yet
+  const allIntermediaryNodes = new Map<string, any>();
+  const intermediaryNodesBySet = new Map<
+    string,
+    Map<string, IntermediaryNode>
+  >();
 
+  for (const item of resolverDoc.resolutionOrder) {
+    // Silently skip modifier items
+    if (item.type === "modifier") {
+      continue;
+    }
+    const mergedSetSources = mergeSources(item.sources);
+    const { nodes, errors } = extractIntermediaryNodes(mergedSetSources);
+    intermediaryNodesBySet.set(item.name, nodes);
+    for (const [path, node] of nodes) {
+      allIntermediaryNodes.set(path, node);
+    }
+    collectedErrors.push(...errors);
+  }
+
+  // PHASE 2: Resolve intermediary nodes with cross-set availability
+  // Now that we have all tokens/groups from all sets, resolve references with full visibility
+  for (const item of resolverDoc.resolutionOrder) {
     if (item.type === "modifier") {
       // Silently skip modifier items
       continue;
     }
-
-    // item.type === "set"
-    const set = item as ResolverSet;
-
-    // Merge sources within this Set only
-    const mergedSetSources = mergeSources(set.sources);
-
-    // Parse the merged sources using existing parseDesignTokens
-    const parseResult = parseDesignTokens(mergedSetSources);
+    // Get this set's intermediary nodes
+    const intermediaryNodes = intermediaryNodesBySet.get(item.name);
+    if (!intermediaryNodes) {
+      continue;
+    }
+    // Resolve this set's intermediary nodes, using all accumulated nodes for reference lookup
+    const { nodes, errors } = resolveIntermediaryNodes(
+      intermediaryNodes,
+      allIntermediaryNodes,
+    );
 
     // Create a new token-set node for this Set
     const setNodeId = crypto.randomUUID();
     const prevSetIndex = lastChildIndexPerParent.get(undefined);
-    const setIndex = generateKeyBetween(prevSetIndex ?? zeroIndex, null);
-    lastChildIndexPerParent.set(undefined, setIndex);
+    const newSetIndex = generateKeyBetween(prevSetIndex ?? zeroIndex, null);
+    lastChildIndexPerParent.set(undefined, newSetIndex);
 
     const setNode: TreeNode<SetMeta> = {
       nodeId: setNodeId,
       parentId: undefined,
-      index: setIndex,
+      index: newSetIndex,
       meta: {
         nodeType: "token-set",
-        name: set.name,
-        description: set.description,
-        extensions: set.$extensions,
+        name: item.name,
+        description: item.description,
+        extensions: item.$extensions,
       },
     };
 
@@ -135,7 +165,7 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
     // Re-parent root-level tokens/groups from this Set to the token-set node
     // Only set parentId for nodes at root level (parentId is undefined)
     // This preserves the hierarchy of nested groups and tokens within the Set
-    for (const node of parseResult.nodes) {
+    for (const node of nodes) {
       if (node.parentId === undefined) {
         node.parentId = setNodeId;
       }
@@ -143,7 +173,7 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
     }
 
     // Collect errors from this Set
-    collectedErrors.push(...parseResult.errors);
+    collectedErrors.push(...errors);
   }
 
   return {
@@ -214,6 +244,7 @@ export const serializeTokenResolver = (
     collectDescendants(setNode.nodeId);
     const source = serializeDesignTokens(
       setSubtree as Map<string, TreeNode<TokenMeta | GroupMeta>>,
+      nodes as Map<string, TreeNode<TokenMeta | GroupMeta>>, // Pass all nodes for cross-set reference lookup
     );
     resolutionOrder.push({
       type: "set",

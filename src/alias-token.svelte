@@ -236,6 +236,7 @@
 <style>
   .a-popover {
     width: 320px;
+    position-area: span-left bottom;
   }
 
   .input-container {

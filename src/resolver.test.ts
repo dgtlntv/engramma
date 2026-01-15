@@ -1141,3 +1141,484 @@ describe("serializeTokenResolver", () => {
     expect(document.resolutionOrder[0].name).toBe("Base");
   });
 });
+
+describe("cross-set aliases", () => {
+  test("allows tokens to reference tokens from other sets", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color",
+                  $value: {
+                    colorSpace: "srgb",
+                    components: [0, 0, 1],
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Components",
+          sources: [
+            {
+              button: {
+                background: {
+                  $type: "color",
+                  $value: "{colors.primary}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors).toHaveLength(0);
+    const buttonBg = result.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "background",
+    );
+    expect(buttonBg).toBeDefined();
+  });
+
+  test("allows references regardless of set resolution order", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              primary: {
+                $type: "color",
+                $value: {
+                  colorSpace: "srgb",
+                  components: [1, 0, 0],
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Semantic",
+          sources: [
+            {
+              color: {
+                derived: {
+                  $type: "color",
+                  $value: "{primary}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("supports multi-hop references across multiple sets", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Base",
+          sources: [
+            {
+              color: {
+                primary: {
+                  $type: "color",
+                  $value: {
+                    colorSpace: "srgb",
+                    components: [0, 0, 1],
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Semantic",
+          sources: [
+            {
+              brand: {
+                $type: "color",
+                $value: "{color.primary}",
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Component",
+          sources: [
+            {
+              button: {
+                bg: {
+                  $type: "color",
+                  $value: "{brand}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("reports error when cross-set reference cannot be resolved", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Components",
+          sources: [
+            {
+              button: {
+                background: {
+                  $type: "color",
+                  $value: "{missing.color}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors.length).toBeGreaterThan(0);
+    // Error occurs because the reference cannot be resolved, resulting in type mismatch
+    expect(result.errors[0].path).toContain("background");
+  });
+
+  test("detects circular references across sets", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Foundation",
+          sources: [
+            {
+              primary: {
+                $type: "color",
+                $value: "{semantic.derived}",
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Semantic",
+          sources: [
+            {
+              derived: {
+                $type: "color",
+                $value: "{primary}",
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  test("supports cross-set references in composite tokens", () => {
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Primitives",
+          sources: [
+            {
+              color: {
+                black: {
+                  $type: "color",
+                  $value: {
+                    colorSpace: "srgb",
+                    components: [0, 0, 0],
+                  },
+                },
+              },
+              spacing: {
+                xs: {
+                  $type: "dimension",
+                  $value: {
+                    value: 2,
+                    unit: "px",
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Components",
+          sources: [
+            {
+              border: {
+                default: {
+                  $type: "border",
+                  $value: {
+                    color: "{color.black}",
+                    width: "{spacing.xs}",
+                    style: "solid",
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors).toHaveLength(0);
+    const borderToken = result.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "default",
+    );
+    expect(borderToken).toBeDefined();
+  });
+
+  test("allows cross-set references to be used regardless of strict type checking", () => {
+    // Type validation for cross-set references is limited
+    // The resolver validates that references can be resolved, but not strict type compatibility
+    const result = parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Primitives",
+          sources: [
+            {
+              spacing: {
+                base: {
+                  $type: "dimension",
+                  $value: {
+                    value: 4,
+                    unit: "px",
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Semantic",
+          sources: [
+            {
+              color: {
+                primary: {
+                  $type: "color",
+                  $value: "{spacing.base}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    // References are allowed, even if types don't strictly match
+    // Type validation at consumption time is the responsibility of the consumer
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("roundtrip preserves cross-set references in tree structure", () => {
+    // Cross-set references are preserved in the internal tree structure
+    const original = {
+      version: "2025.10" as const,
+      resolutionOrder: [
+        {
+          type: "set" as const,
+          name: "Foundation",
+          sources: [
+            {
+              colors: {
+                primary: {
+                  $type: "color" as const,
+                  $value: {
+                    colorSpace: "srgb" as const,
+                    components: [0, 0, 1],
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set" as const,
+          name: "Components",
+          sources: [
+            {
+              button: {
+                background: {
+                  $type: "color" as const,
+                  $value: "{colors.primary}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const parseResult1 = parseTokenResolver(original);
+    expect(parseResult1.errors).toHaveLength(0);
+
+    // Verify the cross-set reference was resolved
+    const backgroundToken = parseResult1.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "background",
+    );
+    expect(backgroundToken).toBeDefined();
+    if (backgroundToken && backgroundToken.meta.nodeType === "token") {
+      // Token should have a reference value (NodeRef) pointing to colors.primary
+      expect(backgroundToken.meta.value).toHaveProperty("ref");
+    }
+  });
+
+  test("handles multiple sets with interconnected cross-set references", () => {
+    const original = {
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "CoreColors",
+          sources: [
+            {
+              red: {
+                $type: "color",
+                $value: {
+                  colorSpace: "srgb",
+                  components: [1, 0, 0],
+                },
+              },
+              blue: {
+                $type: "color",
+                $value: {
+                  colorSpace: "srgb",
+                  components: [0, 0, 1],
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "SemanticColors",
+          sources: [
+            {
+              error: {
+                $type: "color",
+                $value: "{red}",
+              },
+              info: {
+                $type: "color",
+                $value: "{blue}",
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "ComponentStyles",
+          sources: [
+            {
+              alert: {
+                background: {
+                  $type: "color",
+                  $value: "{error}",
+                },
+              },
+              badge: {
+                background: {
+                  $type: "color",
+                  $value: "{info}",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const result = parseTokenResolver(original);
+    expect(result.errors).toHaveLength(0);
+    expect(
+      result.nodes.filter((n) => n.meta.nodeType === "token-set"),
+    ).toHaveLength(3);
+    expect(
+      serializeTokenResolver(
+        new Map(result.nodes.map((node) => [node.nodeId, node])),
+      ),
+    ).toEqual(original);
+  });
+
+  test("supports cross-set references from nested group tokens", () => {
+    const original = {
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set",
+          name: "Base",
+          sources: [
+            {
+              dimensions: {
+                spacing: {
+                  small: {
+                    $type: "dimension",
+                    $value: {
+                      value: 8,
+                      unit: "px",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "set",
+          name: "Components",
+          sources: [
+            {
+              button: {
+                styles: {
+                  padding: {
+                    $type: "dimension",
+                    $value: "{dimensions.spacing.small}",
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const result = parseTokenResolver(original);
+    expect(result.errors).toHaveLength(0);
+    expect(
+      serializeTokenResolver(
+        new Map(result.nodes.map((node) => [node.nodeId, node])),
+      ),
+    ).toEqual(original);
+  });
+});

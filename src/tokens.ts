@@ -28,7 +28,7 @@ type TreeNodeMeta = GroupMeta | TokenMeta;
 
 // Intermediary node collected during tree traversal
 // Contains information needed to generate normalized tree nodes
-type IntermediaryNode = {
+export type IntermediaryNode = {
   parentPath: string | undefined;
   name: string;
   nodeId: string;
@@ -141,20 +141,9 @@ const isTokenReference = (value: unknown): value is string => {
   return referenceSchema.safeParse(value).success;
 };
 
-export const parseDesignTokens = (input: unknown): ParseResult => {
-  const intermediaryNodes = new Map<string, IntermediaryNode>();
-  const nodes: TreeNode<TreeNodeMeta>[] = [];
-  const collectedErrors: Array<{ path: string; message: string }> = [];
-  const lastChildIndexPerParent = new Map<string | undefined, string>();
-  const pathToNodeId = new Map<string, string>(); // Map DTCG paths to node IDs
-
-  if (!isObject(input)) {
-    return { nodes, errors: collectedErrors };
-  }
-
-  const recordError = (path: string, message: string) => {
-    collectedErrors.push({ path: path, message });
-  };
+export const extractIntermediaryNodes = (input: unknown) => {
+  const nodes = new Map<string, IntermediaryNode>();
+  const errors: Array<{ path: string; message: string }> = [];
 
   // recursively traverse JSON objects and collect intermediary nodes
   // validate input data and infer inherited types
@@ -167,8 +156,8 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
     const path = parentPath ? [...parentPath, name] : [name];
     const nameValidation = nameSchema.safeParse(name);
     if (!nameValidation.success && name !== "$root") {
-      const errorMessage = prettifyError(nameValidation.error);
-      recordError(path.join("."), errorMessage);
+      const message = prettifyError(nameValidation.error);
+      errors.push({ path: path.join("."), message });
       return;
     }
     // explicitly distinct token from group based on $value
@@ -176,21 +165,21 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
       ? backwardCompatibleTokenSchema.safeParse(data)
       : groupSchema.safeParse(data);
     if (!payload.success) {
-      recordError(path.join("."), prettifyError(payload.error));
+      const message = prettifyError(payload.error);
+      errors.push({ path: path.join("."), message });
       return;
     }
     // pass through inherited type from root group to token
     inheritedType = payload.data.$type ?? inheritedType;
     const nodeId = crypto.randomUUID();
     const pathStr = path.join(".");
-    intermediaryNodes.set(pathStr, {
+    nodes.set(pathStr, {
       parentPath: parentPath?.join("."),
       name,
       nodeId,
       type: inheritedType,
       payload: payload.data,
     });
-    pathToNodeId.set(pathStr, nodeId);
     // skip traversing children on token
     if (!("$value" in payload.data) && isObject(data)) {
       for (const [name, value] of Object.entries(data)) {
@@ -203,13 +192,25 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
     }
   };
 
-  for (const [name, value] of Object.entries(input)) {
-    // Skip unknown $ fields at root level
-    if (name.startsWith("$")) {
-      continue;
+  if (isObject(input)) {
+    for (const [name, value] of Object.entries(input)) {
+      // Skip unknown $ fields at root level
+      if (name.startsWith("$")) {
+        continue;
+      }
+      parseNode(undefined, name, value, undefined);
     }
-    parseNode(undefined, name, value, undefined);
   }
+  return { nodes, errors };
+};
+
+export const resolveIntermediaryNodes = (
+  intermediaryNodes: Map<string, IntermediaryNode>,
+  availableNodes: Map<string, IntermediaryNode>,
+) => {
+  const nodes: TreeNode<TreeNodeMeta>[] = [];
+  const errors: Array<{ path: string; message: string }> = [];
+  const lastChildIndexPerParent = new Map<string | undefined, string>();
 
   // Helper to resolve the type of a token alias by following the reference chain
   const resolveAliasType = (value: string): TokenType | undefined => {
@@ -222,7 +223,7 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
         return;
       }
       visited.add(currentPath);
-      const node = intermediaryNodes.get(currentPath);
+      const node = availableNodes.get(currentPath);
       if (!node || !("$value" in node.payload)) {
         return;
       }
@@ -243,7 +244,7 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
     value: string | Value,
   ): NodeRef | Value => {
     if (isTokenReference(value)) {
-      const node = intermediaryNodes.get(getPathFromTokenRef(value));
+      const node = availableNodes.get(getPathFromTokenRef(value));
       if (!node) {
         throw Error(`Node ${value} not found`);
       }
@@ -261,7 +262,7 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
     // convert token reference to node reference format
     if (isTokenReference(token.$value)) {
       const type = token.$type ?? resolveAliasType(path) ?? intermediaryType;
-      const node = intermediaryNodes.get(getPathFromTokenRef(token.$value));
+      const node = availableNodes.get(getPathFromTokenRef(token.$value));
       if (!type || !node) {
         return;
       }
@@ -373,7 +374,7 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
         // the next error is good enough
       }
       if (!typeAndValue) {
-        recordError(path, "Token type cannot be determined");
+        errors.push({ path, message: "Token type cannot be determined" });
         continue;
       }
       meta = {
@@ -404,19 +405,33 @@ export const parseDesignTokens = (input: unknown): ParseResult => {
     nodes.push({ nodeId, parentId, index, meta });
   }
 
-  return {
-    nodes,
-    errors: collectedErrors,
-  };
+  return { nodes, errors };
+};
+
+export const parseDesignTokens = (input: unknown): ParseResult => {
+  const { nodes: intermediaryNodes, errors: intermediaryErrors } =
+    extractIntermediaryNodes(input);
+  const { nodes, errors: resolverErrors } = resolveIntermediaryNodes(
+    intermediaryNodes,
+    intermediaryNodes,
+  );
+  return { nodes, errors: [...intermediaryErrors, ...resolverErrors] };
 };
 
 export const serializeDesignTokens = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
+  availableNodes: Map<string, TreeNode<TreeNodeMeta>> = nodes,
 ): Record<string, Token | Group> => {
+  const roots: TreeNode<TreeNodeMeta>[] = [];
   const childrenMap = new Map<string | undefined, TreeNode<TreeNodeMeta>[]>();
   const nodeIdToPath = new Map<string, string>();
 
   for (const node of nodes.values()) {
+    if (!node.parentId) {
+      roots.push(node);
+    }
+  }
+  for (const node of availableNodes.values()) {
     const children = childrenMap.get(node.parentId) ?? [];
     children.push(node);
     childrenMap.set(node.parentId, children);
@@ -428,10 +443,14 @@ export const serializeDesignTokens = (
   const buildPathMap = (
     nodeId: string | undefined,
     parentPath: string[] = [],
-  ): void => {
+  ) => {
     const nodeChildren = childrenMap.get(nodeId) ?? [];
     for (const node of nodeChildren) {
-      const nodePath = [...parentPath, node.meta.name];
+      // only group and token should be included in alias path
+      const nodePath =
+        node.meta.nodeType === "token-group" || node.meta.nodeType === "token"
+          ? [...parentPath, node.meta.name]
+          : parentPath;
       const pathStr = nodePath.join(".");
       nodeIdToPath.set(node.nodeId, pathStr);
       buildPathMap(node.nodeId, nodePath);
@@ -483,8 +502,7 @@ export const serializeDesignTokens = (
   };
 
   const result: Record<string, Token | Group> = {};
-  const rootChildren = childrenMap.get(undefined) ?? [];
-  for (const node of rootChildren) {
+  for (const node of roots) {
     result[node.meta.name] = serializeNode(node, undefined);
   }
   return result;
