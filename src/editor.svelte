@@ -1113,7 +1113,7 @@
     right: auto;
     max-height: calc(100cqh - var(--panel-header-height) - 16px - 16px);
     width: 360px;
-    left: max(320px, 30%);
+    left: min(360px, max(320px, 30%));
     display: grid;
     /* collapse heading and content in safari */
     grid-template-rows: max-content max-content;
