@@ -29,7 +29,9 @@
     return "custom";
   };
 
+  // svelte-ignore state_referenced_locally
   let inputValue = $state(value.join(", "));
+  // svelte-ignore state_referenced_locally
   let isCustomSelected = $state(getPresetName(value) === "custom");
 
   const parseInputValue = (inputValue: string) => {

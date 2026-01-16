@@ -59,7 +59,9 @@
 
   // based on https://www.w3.org/WAI/ARIA/apg/patterns/treeview/
 
+  // svelte-ignore state_referenced_locally
   const expandedItems = new SvelteSet(defaultExpandedItems);
+  // svelte-ignore state_referenced_locally
   let activeItemId = $state(Array.from(selectedItems).at(0));
   let treeElement: undefined | HTMLElement;
 
