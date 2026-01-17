@@ -1,226 +1,187 @@
 <script lang="ts">
   import { generateKeyBetween } from "fractional-indexing";
-  import { treeState, type SetMeta } from "./state.svelte";
-  import { parseDesignTokens } from "./tokens";
+  import { treeState, type SetMeta, type TreeNodeMeta } from "./state.svelte";
+  import {
+    extractIntermediaryNodes,
+    resolveIntermediaryNodes,
+    type IntermediaryNode,
+  } from "./tokens";
   import { parseTokenResolver, isResolverFormat } from "./resolver";
   import { parseCssVariables } from "./css-variables";
   import type { TreeNode } from "./store";
 
-  const zeroIndex = generateKeyBetween(null, null);
+  type ImportSource = { name: string; content: string };
+
+  type ImportType = "unknown" | "json" | "css" | "resolver";
+
+  type ImportResult = {
+    importType: ImportType;
+    name: string;
+    nodes: TreeNode<TreeNodeMeta>[];
+    errors: { path: string; message: string }[];
+  };
 
   let dialogElement: undefined | HTMLDialogElement;
-  let fileInputElement: undefined | HTMLInputElement;
-  let dropzoneElement: undefined | HTMLElement;
-  let inputMode: "upload" | "text" = "upload";
-  let importType: "unknown" | "json" | "css" | "resolver" = "unknown";
-  let importedContent = "";
-  let importedResult: undefined | ReturnType<typeof parseTokenResolver>;
-  let isDragOver = false;
-  let isInputTouched = false;
+  let fileInputElement: undefined | HTMLInputElement = $state();
+  let dropzoneElement: undefined | HTMLElement = $state();
+  let inputMode: "upload" | "text" = $state("upload");
+  let isDragOver = $state(false);
+  let isInputTouched = $state(false);
+  let importResults: ImportResult[] = $state([]);
+  let content = $state("");
 
-  interface FileImportResult {
-    fileName: string;
-    content: string;
-    importType: "unknown" | "json" | "css" | "resolver";
-    importedResult: ReturnType<typeof parseTokenResolver> | undefined;
-  }
+  const convertImportSources = (sources: ImportSource[]) => {
+    const results: ImportResult[] = [];
+    const resolvers = [];
+    const tokenSets = [];
+    const availableIntermediaryNodes = new Map<string, IntermediaryNode>();
 
-  let importedFiles: FileImportResult[] = [];
-
-  const validateImportedTokens = (content: string) => {
-    importType = "unknown";
-    importedResult = undefined;
-
-    // Try JSON
-    try {
-      const parsed = JSON.parse(content);
-      if (isResolverFormat(parsed)) {
-        const result = parseTokenResolver(parsed);
-        if (result.nodes.length > 0 || result.errors.length > 0) {
-          importType = "resolver";
-          importedResult = result;
+    // Collect resolvers and separate sets of tokens
+    for (const { name, content } of sources) {
+      try {
+        const parsed = JSON.parse(content);
+        // start with resolver format
+        if (isResolverFormat(parsed)) {
+          const result = parseTokenResolver(parsed);
+          resolvers.push({ name, ...result });
+        } else {
+          // fallback to tokens format
+          const result = extractIntermediaryNodes(parsed);
+          tokenSets.push({ name, ...result });
+          for (const [key, node] of result.nodes) {
+            availableIntermediaryNodes.set(key, node);
+          }
         }
-      } else {
-        // Try as tokens format
-        const result = parseDesignTokens(parsed);
-        if (result.nodes.length > 0 || result.errors.length > 0) {
-          importType = "json";
-          importedResult = result;
+      } catch {
+        // when input is not json fallback to css
+        const result = extractIntermediaryNodes(parseCssVariables(content));
+        tokenSets.push({ name, ...result });
+        for (const [key, node] of result.nodes) {
+          availableIntermediaryNodes.set(key, node);
         }
       }
-    } catch {}
+    }
 
-    // Try CSS
-    try {
-      const result = parseDesignTokens(parseCssVariables(content));
-      if (result.nodes.length > 0 || result.errors.length > 0) {
-        importType = "css";
-        importedResult = result;
+    let lastIndex: null | string = null;
+    // merge resolver sets
+    for (const { name, nodes, errors } of resolvers) {
+      for (const node of nodes) {
+        if (node.meta.nodeType === "token-set") {
+          const currentIndex = generateKeyBetween(lastIndex, null);
+          lastIndex = currentIndex;
+          node.index = currentIndex;
+        }
       }
-    } catch {}
+      results.push({
+        importType: "unknown",
+        name,
+        nodes,
+        errors,
+      });
+    }
+
+    // merge token sets
+    for (const { name, nodes: intermediaryNodes, errors } of tokenSets) {
+      const nodes: TreeNode<TreeNodeMeta>[] = [];
+      const result = resolveIntermediaryNodes(
+        intermediaryNodes,
+        availableIntermediaryNodes,
+      );
+      errors.push(...result.errors);
+      const currentIndex = generateKeyBetween(lastIndex, null);
+      lastIndex = currentIndex;
+      const tokenSetNode: TreeNode<SetMeta> = {
+        nodeId: crypto.randomUUID(),
+        parentId: undefined,
+        index: currentIndex,
+        meta: { nodeType: "token-set", name },
+      };
+      nodes.push(tokenSetNode);
+      for (const node of result.nodes) {
+        if (node.parentId === undefined) {
+          node.parentId = tokenSetNode.nodeId;
+        }
+        nodes.push(node);
+      }
+      results.push({
+        importType: "unknown",
+        name,
+        nodes,
+        errors,
+      });
+    }
+    return results;
+  };
+
+  const handleTextareaInput = (newValue: string) => {
+    content = newValue;
+    importResults = convertImportSources([{ name: "Base", content: newValue }]);
+    isInputTouched = false;
+  };
+
+  const handleMultipleFiles = async (files: FileList) => {
+    const sources: ImportSource[] = [];
+    // FileList is not iterated over for some reason
+    for (const file of Array.from(files)) {
+      let name = file.name
+        // strip extensions
+        .replace(/\.tokens\.json$/, "")
+        .replace(/\.resolver\.json$/, "")
+        .replace(/\.json$/, "")
+        .replace(/\.css$/, "")
+        .replace(/[^a-zA-Z0-9-_]/g, "-");
+      const content = await file.text();
+      sources.push({ name, content });
+    }
+    importResults = convertImportSources(sources);
+    isInputTouched = true;
   };
 
   const handleImport = async () => {
     isInputTouched = true;
-
-    // Check for files from multi-file upload
-    if (importedFiles.length > 0) {
-      // Check if any file has errors
-      const filesWithErrors = importedFiles.filter(
-        (f) => f.importedResult?.errors.length ?? 0 > 0,
-      );
-      if (filesWithErrors.length > 0) {
-        return;
+    // Check if any source has errors
+    if (importResults.some((s) => s.errors.length > 0)) {
+      return;
+    }
+    treeState.transact((tx) => {
+      tx.clear();
+      for (const { nodes } of importResults) {
+        for (const node of nodes) {
+          tx.set(node);
+        }
       }
-
-      // Import each file as a separate token set
-      treeState.transact((tx) => {
-        tx.clear();
-        let lastIndex: null | string = null;
-        for (const fileResult of importedFiles) {
-          const nodes = fileResult.importedResult?.nodes ?? [];
-          if (nodes.length === 0) {
-            continue;
-          }
-
-          // Check if nodes already have token-set definition
-          const tokenSets = nodes.filter(
-            (node) => node.meta.nodeType === "token-set",
-          );
-          if (tokenSets.length === 0) {
-            const currentIndex = generateKeyBetween(lastIndex, null);
-            lastIndex = currentIndex;
-            // Create a new token set named after the file (without extension)
-            const fileName = fileResult.fileName
-              .replace(/\.[^/.]+$/, "")
-              .replace(/[^a-zA-Z0-9-_]/g, "-");
-            const tokenSetNode: TreeNode<SetMeta> = {
-              nodeId: crypto.randomUUID(),
-              parentId: undefined,
-              index: currentIndex,
-              meta: {
-                nodeType: "token-set",
-                name: fileName,
-              },
-            };
-            tx.set(tokenSetNode);
-            for (const node of nodes) {
-              if (node.parentId === undefined) {
-                node.parentId = tokenSetNode.nodeId;
-              }
-              tx.set(node);
-            }
-          } else {
-            for (const set of tokenSets) {
-              const currentIndex = generateKeyBetween(lastIndex, null);
-              lastIndex = currentIndex;
-              set.index = currentIndex;
-            }
-            // Nodes already have token-set structure
-            for (const node of nodes) {
-              tx.set(node);
-            }
-          }
-        }
-      });
-
-      // Close and reset
-      dialogElement?.close();
-      return;
-    }
-
-    // Single file or text paste mode (existing logic)
-    if (importedResult && importedResult.errors.length > 0) {
-      return;
-    }
-
-    // Update state
-    const nodes = importedResult?.nodes ?? [];
-    if (nodes.some((node) => node.meta.nodeType === "token-set")) {
-      treeState.transact((tx) => {
-        tx.clear();
-        for (const node of nodes) {
-          tx.set(node);
-        }
-      });
-    } else {
-      treeState.transact((tx) => {
-        tx.clear();
-        const baseSetNode: TreeNode<SetMeta> = {
-          nodeId: crypto.randomUUID(),
-          parentId: undefined,
-          index: zeroIndex,
-          meta: {
-            nodeType: "token-set",
-            name: "Base",
-          },
-        };
-        tx.set(baseSetNode);
-        for (const node of nodes) {
-          if (node.parentId === undefined) {
-            node.parentId = baseSetNode.nodeId;
-          }
-          tx.set(node);
-        }
-      });
-    }
-
-    // Close and reset
+    });
     dialogElement?.close();
   };
 
   const resetForm = () => {
-    importedContent = "";
-    importedResult = undefined;
-    importType = "unknown";
+    content = "";
+    importResults = [];
     isDragOver = false;
     inputMode = "upload";
-    importedFiles = [];
   };
 
-  const handleTextareaInput = () => {
-    isInputTouched = false;
-    validateImportedTokens(importedContent);
-  };
+  const errorGroups = $derived(
+    importResults
+      .map((source) => ({
+        name: source.name,
+        errors: source.errors,
+      }))
+      .filter((item) => item.errors.length > 0),
+  );
 
-  const readFileAsText = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        resolve(event.target?.result as string);
-      };
-      reader.onerror = () => {
-        reject(reader.error);
-      };
-      reader.readAsText(file);
-    });
-  };
+  const getFormatDisplay = () => {
+    if (importResults.length === 0) return "Unknown";
 
-  const handleMultipleFiles = async (files: File[]) => {
-    const results: FileImportResult[] = [];
-    for (const file of files) {
-      const content = await readFileAsText(file);
-      // Validate using the existing function by temporarily storing state
-      const previousImportType = importType;
-      const previousImportedResult = importedResult;
-
-      importType = "unknown";
-      importedResult = undefined;
-      validateImportedTokens(content);
-
-      results.push({
-        fileName: file.name,
-        content,
-        importType,
-        importedResult,
-      });
-
-      // Restore state for UI
-      importType = previousImportType;
-      importedResult = previousImportedResult;
+    if (importResults.length === 1) {
+      const type = importResults[0].importType;
+      if (type === "json") return "JSON (DTCG)";
+      if (type === "css") return "CSS Variables";
+      if (type === "resolver") return "JSON (Resolver 2025.10)";
+      return "Unknown";
     }
-    importedFiles = results;
-    isInputTouched = true;
+
+    return `${importResults.length} file(s) selected`;
   };
 
   const handleDrop = (event: DragEvent) => {
@@ -230,7 +191,7 @@
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      handleMultipleFiles(Array.from(files));
+      handleMultipleFiles(files);
     }
   };
 
@@ -258,7 +219,7 @@
     const input = event.target as HTMLInputElement;
     const files = input.files;
     if (files && files.length > 0) {
-      handleMultipleFiles(Array.from(files));
+      handleMultipleFiles(files);
       // Reset input so same file can be selected again
       input.value = "";
     }
@@ -296,53 +257,23 @@
     with JSON (DTCG, Resolver 2025.10) or CSS custom properties
   </p>
 
-  {#if importedFiles.length > 0}
-    <p>
-      Files: <span>{importedFiles.length} file(s) selected</span>
-    </p>
-  {:else}
-    <p>
-      Format: <span>
-        {#if importType === "json"}
-          JSON (DTCG)
-        {/if}
-        {#if importType === "css"}
-          CSS Variables
-        {/if}
-        {#if importType === "resolver"}
-          JSON (Resolver 2025.10)
-        {/if}
-        {#if importType === "unknown"}
-          Unknown
-        {/if}
-      </span>
-    </p>
+  <p>
+    Format: <span>{getFormatDisplay()}</span>
+  </p>
 
-    {#if isInputTouched && importedResult && importedResult.errors.length > 0}
+  {#if isInputTouched && errorGroups.length > 0}
+    {#each errorGroups as group}
       <p class="error-message">
-        {#each importedResult.errors as error, index}
-          {#if index > 0}
+        {#if group.name}
+          <strong>{group.name}</strong>
+        {/if}
+        {#each group.errors as error, index}
+          {#if index > 0 || group.name}
             <br />
           {/if}
           {error.message} at ${error.path}
         {/each}
       </p>
-    {/if}
-  {/if}
-
-  {#if importedFiles.length > 0 && isInputTouched}
-    {#each importedFiles as fileResult}
-      {#if fileResult.importedResult && fileResult.importedResult.errors.length > 0}
-        <p class="error-message">
-          <strong>{fileResult.fileName}</strong>
-          {#each fileResult.importedResult.errors as error, index}
-            {#if index > 0}
-              <br />
-            {/if}
-            {error.message} at ${error.path}
-          {/each}
-        </p>
-      {/if}
     {/each}
   {/if}
 
@@ -382,8 +313,7 @@
         id="new-project-text-panel"
         class="a-field"
         placeholder="Paste your JSON tokens or CSS variables here..."
-        bind:value={importedContent}
-        oninput={handleTextareaInput}
+        bind:value={() => content ?? "", handleTextareaInput}
         onblur={() => (isInputTouched = true)}
       ></textarea>
     {/if}

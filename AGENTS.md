@@ -32,6 +32,7 @@
 ## Development Guidelines
 
 - Never commit changes to git.
+- Use type instead of interfaces in typescript
 
 ## Node Version
 
