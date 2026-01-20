@@ -87,7 +87,16 @@ const getToken = (
   // look up token by nodeId
   const tokenNode = ctx.nodes.get(nodeId);
   if (tokenNode?.meta.nodeType !== "token") {
-    throw new Error(`Token node not found while resolving nodeId "${nodeId}"`);
+    const stackPath = Array.from(ctx.resolvingStack)
+      .map((id) => {
+        const node = ctx.nodes.get(id);
+        return node?.meta.nodeType === "token" ? node.meta.name : id;
+      })
+      .join(" -> ");
+    throw new Error(
+      `Token node not found while resolving nodeId "${nodeId}"` +
+        (stackPath ? ` (resolving: ${stackPath})` : ""),
+    );
   }
   return tokenNode;
 };
@@ -243,16 +252,29 @@ export const resolveTokenValue = (
       };
     case "typography": {
       const { value } = rawValue;
-      return {
-        type: "typography",
-        value: {
-          fontFamily: resolveRef(ctx, "fontFamily", value.fontFamily),
-          fontSize: resolveRef(ctx, "dimension", value.fontSize),
-          fontWeight: resolveRef(ctx, "fontWeight", value.fontWeight),
-          letterSpacing: resolveRef(ctx, "dimension", value.letterSpacing),
-          lineHeight: resolveRef(ctx, "number", value.lineHeight),
-        },
-      };
+      const tokenName =
+        node.meta.nodeType === "token" ? node.meta.name : "unknown";
+      try {
+        return {
+          type: "typography",
+          value: {
+            fontFamily: resolveRef(ctx, "fontFamily", value.fontFamily),
+            fontSize: resolveRef(ctx, "dimension", value.fontSize),
+            fontWeight: resolveRef(ctx, "fontWeight", value.fontWeight),
+            letterSpacing: resolveRef(ctx, "dimension", value.letterSpacing),
+            lineHeight: resolveRef(ctx, "number", value.lineHeight),
+          },
+        };
+      } catch (err) {
+        console.error(`Failed resolving typography token "${tokenName}":`, {
+          fontFamily: value.fontFamily,
+          fontSize: value.fontSize,
+          fontWeight: value.fontWeight,
+          letterSpacing: value.letterSpacing,
+          lineHeight: value.lineHeight,
+        });
+        throw err;
+      }
     }
     case "gradient":
       return {

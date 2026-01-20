@@ -1,0 +1,788 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "typography": {
+    "$type": "typography",
+    "text": {
+      "primary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.350}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.350}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Primary body text - 16px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Primary body text - bold variant"
+        },
+        "code": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Primary code text"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/primary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Primary prose text with oldstyle figures - 16px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/primary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/primary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Primary prose text with oldstyle figures - bold variant"
+          }
+        }
+      },
+      "secondary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.300}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.300}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Secondary body text - 14px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Secondary body text - bold variant"
+        },
+        "code": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontSize": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Secondary code text"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Secondary prose text with oldstyle figures - 14px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/secondary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/secondary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Secondary prose text with oldstyle figures - bold variant"
+          }
+        }
+      },
+      "tertiary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.250}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.250}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Tertiary body text - 12px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/tertiary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/tertiary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/tertiary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/tertiary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Tertiary body text - bold variant"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/tertiary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/tertiary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Tertiary prose text with oldstyle figures - 12px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/tertiary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/tertiary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Tertiary prose text with oldstyle figures - bold variant"
+          }
+        }
+      },
+      "italic": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "fontStyle",
+            "$value": "{typography.fontStyle.italic}"
+          }
+        },
+        "$description": "Italic text modifier"
+      },
+      "oldStyleFigure": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "figureStyle",
+            "$value": "{typography.figureStyle.oldStyleFigure}"
+          }
+        },
+        "$description": "Old style figures modifier"
+      },
+      "liningFigures": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "figureStyle",
+            "$value": "{typography.figureStyle.liningFigures}"
+          }
+        },
+        "$description": "Lining figures modifier"
+      },
+      "superscript": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "fontPosition",
+            "$value": "{typography.fontPosition.superscript}"
+          }
+        },
+        "$description": "Superscript modifier"
+      },
+      "subscript": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "fontPosition",
+            "$value": "{typography.fontPosition.subscript}"
+          }
+        },
+        "$description": "Subscript modifier"
+      },
+      "underline": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "textDecoration",
+            "$value": "{typography.textDecoration.underline}"
+          }
+        },
+        "$description": "Underline text modifier"
+      },
+      "strikethrough": {
+        "$extensions": {
+          "com.canonical.typography": {
+            "$type": "textDecoration",
+            "$value": "{typography.textDecoration.strikethrough}"
+          }
+        },
+        "$description": "Strikethrough text modifier"
+      },
+      "smallcaps": {
+        "$description": "Small caps text modifier with wide letter spacing",
+        "letterCase": {
+          "$extensions": {
+            "com.canonical.typography": {
+              "$type": "letterCase",
+              "$value": "{typography.letterCase.smallcaps}"
+            }
+          }
+        },
+        "letterSpacing": {
+          "$type": "dimension",
+          "$value": "{dimension.letterSpacing.wide}"
+        },
+        "figureStyle": {
+          "$extensions": {
+            "com.canonical.typography": {
+              "$type": "figureStyle",
+              "$value": "{typography.figureStyle.oldStyleFigure}"
+            }
+          }
+        }
+      }
+    },
+    "heading": {
+      "1": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.700}",
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": "{number.lineHeight.700}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 1 - 42px medium"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/1/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/1/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.bold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/1/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/1/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/1/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/1/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 1 - bold variant"
+        }
+      },
+      "2": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.700}",
+            "fontWeight": "{typography.weight.light}",
+            "lineHeight": "{number.lineHeight.700}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 2 - 42px light"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/2/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/2/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/2/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/2/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/2/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/2/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 2 - bold variant"
+        }
+      },
+      "3": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.500}",
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": "{number.lineHeight.500}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 3 - 24px medium"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/3/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/3/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.bold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/3/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/3/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/3/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/3/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 3 - bold variant"
+        }
+      },
+      "4": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.500}",
+            "fontWeight": "{typography.weight.light}",
+            "lineHeight": "{number.lineHeight.500}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 4 - 24px light"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/4/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/4/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/4/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/4/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/4/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/4/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 4 - bold variant"
+        }
+      },
+      "5": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.350}",
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": "{number.lineHeight.350}",
+            "letterSpacing": "{dimension.letterSpacing.wide}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.smallcaps}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 5 - 16px semibold small caps"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/5/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/5/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.extraBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/5/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/5/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/5/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/5/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 5 - bold variant"
+        }
+      },
+      "6": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.350}",
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": "{number.lineHeight.350}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 6 - 16px semibold"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/6/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/6/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.extraBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/6/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/6/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/6/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/6/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 6 - bold variant"
+        }
+      }
+    }
+  }
+}

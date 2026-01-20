@@ -1,9 +1,15 @@
 import { prettifyError } from "zod";
 import { generateKeyBetween } from "fractional-indexing";
+import $RefParser from "@apidevtools/json-schema-ref-parser";
 import {
-  resolverDocumentSchema,
+  resolvedResolverDocumentSchema,
   type ResolverDocument,
-  type ResolverSet,
+  type ResolverSource,
+  type SourceItem,
+  type RefObject,
+  type ResolvedResolverDocument,
+  type ResolvedResolverSet,
+  type ResolvedResolverModifier,
 } from "./dtcg.schema";
 import {
   serializeDesignTokens,
@@ -23,6 +29,26 @@ import type { TreeNode } from "./store";
 type ParseResult = {
   nodes: TreeNode<TreeNodeMeta>[];
   errors: Array<{ path: string; message: string }>;
+};
+
+// Type for file loader function - takes a path relative to resolver, returns file content
+export type FileLoader = (
+  path: string,
+) => Promise<Record<string, unknown>> | Record<string, unknown>;
+
+// Options for resolving $ref references
+export type ResolveOptions =
+  | { baseUrl: string } // Fetch files relative to this URL
+  | { fileLoader: FileLoader }; // Use custom loader (e.g., for uploaded files)
+
+// Check if an object is a $ref object
+export const isRefObject = (obj: unknown): obj is RefObject => {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "$ref" in obj &&
+    typeof (obj as RefObject).$ref === "string"
+  );
 };
 
 // Helper function to deep merge sources respecting path-based order
@@ -77,15 +103,157 @@ export const isResolverFormat = (obj: unknown): boolean => {
   return o.version === "2025.10" && Array.isArray(o.resolutionOrder);
 };
 
-// Parse resolver document containing sets and modifiers in resolutionOrder
+/**
+ * Resolves all $ref references in a resolver document.
+ * - External file references (e.g., "global/primitive/color.tokens.json") are loaded via fetch or fileLoader
+ * - Internal document references (e.g., "#/sets/primitive") are resolved within the document
+ *
+ * @param resolverDoc - The resolver document with unresolved $ref objects
+ * @param options - Either { baseUrl } to fetch files, or { fileLoader } for custom loading
+ * @returns Fully resolved resolver document ready for parseTokenResolver
+ */
+export const resolveResolverRefs = async (
+  resolverDoc: ResolverDocument,
+  options: ResolveOptions,
+): Promise<ResolvedResolverDocument> => {
+  // Create the file loader based on options
+  const loadFile = async (path: string): Promise<Record<string, unknown>> => {
+    if ("baseUrl" in options) {
+      // Construct URL - handle both absolute and relative base URLs
+      const base = options.baseUrl.startsWith("http")
+        ? options.baseUrl
+        : new URL(options.baseUrl, window.location.origin).href;
+      const url = new URL(path, base).href;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${url}: ${response.statusText}`);
+      }
+      return response.json();
+    } else {
+      return options.fileLoader(path);
+    }
+  };
+
+  // Resolve a sources array - replace $ref objects with loaded file contents
+  const resolveSources = async (
+    sources: SourceItem[],
+  ): Promise<ResolverSource[]> => {
+    const resolved: ResolverSource[] = [];
+
+    for (const source of sources) {
+      if (isRefObject(source)) {
+        const ref = source.$ref;
+        // External file reference (doesn't start with #)
+        if (!ref.startsWith("#")) {
+          const content = await loadFile(ref);
+          resolved.push(content as ResolverSource);
+        }
+      } else {
+        // Inline tokens - pass through
+        resolved.push(source);
+      }
+    }
+
+    return resolved;
+  };
+
+  // Build the resolved resolutionOrder array
+  const resolvedResolutionOrder: (
+    | ResolvedResolverSet
+    | ResolvedResolverModifier
+  )[] = [];
+
+  for (const item of resolverDoc.resolutionOrder) {
+    if (isRefObject(item)) {
+      const ref = item.$ref;
+
+      // Internal reference to root-level sets
+      if (ref.startsWith("#/sets/")) {
+        const setName = ref.replace("#/sets/", "");
+        const set = resolverDoc.sets?.[setName];
+        if (set) {
+          const resolvedSources = await resolveSources(set.sources);
+          resolvedResolutionOrder.push({
+            type: "set",
+            name: setName,
+            description: set.description,
+            $extensions: set.$extensions,
+            sources: resolvedSources,
+          });
+        }
+      }
+
+      // Internal reference to root-level modifiers
+      if (ref.startsWith("#/modifiers/")) {
+        const modifierName = ref.replace("#/modifiers/", "");
+        const modifier = resolverDoc.modifiers?.[modifierName];
+        if (modifier) {
+          const resolvedContexts: Record<string, ResolverSource[]> = {};
+          for (const [contextName, sources] of Object.entries(
+            modifier.contexts,
+          )) {
+            resolvedContexts[contextName] = await resolveSources(sources);
+          }
+          resolvedResolutionOrder.push({
+            type: "modifier",
+            name: modifierName,
+            description: modifier.description,
+            default: modifier.default,
+            $extensions: modifier.$extensions,
+            contexts: resolvedContexts,
+          });
+        }
+      }
+    } else if (item.type === "set") {
+      // Inline set - resolve its sources
+      const resolvedSources = await resolveSources(item.sources);
+      resolvedResolutionOrder.push({
+        type: "set",
+        name: item.name,
+        description: item.description,
+        $extensions: item.$extensions,
+        sources: resolvedSources,
+      });
+    } else if (item.type === "modifier") {
+      // Inline modifier - resolve its context sources
+      const resolvedContexts: Record<string, ResolverSource[]> = {};
+      for (const [contextName, sources] of Object.entries(item.contexts)) {
+        resolvedContexts[contextName] = await resolveSources(sources);
+      }
+      resolvedResolutionOrder.push({
+        type: "modifier",
+        name: item.name,
+        description: item.description,
+        default: item.default,
+        $extensions: item.$extensions,
+        contexts: resolvedContexts,
+      });
+    }
+  }
+
+  return {
+    $schema: resolverDoc.$schema,
+    version: resolverDoc.version,
+    name: resolverDoc.name,
+    description: resolverDoc.description,
+    resolutionOrder: resolvedResolutionOrder,
+  };
+};
+
+// Parse a resolved resolver document containing sets and modifiers in resolutionOrder
 // Creates separate root token-sets for each Set item
 // Only processes Set items; Modifier items are silently skipped
 // Supports cross-set token aliases through two-phase resolution:
 // Phase 1: Extract intermediary nodes from all sets (collect what tokens/groups exist)
 // Phase 2: Resolve with all accumulated nodes available (enables cross-set references)
-export const parseTokenResolver = (input: unknown): ParseResult => {
-  // Validate resolver document structure
-  const validation = resolverDocumentSchema.safeParse(input);
+//
+// Note: Input must be a ResolvedResolverDocument (all $refs already resolved at file level)
+// Internal JSON Pointer $refs (e.g., #/path/to/value) inside token $value objects are resolved here
+export const parseTokenResolver = async (
+  input: unknown,
+): Promise<ParseResult> => {
+  // Validate resolved resolver document structure
+  const validation = resolvedResolverDocumentSchema.safeParse(input);
 
   if (!validation.success) {
     const errorMessage = prettifyError(validation.error);
@@ -95,7 +263,7 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
     };
   }
 
-  const resolverDoc: ResolverDocument = validation.data;
+  const resolverDoc: ResolvedResolverDocument = validation.data;
   const allNodes: Array<any> = [];
   const collectedErrors: Array<{ path: string; message: string }> = [];
   const lastChildIndexPerParent = new Map<string | undefined, string>();
@@ -115,7 +283,19 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
       continue;
     }
     const mergedSetSources = mergeSources(item.sources);
-    const { nodes, errors } = extractIntermediaryNodes(mergedSetSources);
+    // Resolve internal JSON Pointer $refs (e.g., #/typography/text/primary/$root/$value/fontFamily)
+    // These are used in composite token values like typography to reference other values in the same document
+    let dereferencedSources;
+    try {
+      dereferencedSources = await $RefParser.dereference(
+        structuredClone(mergedSetSources),
+        { mutateInputSchema: true },
+      );
+    } catch (err) {
+      console.error(`Failed to dereference set "${item.name}":`, err);
+      dereferencedSources = mergedSetSources;
+    }
+    const { nodes, errors } = extractIntermediaryNodes(dereferencedSources);
     intermediaryNodesBySet.set(item.name, nodes);
     for (const [path, node] of nodes) {
       allIntermediaryNodes.set(path, node);
@@ -183,14 +363,14 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
 };
 
 /**
- * Serializes tree nodes back into a ResolverDocument following the Design Tokens Resolver Module 2025.10 specification.
+ * Serializes tree nodes back into a ResolvedResolverDocument following the Design Tokens Resolver Module 2025.10 specification.
  *
  * This function converts a tree structure (as produced by parseTokenResolver) back into a valid resolver document.
  * Each token-set node at the root level becomes a Set in the resolutionOrder array.
  *
  * @param nodes - Map of all tree nodes (nodeId → TreeNode)
  * @param metadata - Optional document-level metadata (name and description)
- * @returns A valid ResolverDocument with sets organized in resolutionOrder
+ * @returns A valid ResolvedResolverDocument with sets organized in resolutionOrder
  *
  * @example
  * ```typescript
@@ -204,7 +384,7 @@ export const parseTokenResolver = (input: unknown): ParseResult => {
 export const serializeTokenResolver = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
   metadata?: { name?: string; description?: string },
-): ResolverDocument => {
+): ResolvedResolverDocument => {
   const setNodes: Array<TreeNode<SetMeta>> = [];
   for (const node of nodes.values()) {
     if (node.parentId === undefined && node.meta.nodeType === "token-set") {
@@ -214,7 +394,7 @@ export const serializeTokenResolver = (
 
   // Sort by index to maintain document order
   setNodes.sort(compareTreeNodes);
-  const resolutionOrder: ResolverSet[] = [];
+  const resolutionOrder: ResolvedResolverSet[] = [];
   for (const setNode of setNodes) {
     // Create a filtered map containing only this set's descendants (excluding the set node itself)
     // serializeDesignTokens expects token and group nodes, not token-set nodes

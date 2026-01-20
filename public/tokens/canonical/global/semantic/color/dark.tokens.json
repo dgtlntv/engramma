@@ -1,0 +1,2338 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "color": {
+    "$type": "color",
+    "backdrop": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          { "$ref": "#/color/palette/black/$value/components/0" },
+          { "$ref": "#/color/palette/black/$value/components/1" },
+          { "$ref": "#/number/opacity/backdrop/$value" }
+        ],
+        "alpha": 1
+      },
+      "$description": "Backdrop color for modal overlays"
+    },
+    "background": {
+      "$root": {
+        "$value": "{color.palette.gray.990}",
+        "$description": "Primary background color"
+      },
+      "layer2": {
+        "$value": "{color.palette.gray.960}",
+        "$description": "Secondary layer background color"
+      },
+      "layer3": {
+        "$value": "{color.palette.gray.990}",
+        "$description": "Tertiary layer background color"
+      },
+      "logo": {
+        "$value": "{color.brand.primary}",
+        "$description": "Background color for logo containers"
+      },
+      "container": {
+        "$value": "{color.palette.gray.930}",
+        "$description": "Container background color"
+      }
+    },
+    "border": {
+      "$root": {
+        "$value": "{color.palette.gray.520}",
+        "$description": "Default border color"
+      },
+      "disabled": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+            { "$ref": "#/color/palette/gray/520/$value/components/1" },
+            { "$ref": "#/color/palette/gray/520/$value/components/2" }
+          ],
+          "alpha": 1
+        },
+        "$description": "Disabled border color"
+      },
+      "information": {
+        "$root": {
+          "$value": "{color.palette.blue.520}",
+          "$description": "Information border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/blue/520/$value/components/1" },
+              { "$ref": "#/color/palette/blue/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled information border color"
+        }
+      },
+      "warning": {
+        "$root": {
+          "$value": "{color.palette.yellow.520}",
+          "$description": "Warning border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/yellow/520/$value/components/1" },
+              { "$ref": "#/color/palette/yellow/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled warning border color"
+        }
+      },
+      "error": {
+        "$root": {
+          "$value": "{color.palette.red.520}",
+          "$description": "Error border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/red/520/$value/components/1" },
+              { "$ref": "#/color/palette/red/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled error border color"
+        }
+      },
+      "success": {
+        "$root": {
+          "$value": "{color.palette.green.520}",
+          "$description": "Success border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/green/520/$value/components/1" },
+              { "$ref": "#/color/palette/green/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled success border color"
+        }
+      },
+      "branded": {
+        "$root": {
+          "$value": "{color.palette.orange.520}",
+          "$description": "Branded border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/orange/520/$value/components/1" },
+              { "$ref": "#/color/palette/orange/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled branded border color"
+        }
+      },
+      "muted": {
+        "$root": {
+          "$value": "{color.palette.gray.820}",
+          "$description": "Muted border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/border/muted/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/color/palette/gray/820/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled muted border color"
+        }
+      },
+      "highlighted": {
+        "$root": {
+          "$value": "{color.palette.white}",
+          "$description": "Highlighted border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/border/highlighted/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/white/$value/components/1" },
+              { "$ref": "#/color/palette/white/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled highlighted border color"
+        }
+      },
+      "tag": {
+        "$root": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/color/palette/gray/520/$value/components/0" },
+              { "$ref": "#/color/palette/gray/520/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Tag border color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/border/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/gray/520/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled tag border color"
+        }
+      }
+    },
+    "brand": {
+      "primary": {
+        "$value": "{color.palette.orange.398}",
+        "$description": "Primary brand color"
+      }
+    },
+    "focusRing": {
+      "$root": {
+        "$value": "{color.palette.blue.520}",
+        "$description": "Focus ring color"
+      },
+      "warning": {
+        "$value": "{color.border.warning.$root}",
+        "$description": "Warning focus ring color"
+      },
+      "error": {
+        "$value": "{color.border.error.$root}",
+        "$description": "Error focus ring color"
+      },
+      "success": {
+        "$value": "{color.border.success.$root}",
+        "$description": "Success focus ring color"
+      }
+    },
+    "foreground": {
+      "ghost": {
+        "$root": {
+          "$value": "{color.background.$root}",
+          "$description": "Ghost foreground color"
+        },
+        "hover": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/ghost/hover/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/990/$value/components/1" },
+              { "$ref": "#/color/palette/gray/990/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Ghost foreground hover color"
+        },
+        "active": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/ghost/active/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/990/$value/components/1" },
+              { "$ref": "#/color/palette/gray/990/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Ghost foreground active color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/ghost/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/990/$value/components/1" },
+              { "$ref": "#/color/palette/gray/990/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Ghost foreground disabled color"
+        },
+        "layer2": {
+          "$root": {
+            "$value": "{color.background.layer2}",
+            "$description": "Ghost foreground layer 2 color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/hover/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 2 hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/active/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 2 active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/disabled/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 2 disabled color"
+          }
+        },
+        "layer3": {
+          "$root": {
+            "$value": "{color.background.layer3}",
+            "$description": "Ghost foreground layer 3 color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/hover/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 3 hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/active/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 3 active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/ghost/disabled/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Ghost foreground layer 3 disabled color"
+          }
+        }
+      },
+      "navigation": {
+        "primary": {
+          "$root": {
+            "$value": "{color.background.$root}",
+            "$description": "Primary navigation foreground color"
+          },
+          "layer2": {
+            "$value": "{color.background.layer2}",
+            "$description": "Primary navigation foreground layer 2 color"
+          },
+          "layer3": {
+            "$value": "{color.background.layer3}",
+            "$description": "Primary navigation foreground layer 3 color"
+          }
+        },
+        "secondary": {
+          "$value": "{color.background.container}",
+          "$description": "Secondary navigation foreground color"
+        }
+      },
+      "input": {
+        "$root": {
+          "$value": "{color.palette.gray.960}",
+          "$description": "Input foreground color"
+        },
+        "hover": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/input/hover/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/960/$value/components/1" },
+              { "$ref": "#/color/palette/gray/960/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Input foreground hover color"
+        },
+        "active": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/input/active/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/960/$value/components/1" },
+              { "$ref": "#/color/palette/gray/960/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Input foreground active color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/input/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/960/$value/components/1" },
+              { "$ref": "#/color/palette/gray/960/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Input foreground disabled color"
+        },
+        "layer2": {
+          "$root": {
+            "$value": "{color.palette.gray.990}",
+            "$description": "Input foreground layer 2 color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/hover/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 2 hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/active/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 2 active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/disabled/onLayer2/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/990/$value/components/1" },
+                { "$ref": "#/color/palette/gray/990/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 2 disabled color"
+          }
+        },
+        "layer3": {
+          "$root": {
+            "$value": "{color.palette.gray.960}",
+            "$description": "Input foreground layer 3 color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/hover/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 3 hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/active/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 3 active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/disabled/onLayer3/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/960/$value/components/1" },
+                { "$ref": "#/color/palette/gray/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Input foreground layer 3 disabled color"
+          }
+        },
+        "warning": {
+          "$root": {
+            "$value": "{color.palette.yellow.960}",
+            "$description": "Warning input foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning input foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning input foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning input foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.palette.yellow.930}",
+              "$description": "Warning input foreground layer 2 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 2 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 2 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.palette.yellow.960}",
+              "$description": "Warning input foreground layer 3 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 3 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 3 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/1" },
+                  { "$ref": "#/color/palette/yellow/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Warning input foreground layer 3 disabled color"
+            }
+          }
+        },
+        "error": {
+          "$root": {
+            "$value": "{color.palette.red.960}",
+            "$description": "Error input foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/960/$value/components/1" },
+                { "$ref": "#/color/palette/red/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error input foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/960/$value/components/1" },
+                { "$ref": "#/color/palette/red/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error input foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/960/$value/components/1" },
+                { "$ref": "#/color/palette/red/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error input foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.palette.red.930}",
+              "$description": "Error input foreground layer 2 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/930/$value/components/1" },
+                  { "$ref": "#/color/palette/red/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 2 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/930/$value/components/1" },
+                  { "$ref": "#/color/palette/red/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 2 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/930/$value/components/1" },
+                  { "$ref": "#/color/palette/red/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.palette.red.960}",
+              "$description": "Error input foreground layer 3 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/960/$value/components/1" },
+                  { "$ref": "#/color/palette/red/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 3 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/960/$value/components/1" },
+                  { "$ref": "#/color/palette/red/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 3 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/red/960/$value/components/1" },
+                  { "$ref": "#/color/palette/red/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Error input foreground layer 3 disabled color"
+            }
+          }
+        },
+        "success": {
+          "$root": {
+            "$value": "{color.palette.green.960}",
+            "$description": "Success input foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/960/$value/components/1" },
+                { "$ref": "#/color/palette/green/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success input foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/960/$value/components/1" },
+                { "$ref": "#/color/palette/green/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success input foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/input/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/960/$value/components/1" },
+                { "$ref": "#/color/palette/green/960/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success input foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.palette.green.930}",
+              "$description": "Success input foreground layer 2 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/930/$value/components/1" },
+                  { "$ref": "#/color/palette/green/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 2 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/930/$value/components/1" },
+                  { "$ref": "#/color/palette/green/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 2 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer2/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/930/$value/components/1" },
+                  { "$ref": "#/color/palette/green/930/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.palette.green.960}",
+              "$description": "Success input foreground layer 3 color"
+            },
+            "hover": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/hover/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/960/$value/components/1" },
+                  { "$ref": "#/color/palette/green/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 3 hover color"
+            },
+            "active": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/active/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/960/$value/components/1" },
+                  { "$ref": "#/color/palette/green/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 3 active color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/input/disabled/onLayer3/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/green/960/$value/components/1" },
+                  { "$ref": "#/color/palette/green/960/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Success input foreground layer 3 disabled color"
+            }
+          }
+        }
+      },
+      "primary": {
+        "$root": {
+          "$value": "{color.palette.gray.520}",
+          "$description": "Primary foreground color"
+        },
+        "hover": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/primary/hover/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/520/$value/components/1" },
+              { "$ref": "#/color/palette/gray/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Primary foreground hover color"
+        },
+        "active": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/primary/active/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/520/$value/components/1" },
+              { "$ref": "#/color/palette/gray/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Primary foreground active color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/520/$value/components/1" },
+              { "$ref": "#/color/palette/gray/520/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Primary foreground disabled color"
+        },
+        "destructive": {
+          "$root": {
+            "$value": "{color.palette.red.520}",
+            "$description": "Destructive primary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/520/$value/components/1" },
+                { "$ref": "#/color/palette/red/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Destructive primary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/520/$value/components/1" },
+                { "$ref": "#/color/palette/red/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Destructive primary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/520/$value/components/1" },
+                { "$ref": "#/color/palette/red/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Destructive primary foreground disabled color"
+          }
+        },
+        "constructive": {
+          "$root": {
+            "$value": "{color.palette.green.520}",
+            "$description": "Constructive primary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/520/$value/components/1" },
+                { "$ref": "#/color/palette/green/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Constructive primary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/520/$value/components/1" },
+                { "$ref": "#/color/palette/green/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Constructive primary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/520/$value/components/1" },
+                { "$ref": "#/color/palette/green/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Constructive primary foreground disabled color"
+          }
+        },
+        "branded": {
+          "$root": {
+            "$value": "{color.palette.orange.520}",
+            "$description": "Branded primary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/520/$value/components/1" },
+                { "$ref": "#/color/palette/orange/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded primary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/520/$value/components/1" },
+                { "$ref": "#/color/palette/orange/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded primary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/520/$value/components/1" },
+                { "$ref": "#/color/palette/orange/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded primary foreground disabled color"
+          }
+        }
+      },
+      "secondary": {
+        "$root": {
+          "$value": "{color.palette.gray.820}",
+          "$description": "Secondary foreground color"
+        },
+        "hover": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/color/palette/gray/820/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Secondary foreground hover color"
+        },
+        "active": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/color/palette/gray/820/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Secondary foreground active color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/color/palette/gray/820/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Secondary foreground disabled color"
+        },
+        "information": {
+          "$root": {
+            "$value": "{color.palette.blue.820}",
+            "$description": "Information secondary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/820/$value/components/1" },
+                { "$ref": "#/color/palette/blue/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Information secondary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/820/$value/components/1" },
+                { "$ref": "#/color/palette/blue/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Information secondary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/820/$value/components/1" },
+                { "$ref": "#/color/palette/blue/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Information secondary foreground disabled color"
+          }
+        },
+        "warning": {
+          "$root": {
+            "$value": "{color.palette.yellow.820}",
+            "$description": "Warning secondary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/820/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning secondary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/820/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning secondary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/820/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Warning secondary foreground disabled color"
+          }
+        },
+        "error": {
+          "$root": {
+            "$value": "{color.palette.red.820}",
+            "$description": "Error secondary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/820/$value/components/1" },
+                { "$ref": "#/color/palette/red/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error secondary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/820/$value/components/1" },
+                { "$ref": "#/color/palette/red/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error secondary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/820/$value/components/1" },
+                { "$ref": "#/color/palette/red/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Error secondary foreground disabled color"
+          }
+        },
+        "success": {
+          "$root": {
+            "$value": "{color.palette.green.820}",
+            "$description": "Success secondary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/820/$value/components/1" },
+                { "$ref": "#/color/palette/green/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success secondary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/820/$value/components/1" },
+                { "$ref": "#/color/palette/green/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success secondary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/820/$value/components/1" },
+                { "$ref": "#/color/palette/green/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Success secondary foreground disabled color"
+          }
+        },
+        "branded": {
+          "$root": {
+            "$value": "{color.palette.orange.820}",
+            "$description": "Branded secondary foreground color"
+          },
+          "hover": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/820/$value/components/1" },
+                { "$ref": "#/color/palette/orange/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded secondary foreground hover color"
+          },
+          "active": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/820/$value/components/1" },
+                { "$ref": "#/color/palette/orange/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded secondary foreground active color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/orange/820/$value/components/1" },
+                { "$ref": "#/color/palette/orange/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Branded secondary foreground disabled color"
+          }
+        }
+      },
+      "tag": {
+        "$root": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/color/palette/gray/820/$value/components/0" },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Tag foreground color"
+        },
+        "hover": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/hover/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Tag foreground hover color"
+        },
+        "active": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/active/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Tag foreground active color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/foreground/secondary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Tag foreground disabled color"
+        }
+      },
+      "slider": {
+        "progress": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.selected.$root}",
+            "$description": "Slider progress foreground color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/520/$value/components/1" },
+                { "$ref": "#/color/palette/blue/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Slider progress foreground disabled color"
+          }
+        },
+        "track": {
+          "$root": {
+            "$value": "{color.palette.gray.820}",
+            "$description": "Slider track foreground color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/border/muted/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/820/$value/components/1" },
+                { "$ref": "#/color/palette/gray/820/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Slider track foreground disabled color"
+          },
+          "endstop": {
+            "$root": {
+              "$value": "{color.palette.gray.520}",
+              "$description": "Slider track endstop foreground color"
+            },
+            "disabled": {
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [
+                  {
+                    "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                  },
+                  { "$ref": "#/color/palette/gray/520/$value/components/1" },
+                  { "$ref": "#/color/palette/gray/520/$value/components/2" }
+                ],
+                "alpha": 1
+              },
+              "$description": "Slider track endstop foreground disabled color"
+            }
+          }
+        }
+      },
+      "checkbox": {
+        "checkmark": {
+          "$root": {
+            "$value": "{color.foreground.ghost.$root}",
+            "$description": "Checkbox checkmark foreground color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.ghost.disabled}",
+            "$description": "Checkbox checkmark foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.foreground.ghost.layer2.$root}",
+              "$description": "Checkbox checkmark foreground layer 2 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.ghost.layer2.disabled}",
+              "$description": "Checkbox checkmark foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.foreground.ghost.layer3.$root}",
+              "$description": "Checkbox checkmark foreground layer 3 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.ghost.layer3.disabled}",
+              "$description": "Checkbox checkmark foreground layer 3 disabled color"
+            }
+          }
+        },
+        "unselected": {
+          "$root": {
+            "$value": "{color.foreground.ghost.$root}",
+            "$description": "Checkbox unselected foreground color"
+          },
+          "hover": {
+            "$value": "{color.foreground.ghost.hover}",
+            "$description": "Checkbox unselected foreground hover color"
+          },
+          "active": {
+            "$value": "{color.foreground.ghost.active}",
+            "$description": "Checkbox unselected foreground active color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.ghost.disabled}",
+            "$description": "Checkbox unselected foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.foreground.ghost.layer2.$root}",
+              "$description": "Checkbox unselected foreground layer 2 color"
+            },
+            "hover": {
+              "$value": "{color.foreground.ghost.layer2.hover}",
+              "$description": "Checkbox unselected foreground layer 2 hover color"
+            },
+            "active": {
+              "$value": "{color.foreground.ghost.layer2.active}",
+              "$description": "Checkbox unselected foreground layer 2 active color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.ghost.layer2.disabled}",
+              "$description": "Checkbox unselected foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.foreground.ghost.layer3.$root}",
+              "$description": "Checkbox unselected foreground layer 3 color"
+            },
+            "hover": {
+              "$value": "{color.foreground.ghost.layer3.hover}",
+              "$description": "Checkbox unselected foreground layer 3 hover color"
+            },
+            "active": {
+              "$value": "{color.foreground.ghost.layer3.active}",
+              "$description": "Checkbox unselected foreground layer 3 active color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.ghost.layer3.disabled}",
+              "$description": "Checkbox unselected foreground layer 3 disabled color"
+            }
+          }
+        },
+        "selected": {
+          "$root": {
+            "$value": "{color.palette.blue.520}",
+            "$description": "Checkbox selected foreground color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/520/$value/components/1" },
+                { "$ref": "#/color/palette/blue/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Checkbox selected foreground disabled color"
+          }
+        }
+      },
+      "radio": {
+        "checkmark": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.checkmark.$root}",
+            "$description": "Radio checkmark foreground color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.checkbox.checkmark.disabled}",
+            "$description": "Radio checkmark foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.checkmark.layer2.$root}",
+              "$description": "Radio checkmark foreground layer 2 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.checkmark.layer2.disabled}",
+              "$description": "Radio checkmark foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.checkmark.layer3.$root}",
+              "$description": "Radio checkmark foreground layer 3 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.checkmark.layer3.disabled}",
+              "$description": "Radio checkmark foreground layer 3 disabled color"
+            }
+          }
+        },
+        "unselected": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.unselected.$root}",
+            "$description": "Radio unselected foreground color"
+          },
+          "hover": {
+            "$value": "{color.foreground.checkbox.unselected.hover}",
+            "$description": "Radio unselected foreground hover color"
+          },
+          "active": {
+            "$value": "{color.foreground.checkbox.unselected.active}",
+            "$description": "Radio unselected foreground active color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.checkbox.unselected.disabled}",
+            "$description": "Radio unselected foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.unselected.layer2.$root}",
+              "$description": "Radio unselected foreground layer 2 color"
+            },
+            "hover": {
+              "$value": "{color.foreground.checkbox.unselected.layer2.hover}",
+              "$description": "Radio unselected foreground layer 2 hover color"
+            },
+            "active": {
+              "$value": "{color.foreground.checkbox.unselected.layer2.active}",
+              "$description": "Radio unselected foreground layer 2 active color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.unselected.layer2.disabled}",
+              "$description": "Radio unselected foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.unselected.layer3.$root}",
+              "$description": "Radio unselected foreground layer 3 color"
+            },
+            "hover": {
+              "$value": "{color.foreground.checkbox.unselected.layer3.hover}",
+              "$description": "Radio unselected foreground layer 3 hover color"
+            },
+            "active": {
+              "$value": "{color.foreground.checkbox.unselected.layer3.active}",
+              "$description": "Radio unselected foreground layer 3 active color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.unselected.layer3.disabled}",
+              "$description": "Radio unselected foreground layer 3 disabled color"
+            }
+          }
+        },
+        "selected": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.selected.$root}",
+            "$description": "Radio selected foreground color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.checkbox.selected.disabled}",
+            "$description": "Radio selected foreground disabled color"
+          }
+        }
+      },
+      "switch": {
+        "knob": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.checkmark.$root}",
+            "$description": "Switch knob foreground color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.checkbox.checkmark.disabled}",
+            "$description": "Switch knob foreground disabled color"
+          },
+          "layer2": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.checkmark.layer2.$root}",
+              "$description": "Switch knob foreground layer 2 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.checkmark.layer2.disabled}",
+              "$description": "Switch knob foreground layer 2 disabled color"
+            }
+          },
+          "layer3": {
+            "$root": {
+              "$value": "{color.foreground.checkbox.checkmark.layer3.$root}",
+              "$description": "Switch knob foreground layer 3 color"
+            },
+            "disabled": {
+              "$value": "{color.foreground.checkbox.checkmark.layer3.disabled}",
+              "$description": "Switch knob foreground layer 3 disabled color"
+            }
+          }
+        },
+        "selected": {
+          "$root": {
+            "$value": "{color.foreground.checkbox.selected.$root}",
+            "$description": "Switch selected foreground color"
+          },
+          "disabled": {
+            "$value": "{color.foreground.checkbox.selected.disabled}",
+            "$description": "Switch selected foreground disabled color"
+          }
+        },
+        "unselected": {
+          "$root": {
+            "$value": "{color.palette.gray.520}",
+            "$description": "Switch unselected foreground color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/foreground/primary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/gray/520/$value/components/1" },
+                { "$ref": "#/color/palette/gray/520/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Switch unselected foreground disabled color"
+          }
+        }
+      }
+    },
+    "icon": {
+      "$root": {
+        "$value": "{color.text.$root}",
+        "$description": "Default icon color"
+      },
+      "disabled": {
+        "$value": "{color.text.disabled}",
+        "$description": "Disabled icon color"
+      },
+      "information": {
+        "$root": {
+          "$value": "{color.text.information.$root}",
+          "$description": "Information icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.information.disabled}",
+          "$description": "Disabled information icon color"
+        }
+      },
+      "warning": {
+        "$root": {
+          "$value": "{color.text.warning.$root}",
+          "$description": "Warning icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.warning.disabled}",
+          "$description": "Disabled warning icon color"
+        }
+      },
+      "error": {
+        "$root": {
+          "$value": "{color.text.error.$root}",
+          "$description": "Error icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.error.disabled}",
+          "$description": "Disabled error icon color"
+        }
+      },
+      "success": {
+        "$root": {
+          "$value": "{color.text.success.$root}",
+          "$description": "Success icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.success.disabled}",
+          "$description": "Disabled success icon color"
+        }
+      },
+      "destructive": {
+        "$root": {
+          "$value": "{color.text.destructive.$root}",
+          "$description": "Destructive icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.destructive.disabled}",
+          "$description": "Disabled destructive icon color"
+        }
+      },
+      "constructive": {
+        "$root": {
+          "$value": "{color.text.constructive.$root}",
+          "$description": "Constructive icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.constructive.disabled}",
+          "$description": "Disabled constructive icon color"
+        }
+      },
+      "muted": {
+        "$root": {
+          "$value": "{color.text.muted.$root}",
+          "$description": "Muted icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.muted.disabled}",
+          "$description": "Disabled muted icon color"
+        }
+      },
+      "link": {
+        "$root": {
+          "$value": "{color.text.link.$root}",
+          "$description": "Link icon color"
+        },
+        "disabled": {
+          "$value": "{color.text.link.disabled}",
+          "$description": "Disabled link icon color"
+        },
+        "visited": {
+          "$root": {
+            "$value": "{color.text.link.visited.$root}",
+            "$description": "Visited link icon color"
+          },
+          "disabled": {
+            "$value": "{color.text.link.visited.disabled}",
+            "$description": "Disabled visited link icon color"
+          }
+        }
+      },
+      "logo": {
+        "$value": "{color.palette.white}",
+        "$description": "Logo icon color"
+      },
+      "onForegroundPrimary": {
+        "$root": {
+          "$value": "{color.text.onForegroundPrimary.$root}",
+          "$description": "Icon color on primary foreground"
+        },
+        "disabled": {
+          "$value": "{color.text.onForegroundPrimary.disabled}",
+          "$description": "Disabled icon color on primary foreground"
+        }
+      },
+      "onForegroundSecondary": {
+        "$root": {
+          "$value": "{color.text.onForegroundSecondary.$root}",
+          "$description": "Icon color on secondary foreground"
+        },
+        "disabled": {
+          "$value": "{color.text.onForegroundSecondary.disabled}",
+          "$description": "Disabled icon color on secondary foreground"
+        },
+        "information": {
+          "$root": {
+            "$value": "{color.text.onForegroundSecondary.information.$root}",
+            "$description": "Information icon color on secondary foreground"
+          },
+          "disabled": {
+            "$value": "{color.text.onForegroundSecondary.information.disabled}",
+            "$description": "Disabled information icon color on secondary foreground"
+          }
+        },
+        "warning": {
+          "$root": {
+            "$value": "{color.text.onForegroundSecondary.warning.$root}",
+            "$description": "Warning icon color on secondary foreground"
+          },
+          "disabled": {
+            "$value": "{color.text.onForegroundSecondary.warning.disabled}",
+            "$description": "Disabled warning icon color on secondary foreground"
+          }
+        },
+        "error": {
+          "$root": {
+            "$value": "{color.text.onForegroundSecondary.error.$root}",
+            "$description": "Error icon color on secondary foreground"
+          },
+          "disabled": {
+            "$value": "{color.text.onForegroundSecondary.error.disabled}",
+            "$description": "Disabled error icon color on secondary foreground"
+          }
+        },
+        "success": {
+          "$root": {
+            "$value": "{color.text.onForegroundSecondary.success.$root}",
+            "$description": "Success icon color on secondary foreground"
+          },
+          "disabled": {
+            "$value": "{color.text.onForegroundSecondary.success.disabled}",
+            "$description": "Disabled success icon color on secondary foreground"
+          }
+        }
+      }
+    },
+    "text": {
+      "$root": {
+        "$value": "{color.palette.white}",
+        "$description": "Default text color"
+      },
+      "disabled": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+            { "$ref": "#/color/palette/white/$value/components/1" },
+            { "$ref": "#/color/palette/white/$value/components/2" }
+          ],
+          "alpha": 1
+        },
+        "$description": "Disabled text color"
+      },
+      "information": {
+        "$root": {
+          "$value": "{color.palette.blue.385}",
+          "$description": "Information text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/blue/385/$value/components/1" },
+              { "$ref": "#/color/palette/blue/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled information text color"
+        }
+      },
+      "warning": {
+        "$root": {
+          "$value": "{color.palette.yellow.385}",
+          "$description": "Warning text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/yellow/385/$value/components/1" },
+              { "$ref": "#/color/palette/yellow/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled warning text color"
+        }
+      },
+      "error": {
+        "$root": {
+          "$value": "{color.palette.red.385}",
+          "$description": "Error text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/red/385/$value/components/1" },
+              { "$ref": "#/color/palette/red/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled error text color"
+        }
+      },
+      "success": {
+        "$root": {
+          "$value": "{color.palette.green.385}",
+          "$description": "Success text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/green/385/$value/components/1" },
+              { "$ref": "#/color/palette/green/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled success text color"
+        }
+      },
+      "destructive": {
+        "$root": {
+          "$value": "{color.palette.red.385}",
+          "$description": "Destructive text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/red/385/$value/components/1" },
+              { "$ref": "#/color/palette/red/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled destructive text color"
+        }
+      },
+      "constructive": {
+        "$root": {
+          "$value": "{color.palette.green.385}",
+          "$description": "Constructive text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/green/385/$value/components/1" },
+              { "$ref": "#/color/palette/green/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled constructive text color"
+        }
+      },
+      "muted": {
+        "$root": {
+          "$value": "{color.palette.gray.385}",
+          "$description": "Muted text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/text/muted/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/820/$value/components/1" },
+              { "$ref": "#/color/palette/gray/820/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled muted text color"
+        }
+      },
+      "link": {
+        "$root": {
+          "$value": "{color.palette.blue.385}",
+          "$description": "Link text color"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/number/lightness/text/link/disabled/onDark/$value" },
+              { "$ref": "#/color/palette/blue/385/$value/components/1" },
+              { "$ref": "#/color/palette/blue/385/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled link text color"
+        },
+        "visited": {
+          "$root": {
+            "$value": "{color.palette.purple.385}",
+            "$description": "Visited link text color"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/text/link/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/purple/385/$value/components/1" },
+                { "$ref": "#/color/palette/purple/385/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Disabled visited link text color"
+          }
+        }
+      },
+      "onForegroundPrimary": {
+        "$root": {
+          "$value": "{color.palette.white}",
+          "$description": "Text color on primary foreground"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/text/onForegroundPrimary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/white/$value/components/1" },
+              { "$ref": "#/color/palette/white/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled text color on primary foreground"
+        }
+      },
+      "onForegroundSecondary": {
+        "$root": {
+          "$value": "{color.palette.gray.180}",
+          "$description": "Text color on secondary foreground"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/180/$value/components/1" },
+              { "$ref": "#/color/palette/gray/180/$value/components/2" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled text color on secondary foreground"
+        },
+        "information": {
+          "$root": {
+            "$value": "{color.palette.blue.180}",
+            "$description": "Information text color on secondary foreground"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/blue/180/$value/components/1" },
+                { "$ref": "#/color/palette/blue/180/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Disabled information text color on secondary foreground"
+          }
+        },
+        "warning": {
+          "$root": {
+            "$value": "{color.palette.yellow.180}",
+            "$description": "Warning text color on secondary foreground"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/yellow/180/$value/components/1" },
+                { "$ref": "#/color/palette/yellow/180/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Disabled warning text color on secondary foreground"
+          }
+        },
+        "error": {
+          "$root": {
+            "$value": "{color.palette.red.180}",
+            "$description": "Error text color on secondary foreground"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/red/180/$value/components/1" },
+                { "$ref": "#/color/palette/red/180/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Disabled error text color on secondary foreground"
+          }
+        },
+        "success": {
+          "$root": {
+            "$value": "{color.palette.green.180}",
+            "$description": "Success text color on secondary foreground"
+          },
+          "disabled": {
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [
+                {
+                  "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+                },
+                { "$ref": "#/color/palette/green/180/$value/components/1" },
+                { "$ref": "#/color/palette/green/180/$value/components/2" }
+              ],
+              "alpha": 1
+            },
+            "$description": "Disabled success text color on secondary foreground"
+          }
+        }
+      },
+      "onTag": {
+        "$root": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              { "$ref": "#/color/palette/gray/180/$value/components/0" },
+              { "$ref": "#/color/palette/gray/180/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Text color on tags"
+        },
+        "disabled": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              {
+                "$ref": "#/number/lightness/text/onForegroundSecondary/disabled/onDark/$value"
+              },
+              { "$ref": "#/color/palette/gray/180/$value/components/1" },
+              { "$ref": "#/number/hue/tag/$value" }
+            ],
+            "alpha": 1
+          },
+          "$description": "Disabled text color on tags"
+        }
+      }
+    }
+  }
+}

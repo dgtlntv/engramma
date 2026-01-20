@@ -1,0 +1,12 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "dimension": {
+    "$type": "dimension",
+    "size": {
+      "rootFontSize": {
+        "$value": "{dimension.225}",
+        "$description": "Root font size for xLarge breakpoint - 1.125rem, 18px"
+      }
+    }
+  }
+}

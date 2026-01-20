@@ -6,9 +6,14 @@
     resolveIntermediaryNodes,
     type IntermediaryNode,
   } from "./tokens";
-  import { parseTokenResolver, isResolverFormat } from "./resolver";
+  import {
+    parseTokenResolver,
+    isResolverFormat,
+    resolveResolverRefs,
+  } from "./resolver";
   import { parseCssVariables } from "./css-variables";
   import type { TreeNode } from "./store";
+  import type { ResolverDocument } from "./dtcg.schema";
 
   type ImportSource = { name: string; content: string };
 
@@ -30,11 +35,47 @@
   let importResults: ImportResult[] = $state([]);
   let content = $state("");
 
-  const convertImportSources = (sources: ImportSource[]) => {
+  const convertImportSources = async (sources: ImportSource[]) => {
     const results: ImportResult[] = [];
-    const resolvers = [];
-    const tokenSets = [];
+    const resolvers: { name: string; content: ResolverDocument }[] = [];
+    const tokenSets: {
+      name: string;
+      nodes: Map<string, IntermediaryNode>;
+      errors: { path: string; message: string }[];
+    }[] = [];
     const availableIntermediaryNodes = new Map<string, IntermediaryNode>();
+
+    // Build a map of all uploaded files for resolving $refs
+    const uploadedFiles = new Map<string, Record<string, unknown>>();
+    for (const { name, content } of sources) {
+      try {
+        const parsed = JSON.parse(content);
+        uploadedFiles.set(name, parsed);
+      } catch {
+        // Not JSON, skip for file lookup
+      }
+    }
+
+    // File loader that looks up files from uploaded files
+    const fileLoader = (path: string): Record<string, unknown> => {
+      // Try exact match first
+      let content = uploadedFiles.get(path);
+      if (content) return content;
+
+      // Try matching by filename (for when $ref is relative path but upload is just filename)
+      const filename = path.split("/").pop();
+      for (const [name, fileContent] of uploadedFiles) {
+        if (
+          name === filename ||
+          name.endsWith(`/${path}`) ||
+          path.endsWith(`/${name}`)
+        ) {
+          return fileContent;
+        }
+      }
+
+      throw new Error(`Referenced file not found: ${path}`);
+    };
 
     // Collect resolvers and separate sets of tokens
     for (const { name, content } of sources) {
@@ -42,8 +83,7 @@
         const parsed = JSON.parse(content);
         // start with resolver format
         if (isResolverFormat(parsed)) {
-          const result = parseTokenResolver(parsed);
-          resolvers.push({ name, ...result });
+          resolvers.push({ name, content: parsed as ResolverDocument });
         } else {
           // fallback to tokens format
           const result = extractIntermediaryNodes(parsed);
@@ -63,21 +103,39 @@
     }
 
     let lastIndex: null | string = null;
-    // merge resolver sets
-    for (const { name, nodes, errors } of resolvers) {
-      for (const node of nodes) {
-        if (node.meta.nodeType === "token-set") {
-          const currentIndex = generateKeyBetween(lastIndex, null);
-          lastIndex = currentIndex;
-          node.index = currentIndex;
+
+    // Process resolvers - resolve $refs and parse
+    for (const { name, content: resolverDoc } of resolvers) {
+      try {
+        const resolved = await resolveResolverRefs(resolverDoc, { fileLoader });
+        const result = await parseTokenResolver(resolved);
+
+        for (const node of result.nodes) {
+          if (node.meta.nodeType === "token-set") {
+            const currentIndex = generateKeyBetween(lastIndex, null);
+            lastIndex = currentIndex;
+            node.index = currentIndex;
+          }
         }
+        results.push({
+          importType: "resolver",
+          name,
+          nodes: result.nodes,
+          errors: result.errors,
+        });
+      } catch (err) {
+        results.push({
+          importType: "resolver",
+          name,
+          nodes: [],
+          errors: [
+            {
+              path: name,
+              message: err instanceof Error ? err.message : String(err),
+            },
+          ],
+        });
       }
-      results.push({
-        importType: "unknown",
-        name,
-        nodes,
-        errors,
-      });
     }
 
     // merge token sets
@@ -104,7 +162,7 @@
         nodes.push(node);
       }
       results.push({
-        importType: "unknown",
+        importType: "json",
         name,
         nodes,
         errors,
@@ -113,9 +171,11 @@
     return results;
   };
 
-  const handleTextareaInput = (newValue: string) => {
+  const handleTextareaInput = async (newValue: string) => {
     content = newValue;
-    importResults = convertImportSources([{ name: "Base", content: newValue }]);
+    importResults = await convertImportSources([
+      { name: "Base", content: newValue },
+    ]);
     isInputTouched = false;
   };
 
@@ -133,7 +193,7 @@
       const content = await file.text();
       sources.push({ name, content });
     }
-    importResults = convertImportSources(sources);
+    importResults = await convertImportSources(sources);
     isInputTouched = true;
   };
 

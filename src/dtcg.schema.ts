@@ -256,8 +256,14 @@ export type TypographyValue = z.infer<typeof typographyValue>;
 // Design Tokens Resolver Module 2025.10
 // https://www.designtokens.org/tr/2025.10/resolver/
 
-// Single source is a Record where keys are group/token names
-// values are Group or Token objects
+// Reference object for $ref (JSON Pointer or external file reference)
+export const refObjectSchema = z.object({
+  $ref: z.string(),
+});
+
+export type RefObject = z.infer<typeof refObjectSchema>;
+
+// Single source is either a $ref object or inline tokens Record
 export const resolverSourceSchema = z.record(
   z.string(),
   // avoid checking to not cut of nested groups and tokens
@@ -267,11 +273,19 @@ export const resolverSourceSchema = z.record(
 
 export type ResolverSource = z.infer<typeof resolverSourceSchema>;
 
+// Source item can be either $ref or inline tokens
+export const sourceItemSchema = z.union([
+  refObjectSchema,
+  resolverSourceSchema,
+]);
+
+export type SourceItem = z.infer<typeof sourceItemSchema>;
+
 // Set in resolutionOrder array - collection of design tokens
 export const resolverSetSchema = z.object({
   type: z.literal("set"),
   name: nameSchema, // required, unique identifier within resolutionOrder
-  sources: z.array(resolverSourceSchema), // non-optional, can be empty
+  sources: z.array(sourceItemSchema), // non-optional, can be empty
   description: z.string().optional(),
   $extensions: z.record(z.string(), z.unknown()).optional(),
 });
@@ -281,7 +295,7 @@ export type ResolverSet = z.infer<typeof resolverSetSchema>;
 // Modifier contexts - map of context name to sources
 export const resolverModifierContextsSchema = z.record(
   z.string(), // context name (e.g., "light", "dark")
-  z.array(resolverSourceSchema), // sources array (non-optional)
+  z.array(sourceItemSchema), // sources array (non-optional)
 );
 
 // Modifier in resolutionOrder - for documentation, parsed but skipped
@@ -296,27 +310,91 @@ export const resolverModifierSchema = z.object({
 
 export type ResolverModifier = z.infer<typeof resolverModifierSchema>;
 
-// Item in resolutionOrder array
+// Item in resolutionOrder array can be inline set/modifier or $ref to root-level definition
 export const resolutionOrderItemSchema = z.union([
   resolverSetSchema,
   resolverModifierSchema,
+  refObjectSchema,
 ]);
 
 export type ResolutionOrderItem = z.infer<typeof resolutionOrderItemSchema>;
 
-// Unsupported root-level sets and modifiers
-// These reject any object with properties - only allow undefined or empty object
-const unsupportedSetsSchema = z.object({}).strict().optional();
-const unsupportedModifiersSchema = z.object({}).strict().optional();
+// Root-level set definition (without type/name, referenced via $ref)
+export const rootSetSchema = z.object({
+  sources: z.array(sourceItemSchema),
+  description: z.string().optional(),
+  $extensions: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type RootSet = z.infer<typeof rootSetSchema>;
+
+// Root-level modifier definition (without type/name, referenced via $ref)
+export const rootModifierSchema = z.object({
+  contexts: resolverModifierContextsSchema,
+  description: z.string().optional(),
+  default: z.string().optional(),
+  $extensions: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type RootModifier = z.infer<typeof rootModifierSchema>;
 
 // Resolver document following Design Tokens Resolver Module 2025.10
+// This is the raw/input format that may contain $ref objects
 export const resolverDocumentSchema = z.object({
+  $schema: z.string().optional(),
   version: z.literal("2025.10"),
   name: z.string().optional(),
   description: z.string().optional(),
-  sets: unsupportedSetsSchema.optional(),
-  modifiers: unsupportedModifiersSchema.optional(),
+  sets: z.record(z.string(), rootSetSchema).optional(),
+  modifiers: z.record(z.string(), rootModifierSchema).optional(),
   resolutionOrder: z.array(resolutionOrderItemSchema),
 });
 
 export type ResolverDocument = z.infer<typeof resolverDocumentSchema>;
+
+// Resolved types - after all $ref objects have been resolved to actual content
+// These types guarantee no $ref objects remain
+
+export const resolvedResolverSetSchema = z.object({
+  type: z.literal("set"),
+  name: nameSchema,
+  sources: z.array(resolverSourceSchema),
+  description: z.string().optional(),
+  $extensions: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type ResolvedResolverSet = z.infer<typeof resolvedResolverSetSchema>;
+
+export const resolvedResolverModifierContextsSchema = z.record(
+  z.string(),
+  z.array(resolverSourceSchema),
+);
+
+export const resolvedResolverModifierSchema = z.object({
+  type: z.literal("modifier"),
+  name: nameSchema,
+  contexts: resolvedResolverModifierContextsSchema,
+  description: z.string().optional(),
+  default: z.string().optional(),
+  $extensions: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type ResolvedResolverModifier = z.infer<
+  typeof resolvedResolverModifierSchema
+>;
+
+export const resolvedResolverDocumentSchema = z
+  .object({
+    $schema: z.string().optional(),
+    version: z.literal("2025.10"),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    resolutionOrder: z.array(
+      z.union([resolvedResolverSetSchema, resolvedResolverModifierSchema]),
+    ),
+  })
+  .strict();
+
+export type ResolvedResolverDocument = z.infer<
+  typeof resolvedResolverDocumentSchema
+>;

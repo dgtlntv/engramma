@@ -28,6 +28,7 @@
     "node": "22"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^15.2.1",
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@floating-ui/dom": "^1.7.4",
@@ -56,6 +57,7 @@
     "typescript": "^5.9.3",
     "typescript-svelte-plugin": "^0.3.50",
     "vite": "^7.3.1",
+    "vite-plugin-node-polyfills": "^0.25.0",
     "vitest": "^4.0.17",
     "zod": "^4.3.5"
   }

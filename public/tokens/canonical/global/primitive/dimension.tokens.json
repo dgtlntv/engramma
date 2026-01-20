@@ -1,0 +1,589 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "dimension": {
+    "100": {
+      "$value": {
+        "value": 0.5,
+        "unit": "rem"
+      },
+      "$description": "8px equivalent - base unit"
+    },
+    "150": {
+      "$value": {
+        "value": 0.75,
+        "unit": "rem"
+      },
+      "$description": "12px equivalent"
+    },
+    "175": {
+      "$value": {
+        "value": 0.875,
+        "unit": "rem"
+      },
+      "$description": "14px equivalent"
+    },
+    "200": {
+      "$value": {
+        "value": 1,
+        "unit": "rem"
+      },
+      "$description": "16px equivalent"
+    },
+    "225": {
+      "$value": {
+        "value": 1.125,
+        "unit": "rem"
+      },
+      "$description": "18px equivalent - used for xLarge breakpoint root font size"
+    },
+    "250": {
+      "$value": {
+        "value": 1.25,
+        "unit": "rem"
+      },
+      "$description": "20px equivalent"
+    },
+    "300": {
+      "$value": {
+        "value": 1.5,
+        "unit": "rem"
+      },
+      "$description": "24px equivalent"
+    },
+    "400": {
+      "$value": {
+        "value": 2,
+        "unit": "rem"
+      },
+      "$description": "32px equivalent"
+    },
+    "500": {
+      "$value": {
+        "value": 2.5,
+        "unit": "rem"
+      },
+      "$description": "40px equivalent"
+    },
+    "600": {
+      "$value": {
+        "value": 3,
+        "unit": "rem"
+      },
+      "$description": "48px equivalent"
+    },
+    "700": {
+      "$value": {
+        "value": 3.5,
+        "unit": "rem"
+      },
+      "$description": "56px equivalent"
+    },
+    "800": {
+      "$value": {
+        "value": 4,
+        "unit": "rem"
+      },
+      "$description": "64px equivalent"
+    },
+    "900": {
+      "$value": {
+        "value": 4.5,
+        "unit": "rem"
+      },
+      "$description": "72px equivalent"
+    },
+    "1000": {
+      "$value": {
+        "value": 5,
+        "unit": "rem"
+      },
+      "$description": "80px equivalent"
+    },
+    "1100": {
+      "$value": {
+        "value": 5.5,
+        "unit": "rem"
+      },
+      "$description": "88px equivalent"
+    },
+    "$type": "dimension",
+    "025": {
+      "$value": {
+        "value": 0.125,
+        "unit": "rem"
+      },
+      "$description": "2px equivalent"
+    },
+    "050": {
+      "$value": {
+        "value": 0.25,
+        "unit": "rem"
+      },
+      "$description": "4px equivalent"
+    },
+    "size": {
+      "fontSize": {
+        "200": {
+          "$value": {
+            "value": 0.625,
+            "unit": "rem"
+          },
+          "$description": "10px equivalent"
+        },
+        "250": {
+          "$value": {
+            "value": 0.75,
+            "unit": "rem"
+          },
+          "$description": "12px equivalent"
+        },
+        "300": {
+          "$value": {
+            "value": 0.875,
+            "unit": "rem"
+          },
+          "$description": "14px equivalent"
+        },
+        "350": {
+          "$value": {
+            "value": 1,
+            "unit": "rem"
+          },
+          "$description": "16px equivalent"
+        },
+        "400": {
+          "$value": {
+            "value": 1.125,
+            "unit": "rem"
+          },
+          "$description": "18px equivalent"
+        },
+        "450": {
+          "$value": {
+            "value": 1.3125,
+            "unit": "rem"
+          },
+          "$description": "21px equivalent"
+        },
+        "500": {
+          "$value": {
+            "value": 1.5,
+            "unit": "rem"
+          },
+          "$description": "24px equivalent"
+        },
+        "550": {
+          "$value": {
+            "value": 1.75,
+            "unit": "rem"
+          },
+          "$description": "28px equivalent"
+        },
+        "600": {
+          "$value": {
+            "value": 2,
+            "unit": "rem"
+          },
+          "$description": "32px equivalent"
+        },
+        "650": {
+          "$value": {
+            "value": 2.25,
+            "unit": "rem"
+          },
+          "$description": "36px equivalent"
+        },
+        "700": {
+          "$value": {
+            "value": 2.625,
+            "unit": "rem"
+          },
+          "$description": "42px equivalent"
+        },
+        "750": {
+          "$value": {
+            "value": 3,
+            "unit": "rem"
+          },
+          "$description": "48px equivalent"
+        },
+        "800": {
+          "$value": {
+            "value": 3.4375,
+            "unit": "rem"
+          },
+          "$description": "55px equivalent"
+        },
+        "850": {
+          "$value": {
+            "value": 3.9375,
+            "unit": "rem"
+          },
+          "$description": "63px equivalent"
+        },
+        "900": {
+          "$value": {
+            "value": 4.5625,
+            "unit": "rem"
+          },
+          "$description": "73px equivalent"
+        },
+        "950": {
+          "$value": {
+            "value": 5.25,
+            "unit": "rem"
+          },
+          "$description": "84px equivalent"
+        },
+        "1000": {
+          "$value": {
+            "value": 6,
+            "unit": "rem"
+          },
+          "$description": "96px equivalent"
+        }
+      }
+    },
+    "letterSpacing": {
+      "default": {
+        "$value": {
+          "value": 0,
+          "unit": "rem"
+        },
+        "$description": "Default letter spacing",
+        "$extensions": {
+          "com.canonical.dimension": {
+            "$type": "dimension",
+            "$value": {
+              "value": 0,
+              "unit": "em"
+            }
+          }
+        }
+      },
+      "wide": {
+        "$description": "Wide letter spacing for emphasis",
+        "$value": {
+          "value": 0.05,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "com.canonical.dimension": {
+            "$type": "dimension",
+            "$value": {
+              "value": 0.05,
+              "unit": "em"
+            }
+          }
+        }
+      }
+    },
+    "stroke": {
+      "thickness": {
+        "medium": {
+          "$value": {
+            "value": 1,
+            "unit": "px"
+          },
+          "$description": "Standard stroke thickness"
+        },
+        "large": {
+          "$value": {
+            "value": 3,
+            "unit": "px"
+          },
+          "$description": "Large stroke thickness"
+        }
+      }
+    },
+    "radius": {
+      "none": {
+        "$value": {
+          "value": 0,
+          "unit": "rem"
+        },
+        "$description": "No border radius"
+      },
+      "small": {
+        "$value": {
+          "value": 0,
+          "unit": "rem"
+        },
+        "$description": "Small border radius - placeholder for customization"
+      },
+      "medium": {
+        "$value": {
+          "value": 0,
+          "unit": "rem"
+        },
+        "$description": "Medium border radius - placeholder for customization"
+      },
+      "large": {
+        "$value": {
+          "value": 0,
+          "unit": "rem"
+        },
+        "$description": "Large border radius - placeholder for customization"
+      },
+      "full": {
+        "$value": {
+          "value": 9999,
+          "unit": "px"
+        },
+        "$description": "Fully rounded, e.g. for chips"
+      }
+    },
+    "space": {
+      "top": {
+        "text": {
+          "baselineNudge": {
+            "200": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - top spacing for fontSize 200"
+            },
+            "250": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - top spacing for fontSize 250"
+            },
+            "300": {
+              "$value": {
+                "value": 0.125,
+                "unit": "rem"
+              },
+              "$description": "2px equivalent - top spacing for fontSize 300"
+            },
+            "350": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - top spacing for fontSize 350"
+            },
+            "400": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - top spacing for fontSize 400"
+            },
+            "450": {
+              "$value": {
+                "value": 0.1875,
+                "unit": "rem"
+              },
+              "$description": "3px equivalent - top spacing for fontSize 450"
+            },
+            "500": {
+              "$value": {
+                "value": 0,
+                "unit": "rem"
+              },
+              "$description": "0px equivalent - top spacing for fontSize 500"
+            },
+            "550": {
+              "$value": {
+                "value": 0.3125,
+                "unit": "rem"
+              },
+              "$description": "5px equivalent - top spacing for fontSize 550"
+            },
+            "600": {
+              "$value": {
+                "value": 0.0625,
+                "unit": "rem"
+              },
+              "$description": "1px equivalent - top spacing for fontSize 600"
+            },
+            "650": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - top spacing for fontSize 650"
+            },
+            "700": {
+              "$value": {
+                "value": 0.125,
+                "unit": "rem"
+              },
+              "$description": "2px equivalent - top spacing for fontSize 700"
+            },
+            "750": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - top spacing for fontSize 750"
+            },
+            "800": {
+              "$value": {
+                "value": 0.3125,
+                "unit": "rem"
+              },
+              "$description": "5px equivalent - top spacing for fontSize 800"
+            },
+            "850": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - top spacing for fontSize 850"
+            },
+            "900": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - top spacing for fontSize 900"
+            },
+            "950": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - top spacing for fontSize 950"
+            },
+            "1000": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - top spacing for fontSize 1000"
+            }
+          }
+        }
+      },
+      "bottom": {
+        "text": {
+          "baselineNudge": {
+            "200": {
+              "$value": {
+                "value": 0.3125,
+                "unit": "rem"
+              },
+              "$description": "5px equivalent - bottom spacing for fontSize 200"
+            },
+            "250": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - bottom spacing for fontSize 250"
+            },
+            "300": {
+              "$value": {
+                "value": 0.125,
+                "unit": "rem"
+              },
+              "$description": "2px equivalent - bottom spacing for fontSize 300"
+            },
+            "350": {
+              "$value": {
+                "value": 0.0625,
+                "unit": "rem"
+              },
+              "$description": "1px equivalent - bottom spacing for fontSize 350"
+            },
+            "400": {
+              "$value": {
+                "value": 0.125,
+                "unit": "rem"
+              },
+              "$description": "2px equivalent - bottom spacing for fontSize 400"
+            },
+            "450": {
+              "$value": {
+                "value": 0.0625,
+                "unit": "rem"
+              },
+              "$description": "1px equivalent - bottom spacing for fontSize 450"
+            },
+            "500": {
+              "$value": {
+                "value": 0,
+                "unit": "rem"
+              },
+              "$description": "0px equivalent - bottom spacing for fontSize 500"
+            },
+            "550": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - bottom spacing for fontSize 550"
+            },
+            "600": {
+              "$value": {
+                "value": 0.4375,
+                "unit": "rem"
+              },
+              "$description": "7px equivalent - bottom spacing for fontSize 600"
+            },
+            "650": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - bottom spacing for fontSize 650"
+            },
+            "700": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - bottom spacing for fontSize 700"
+            },
+            "750": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - bottom spacing for fontSize 750"
+            },
+            "800": {
+              "$value": {
+                "value": 0.1875,
+                "unit": "rem"
+              },
+              "$description": "3px equivalent - bottom spacing for fontSize 800"
+            },
+            "850": {
+              "$value": {
+                "value": 0.0625,
+                "unit": "rem"
+              },
+              "$description": "1px equivalent - bottom spacing for fontSize 850"
+            },
+            "900": {
+              "$value": {
+                "value": 0.0625,
+                "unit": "rem"
+              },
+              "$description": "1px equivalent - bottom spacing for fontSize 900"
+            },
+            "950": {
+              "$value": {
+                "value": 0.375,
+                "unit": "rem"
+              },
+              "$description": "6px equivalent - bottom spacing for fontSize 950"
+            },
+            "1000": {
+              "$value": {
+                "value": 0.25,
+                "unit": "rem"
+              },
+              "$description": "4px equivalent - bottom spacing for fontSize 1000"
+            }
+          }
+        }
+      }
+    }
+  }
+}

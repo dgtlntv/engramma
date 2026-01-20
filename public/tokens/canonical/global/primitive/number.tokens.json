@@ -1,0 +1,436 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "number": {
+    "$type": "number",
+    "lineHeight": {
+      "200": {
+        "$value": 1.2,
+        "$description": "Line height multiplier for fontSize 200 (10px font, 12px line)"
+      },
+      "250": {
+        "$value": 1.3333,
+        "$description": "Line height multiplier for fontSize 250 (12px font, 16px line)"
+      },
+      "300": {
+        "$value": 1.4286,
+        "$description": "Line height multiplier for fontSize 300 (14px font, 20px line)"
+      },
+      "350": {
+        "$value": 1.5,
+        "$description": "Line height multiplier for fontSize 350 (16px font, 24px line)"
+      },
+      "400": {
+        "$value": 1.3333,
+        "$description": "Line height multiplier for fontSize 400 (18px font, 24px line)"
+      },
+      "450": {
+        "$value": 1.3333,
+        "$description": "Line height multiplier for fontSize 450 (21px font, 28px line)"
+      },
+      "500": {
+        "$value": 1.3333,
+        "$description": "Line height multiplier for fontSize 500 (24px font, 32px line)"
+      },
+      "550": {
+        "$value": 1.2857,
+        "$description": "Line height multiplier for fontSize 550 (28px font, 36px line)"
+      },
+      "600": {
+        "$value": 1.25,
+        "$description": "Line height multiplier for fontSize 600 (32px font, 40px line)"
+      },
+      "650": {
+        "$value": 1.2222,
+        "$description": "Line height multiplier for fontSize 650 (36px font, 44px line)"
+      },
+      "700": {
+        "$value": 1.1429,
+        "$description": "Line height multiplier for fontSize 700 (42px font, 48px line)"
+      },
+      "750": {
+        "$value": 1.1667,
+        "$description": "Line height multiplier for fontSize 750 (48px font, 56px line)"
+      },
+      "800": {
+        "$value": 1.1636,
+        "$description": "Line height multiplier for fontSize 800 (55px font, 64px line)"
+      },
+      "850": {
+        "$value": 1.1429,
+        "$description": "Line height multiplier for fontSize 850 (63px font, 72px line)"
+      },
+      "900": {
+        "$value": 1.0959,
+        "$description": "Line height multiplier for fontSize 900 (73px font, 80px line)"
+      },
+      "950": {
+        "$value": 1.0952,
+        "$description": "Line height multiplier for fontSize 950 (84px font, 92px line)"
+      },
+      "1000": {
+        "$value": 1.0833,
+        "$description": "Line height multiplier for fontSize 1000 (96px font, 104px line)"
+      }
+    },
+    "hue": {
+      "tag": {
+        "$value": 0.5,
+        "$description": "Hue value for tag colors"
+      }
+    },
+    "opacity": {
+      "backdrop": {
+        "$value": 0.15,
+        "$description": "Opacity for backdrop elements"
+      }
+    },
+    "lightness": {
+      "border": {
+        "disabled": {
+          "onLight": {
+            "$value": 0.5,
+            "$description": "Lightness adjustment for disabled borders on light backgrounds"
+          },
+          "onDark": {
+            "$value": 0.5,
+            "$description": "Lightness adjustment for disabled borders on dark backgrounds"
+          }
+        },
+        "highlighted": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled highlighted borders on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled highlighted borders on dark backgrounds"
+            }
+          }
+        },
+        "muted": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled muted borders on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled muted borders on dark backgrounds"
+            }
+          }
+        }
+      },
+      "foreground": {
+        "ghost": {
+          "hover": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground hover state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground hover state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground hover state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground hover state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground hover state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground hover state on layer 3 dark backgrounds"
+              }
+            }
+          },
+          "active": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground active state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground active state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground active state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground active state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground active state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground active state on layer 3 dark backgrounds"
+              }
+            }
+          },
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground disabled state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for ghost foreground disabled state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground disabled state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground disabled state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground disabled state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for ghost foreground disabled state on layer 3 dark backgrounds"
+              }
+            }
+          }
+        },
+        "input": {
+          "hover": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground hover state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground hover state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground hover state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground hover state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground hover state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground hover state on layer 3 dark backgrounds"
+              }
+            }
+          },
+          "active": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground active state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground active state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground active state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground active state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground active state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground active state on layer 3 dark backgrounds"
+              }
+            }
+          },
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground disabled state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for input foreground disabled state on dark backgrounds"
+            },
+            "onLayer2": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground disabled state on layer 2 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground disabled state on layer 2 dark backgrounds"
+              }
+            },
+            "onLayer3": {
+              "onLight": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground disabled state on layer 3 light backgrounds"
+              },
+              "onDark": {
+                "$value": 0.5,
+                "$description": "Lightness adjustment for input foreground disabled state on layer 3 dark backgrounds"
+              }
+            }
+          }
+        },
+        "primary": {
+          "hover": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground hover state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground hover state on dark backgrounds"
+            }
+          },
+          "active": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground active state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground active state on dark backgrounds"
+            }
+          },
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground disabled state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for primary foreground disabled state on dark backgrounds"
+            }
+          }
+        },
+        "secondary": {
+          "hover": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground hover state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground hover state on dark backgrounds"
+            }
+          },
+          "active": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground active state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground active state on dark backgrounds"
+            }
+          },
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground disabled state on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for secondary foreground disabled state on dark backgrounds"
+            }
+          }
+        }
+      },
+      "text": {
+        "disabled": {
+          "onLight": {
+            "$value": 0.5,
+            "$description": "Lightness adjustment for disabled text on light backgrounds"
+          },
+          "onDark": {
+            "$value": 0.5,
+            "$description": "Lightness adjustment for disabled text on dark backgrounds"
+          }
+        },
+        "muted": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled muted text on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled muted text on dark backgrounds"
+            }
+          }
+        },
+        "link": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled link text on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled link text on dark backgrounds"
+            }
+          }
+        },
+        "onForegroundPrimary": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled text on primary foreground on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled text on primary foreground on dark backgrounds"
+            }
+          }
+        },
+        "onForegroundSecondary": {
+          "disabled": {
+            "onLight": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled text on secondary foreground on light backgrounds"
+            },
+            "onDark": {
+              "$value": 0.5,
+              "$description": "Lightness adjustment for disabled text on secondary foreground on dark backgrounds"
+            }
+          }
+        }
+      }
+    }
+  }
+}

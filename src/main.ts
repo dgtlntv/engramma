@@ -4,22 +4,37 @@ import App from "./app.svelte";
 import "./app.css";
 import { parseDesignTokens } from "./tokens";
 import { treeState, type SetMeta } from "./state.svelte";
-import designTokens from "./design-tokens-example.tokens.json";
 import { getDataFromUrl } from "./url-data";
 import type { TreeNode } from "./store";
-import { isResolverFormat, parseTokenResolver } from "./resolver";
+import {
+  isResolverFormat,
+  parseTokenResolver,
+  resolveResolverRefs,
+} from "./resolver";
+import type { ResolverDocument } from "./dtcg.schema";
 
-// Get design tokens from URL or use example
+// Load default tokens from resolver in public folder
+const loadDefaultTokens = async () => {
+  const baseUrl = "/tokens/canonical/";
+  const response = await fetch(`${baseUrl}apps.resolver.json`);
+  if (!response.ok) {
+    throw new Error(`Failed to load resolver: ${response.statusText}`);
+  }
+  const resolverDoc: ResolverDocument = await response.json();
+  return resolveResolverRefs(resolverDoc, { baseUrl });
+};
+
+// Get design tokens from URL or load defaults
 const urlData = await getDataFromUrl();
-const tokensData = urlData ?? designTokens;
+const tokensData = urlData ?? (await loadDefaultTokens());
 
 // Parse design tokens and populate state
-let parsedResult: undefined | ReturnType<typeof parseTokenResolver>;
+let parsedResult: undefined | Awaited<ReturnType<typeof parseTokenResolver>>;
 
 const zeroIndex = generateKeyBetween(null, null);
 
 if (isResolverFormat(tokensData)) {
-  const result = parseTokenResolver(tokensData);
+  const result = await parseTokenResolver(tokensData);
   parsedResult = result;
   if (result.nodes.length > 0 || result.errors.length > 0) {
     treeState.transact((tx) => {

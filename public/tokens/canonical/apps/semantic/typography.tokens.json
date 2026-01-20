@@ -1,0 +1,702 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/format.json",
+  "typography": {
+    "$type": "typography",
+    "text": {
+      "primary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.300}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.300}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Primary body text for apps - 14px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Primary body text for apps - bold variant"
+        },
+        "code": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Primary code text for apps"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/primary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/primary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Primary prose text for apps with oldstyle figures - 14px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/primary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/primary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/primary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Primary prose text for apps with oldstyle figures - bold variant"
+          }
+        }
+      },
+      "secondary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.300}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.300}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Secondary body text for apps - 14px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Secondary body text for apps - bold variant"
+        },
+        "code": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontSize": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Secondary code text for apps"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/secondary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/secondary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/secondary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Secondary prose text for apps with oldstyle figures - 14px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/secondary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/secondary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/secondary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Secondary prose text for apps with oldstyle figures - bold variant"
+          }
+        }
+      },
+      "tertiary": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.250}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.250}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.normal}"
+              }
+            }
+          },
+          "$description": "Tertiary body text for apps - 12px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/tertiary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/tertiary/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/text/tertiary/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/text/tertiary/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Tertiary body text for apps - bold variant"
+        },
+        "prose": {
+          "$root": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontSize"
+              },
+              "fontWeight": {
+                "$ref": "#/typography/text/tertiary/$root/$value/fontWeight"
+              },
+              "lineHeight": {
+                "$ref": "#/typography/text/tertiary/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/tertiary/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                }
+              }
+            },
+            "$description": "Tertiary prose text for apps with oldstyle figures - 12px regular"
+          },
+          "bold": {
+            "$value": {
+              "fontFamily": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/fontFamily"
+              },
+              "fontSize": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/fontSize"
+              },
+              "fontWeight": "{typography.weight.semiBold}",
+              "lineHeight": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/lineHeight"
+              },
+              "letterSpacing": {
+                "$ref": "#/typography/text/tertiary/prose/$root/$value/letterSpacing"
+              }
+            },
+            "$extensions": {
+              "com.canonical.typography": {
+                "$value": {
+                  "letterCase": {
+                    "$ref": "#/typography/text/tertiary/prose/$root/$extensions/com.canonical.typography/$value/letterCase"
+                  },
+                  "figureStyle": {
+                    "$ref": "#/typography/text/tertiary/prose/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                  }
+                }
+              }
+            },
+            "$description": "Tertiary prose text for apps with oldstyle figures - bold variant"
+          }
+        }
+      }
+    },
+    "heading": {
+      "1": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.500}",
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": "{number.lineHeight.500}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 1 for apps - 24px medium"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/1/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/1/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.bold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/1/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/1/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/1/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/1/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 1 for apps - bold variant"
+        }
+      },
+      "2": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.500}",
+            "fontWeight": "{typography.weight.light}",
+            "lineHeight": "{number.lineHeight.500}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 2 for apps - 24px light"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/2/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/2/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.medium}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/2/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/2/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/2/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/2/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 2 for apps - bold variant"
+        }
+      },
+      "3": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.400}",
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": "{number.lineHeight.400}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 3 for apps - 18px semibold"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/3/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/3/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.extraBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/3/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/3/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/3/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/3/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 3 for apps - bold variant"
+        }
+      },
+      "4": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.400}",
+            "fontWeight": "{typography.weight.regular}",
+            "lineHeight": "{number.lineHeight.400}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 4 for apps - 18px regular"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/4/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/4/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/4/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/4/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/4/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/4/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 4 for apps - bold variant"
+        }
+      },
+      "5": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.300}",
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": "{number.lineHeight.300}",
+            "letterSpacing": "{dimension.letterSpacing.wide}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.smallcaps}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 5 for apps - 14px semibold small caps"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/5/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/5/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.extraBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/5/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/5/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/5/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/5/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 5 for apps - bold variant"
+        }
+      },
+      "6": {
+        "$root": {
+          "$value": {
+            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontSize": "{dimension.size.fontSize.300}",
+            "fontWeight": "{typography.weight.semiBold}",
+            "lineHeight": "{number.lineHeight.300}",
+            "letterSpacing": "{dimension.letterSpacing.default}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": "{typography.letterCase.default}",
+                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+              }
+            }
+          },
+          "$description": "Heading 6 for apps - 14px semibold"
+        },
+        "bold": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/heading/6/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/heading/6/$root/$value/fontSize"
+            },
+            "fontWeight": "{typography.weight.extraBold}",
+            "lineHeight": {
+              "$ref": "#/typography/heading/6/$root/$value/lineHeight"
+            },
+            "letterSpacing": {
+              "$ref": "#/typography/heading/6/$root/$value/letterSpacing"
+            }
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/heading/6/$root/$extensions/com.canonical.typography/$value/letterCase"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/heading/6/$root/$extensions/com.canonical.typography/$value/figureStyle"
+                }
+              }
+            }
+          },
+          "$description": "Heading 6 for apps - bold variant"
+        }
+      }
+    }
+  }
+}

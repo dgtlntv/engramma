@@ -56,16 +56,16 @@ describe("isResolverFormat", () => {
 });
 
 describe("parseTokenResolver", () => {
-  test("rejects input without version field", () => {
-    const result = parseTokenResolver({
+  test("rejects input without version field", async () => {
+    const result = await parseTokenResolver({
       resolutionOrder: [],
     });
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0].message).toContain("version");
   });
 
-  test("rejects input with wrong version", () => {
-    const result = parseTokenResolver({
+  test("rejects input with wrong version", async () => {
+    const result = await parseTokenResolver({
       version: "2024.01",
       resolutionOrder: [],
     });
@@ -73,8 +73,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors[0].message).toContain("2025.10");
   });
 
-  test("rejects root-level sets object with property keys", () => {
-    const result = parseTokenResolver({
+  test("rejects root-level sets object with property keys", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       sets: { someSet: { sources: [] } },
       resolutionOrder: [],
@@ -82,8 +82,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("rejects root-level modifiers object with property keys", () => {
-    const result = parseTokenResolver({
+  test("rejects root-level modifiers object with property keys", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       modifiers: { someModifier: { contexts: {} } },
       resolutionOrder: [],
@@ -91,8 +91,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("accepts valid minimal resolver with empty resolutionOrder", () => {
-    const result = parseTokenResolver({
+  test("accepts valid minimal resolver with empty resolutionOrder", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [],
     });
@@ -100,8 +100,8 @@ describe("parseTokenResolver", () => {
     expect(result.nodes).toHaveLength(0); // No sets when no Sets in resolutionOrder
   });
 
-  test("accepts optional name and description", () => {
-    const result = parseTokenResolver({
+  test("accepts optional name and description", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       name: "My Design System",
       description: "Design tokens for my app",
@@ -110,8 +110,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  test("parses single set with single source", () => {
-    const result = parseTokenResolver({
+  test("parses single set with single source", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -139,8 +139,8 @@ describe("parseTokenResolver", () => {
     expect(setNode?.meta.name).toBe("Foundation");
   });
 
-  test("parses single set with empty sources array", () => {
-    const result = parseTokenResolver({
+  test("parses single set with empty sources array", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -157,8 +157,8 @@ describe("parseTokenResolver", () => {
     expect(result.nodes[0].meta.name).toBe("Empty");
   });
 
-  test("merges multiple sources within a set respecting order", () => {
-    const result = parseTokenResolver({
+  test("merges multiple sources within a set respecting order", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -194,8 +194,8 @@ describe("parseTokenResolver", () => {
     expect(setNode?.meta.name).toBe("Colors");
   });
 
-  test("processes multiple sets in resolutionOrder sequentially", () => {
-    const result = parseTokenResolver({
+  test("processes multiple sets in resolutionOrder sequentially", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -242,8 +242,8 @@ describe("parseTokenResolver", () => {
     expect(setNodes.every((n) => n.parentId === undefined)).toBe(true);
   });
 
-  test("keeps sets separate without merging between them", () => {
-    const result = parseTokenResolver({
+  test("keeps sets separate without merging between them", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -288,8 +288,8 @@ describe("parseTokenResolver", () => {
     ]);
   });
 
-  test("silently skips modifier items in resolutionOrder", () => {
-    const result = parseTokenResolver({
+  test("silently skips modifier items in resolutionOrder", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -330,8 +330,8 @@ describe("parseTokenResolver", () => {
     expect(result.nodes.length).toBeGreaterThan(1);
   });
 
-  test("collects errors from invalid tokens in sources", () => {
-    const result = parseTokenResolver({
+  test("collects errors from invalid tokens in sources", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -352,8 +352,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.some((e) => e.path.includes("badToken"))).toBe(true);
   });
 
-  test("merges nested group structures within a set", () => {
-    const result = parseTokenResolver({
+  test("merges nested group structures within a set", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -391,8 +391,8 @@ describe("parseTokenResolver", () => {
     expect(setNode?.meta.name).toBe("Colors");
   });
 
-  test("preserves nested token group hierarchy within sets", () => {
-    const result = parseTokenResolver({
+  test("preserves nested token group hierarchy within sets", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -474,8 +474,8 @@ describe("parseTokenResolver", () => {
     expect(defaultToken?.parentId).toBe(textGroup?.nodeId);
   });
 
-  test("preserves set name and metadata on root set node", () => {
-    const result = parseTokenResolver({
+  test("preserves set name and metadata on root set node", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -496,8 +496,8 @@ describe("parseTokenResolver", () => {
     });
   });
 
-  test("preserves token descriptions and extensions from sources", () => {
-    const result = parseTokenResolver({
+  test("preserves token descriptions and extensions from sources", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -529,8 +529,8 @@ describe("parseTokenResolver", () => {
     }
   });
 
-  test("handles complex token types (shadow, border, typography)", () => {
-    const result = parseTokenResolver({
+  test("handles complex token types (shadow, border, typography)", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -564,8 +564,8 @@ describe("parseTokenResolver", () => {
     expect(result.nodes.length).toBeGreaterThan(1);
   });
 
-  test("rejects invalid set without name", () => {
-    const result = parseTokenResolver({
+  test("rejects invalid set without name", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -577,8 +577,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("rejects invalid set without sources", () => {
-    const result = parseTokenResolver({
+  test("rejects invalid set without sources", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -590,8 +590,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("rejects modifier without contexts", () => {
-    const result = parseTokenResolver({
+  test("rejects modifier without contexts", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -603,8 +603,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("accepts modifier with optional default", () => {
-    const result = parseTokenResolver({
+  test("accepts modifier with optional default", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -622,8 +622,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBe(0);
   });
 
-  test("accepts modifier with optional description and extensions", () => {
-    const result = parseTokenResolver({
+  test("accepts modifier with optional description and extensions", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -641,8 +641,8 @@ describe("parseTokenResolver", () => {
     expect(result.errors.length).toBe(0);
   });
 
-  test("accepts set with optional description and extensions", () => {
-    const result = parseTokenResolver({
+  test("accepts set with optional description and extensions", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -659,8 +659,8 @@ describe("parseTokenResolver", () => {
 });
 
 describe("serializeTokenResolver", () => {
-  test("serializes single set with simple tokens", () => {
-    const resolver = parseTokenResolver({
+  test("serializes single set with simple tokens", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -696,8 +696,8 @@ describe("serializeTokenResolver", () => {
     expect(setItem.sources).toHaveLength(1);
   });
 
-  test("serializes multiple sets in correct order", () => {
-    const resolver = parseTokenResolver({
+  test("serializes multiple sets in correct order", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -735,8 +735,8 @@ describe("serializeTokenResolver", () => {
     expect(document.resolutionOrder[1].name).toBe("Semantic");
   });
 
-  test("preserves set metadata (name, description, extensions)", () => {
-    const resolver = parseTokenResolver({
+  test("preserves set metadata (name, description, extensions)", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -758,8 +758,8 @@ describe("serializeTokenResolver", () => {
     expect(set.$extensions).toEqual({ "custom.key": { data: "value" } });
   });
 
-  test("handles empty sets", () => {
-    const resolver = parseTokenResolver({
+  test("handles empty sets", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -778,8 +778,8 @@ describe("serializeTokenResolver", () => {
     expect(setItem.sources).toHaveLength(1);
   });
 
-  test("serializes nested token groups within sets", () => {
-    const resolver = parseTokenResolver({
+  test("serializes nested token groups within sets", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -818,8 +818,8 @@ describe("serializeTokenResolver", () => {
     }
   });
 
-  test("serializes tokens with complex types (shadow, border, typography)", () => {
-    const resolver = parseTokenResolver({
+  test("serializes tokens with complex types (shadow, border, typography)", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -856,8 +856,8 @@ describe("serializeTokenResolver", () => {
     expect(setItem1.sources).toHaveLength(1);
   });
 
-  test("serializes tokens with complex types (shadow, border, typography)", () => {
-    const resolver = parseTokenResolver({
+  test("serializes tokens with complex types (shadow, border, typography)", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -894,7 +894,7 @@ describe("serializeTokenResolver", () => {
     expect(setItem.sources).toHaveLength(1);
   });
 
-  test("roundtrip: parse -> serialize -> parse produces same structure", () => {
+  test("roundtrip: parse -> serialize -> parse produces same structure", async () => {
     const original = {
       version: "2025.10" as const,
       name: "Design System",
@@ -922,7 +922,7 @@ describe("serializeTokenResolver", () => {
     };
 
     // Parse original
-    const parseResult1 = parseTokenResolver(original);
+    const parseResult1 = await parseTokenResolver(original);
     expect(parseResult1.errors).toHaveLength(0);
 
     // Serialize back to document
@@ -933,7 +933,7 @@ describe("serializeTokenResolver", () => {
     });
 
     // Parse serialized document
-    const parseResult2 = parseTokenResolver(serialized);
+    const parseResult2 = await parseTokenResolver(serialized);
     expect(parseResult2.errors).toHaveLength(0);
 
     // Verify structure is preserved
@@ -943,7 +943,7 @@ describe("serializeTokenResolver", () => {
     ).toHaveLength(1);
   });
 
-  test("roundtrip preserves token values and types", () => {
+  test("roundtrip preserves token values and types", async () => {
     const original = {
       version: "2025.10" as const,
       resolutionOrder: [
@@ -980,10 +980,10 @@ describe("serializeTokenResolver", () => {
       ],
     };
 
-    const parseResult1 = parseTokenResolver(original);
+    const parseResult1 = await parseTokenResolver(original);
     const nodes = new Map(parseResult1.nodes.map((n) => [n.nodeId, n]));
     const serialized = serializeTokenResolver(nodes);
-    const parseResult2 = parseTokenResolver(serialized);
+    const parseResult2 = await parseTokenResolver(serialized);
 
     // Both parses should have same number of token and group nodes
     const getTokenCount = (nodes: TreeNode<TreeNodeMeta>[]) =>
@@ -993,8 +993,8 @@ describe("serializeTokenResolver", () => {
     );
   });
 
-  test("serializes without document metadata when not provided", () => {
-    const resolver = parseTokenResolver({
+  test("serializes without document metadata when not provided", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1013,7 +1013,7 @@ describe("serializeTokenResolver", () => {
     expect(document.version).toBe("2025.10");
   });
 
-  test("preserves token descriptions and extensions through roundtrip", () => {
+  test("preserves token descriptions and extensions through roundtrip", async () => {
     const original = {
       version: "2025.10" as const,
       resolutionOrder: [
@@ -1034,10 +1034,10 @@ describe("serializeTokenResolver", () => {
       ],
     };
 
-    const parseResult1 = parseTokenResolver(original);
+    const parseResult1 = await parseTokenResolver(original);
     const nodes = new Map(parseResult1.nodes.map((n) => [n.nodeId, n]));
     const serialized = serializeTokenResolver(nodes);
-    const parseResult2 = parseTokenResolver(serialized);
+    const parseResult2 = await parseTokenResolver(serialized);
 
     // Find the brand token in both results
     const brandToken1 = parseResult1.nodes.find(
@@ -1051,8 +1051,8 @@ describe("serializeTokenResolver", () => {
     expect(brandToken2?.meta.description).toBe("Brand primary color");
   });
 
-  test("handles multiple sets with mixed content", () => {
-    const resolver = parseTokenResolver({
+  test("handles multiple sets with mixed content", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1100,12 +1100,12 @@ describe("serializeTokenResolver", () => {
     expect(document.resolutionOrder[1].name).toBe("Components");
 
     // Serialize and parse again
-    const parseResult2 = parseTokenResolver(document);
+    const parseResult2 = await parseTokenResolver(document);
     expect(parseResult2.errors).toHaveLength(0);
   });
 
-  test("skips modifier items and serializes only sets", () => {
-    const resolver = parseTokenResolver({
+  test("skips modifier items and serializes only sets", async () => {
+    const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1143,8 +1143,8 @@ describe("serializeTokenResolver", () => {
 });
 
 describe("cross-set aliases", () => {
-  test("allows tokens to reference tokens from other sets", () => {
-    const result = parseTokenResolver({
+  test("allows tokens to reference tokens from other sets", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1188,8 +1188,8 @@ describe("cross-set aliases", () => {
     expect(buttonBg).toBeDefined();
   });
 
-  test("allows references regardless of set resolution order", () => {
-    const result = parseTokenResolver({
+  test("allows references regardless of set resolution order", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1227,8 +1227,8 @@ describe("cross-set aliases", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  test("supports multi-hop references across multiple sets", () => {
-    const result = parseTokenResolver({
+  test("supports multi-hop references across multiple sets", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1280,8 +1280,8 @@ describe("cross-set aliases", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  test("reports error when cross-set reference cannot be resolved", () => {
-    const result = parseTokenResolver({
+  test("reports error when cross-set reference cannot be resolved", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1306,8 +1306,8 @@ describe("cross-set aliases", () => {
     expect(result.errors[0].path).toContain("background");
   });
 
-  test("detects circular references across sets", () => {
-    const result = parseTokenResolver({
+  test("detects circular references across sets", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1340,8 +1340,8 @@ describe("cross-set aliases", () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  test("supports cross-set references in composite tokens", () => {
-    const result = parseTokenResolver({
+  test("supports cross-set references in composite tokens", async () => {
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1398,10 +1398,10 @@ describe("cross-set aliases", () => {
     expect(borderToken).toBeDefined();
   });
 
-  test("allows cross-set references to be used regardless of strict type checking", () => {
+  test("allows cross-set references to be used regardless of strict type checking", async () => {
     // Type validation for cross-set references is limited
     // The resolver validates that references can be resolved, but not strict type compatibility
-    const result = parseTokenResolver({
+    const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
         {
@@ -1443,7 +1443,7 @@ describe("cross-set aliases", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  test("roundtrip preserves cross-set references in tree structure", () => {
+  test("roundtrip preserves cross-set references in tree structure", async () => {
     // Cross-set references are preserved in the internal tree structure
     const original = {
       version: "2025.10" as const,
@@ -1482,7 +1482,7 @@ describe("cross-set aliases", () => {
       ],
     };
 
-    const parseResult1 = parseTokenResolver(original);
+    const parseResult1 = await parseTokenResolver(original);
     expect(parseResult1.errors).toHaveLength(0);
 
     // Verify the cross-set reference was resolved
@@ -1496,7 +1496,7 @@ describe("cross-set aliases", () => {
     }
   });
 
-  test("handles multiple sets with interconnected cross-set references", () => {
+  test("handles multiple sets with interconnected cross-set references", async () => {
     const original = {
       version: "2025.10",
       resolutionOrder: [
@@ -1560,7 +1560,7 @@ describe("cross-set aliases", () => {
         },
       ],
     };
-    const result = parseTokenResolver(original);
+    const result = await parseTokenResolver(original);
     expect(result.errors).toHaveLength(0);
     expect(
       result.nodes.filter((n) => n.meta.nodeType === "token-set"),
@@ -1572,7 +1572,7 @@ describe("cross-set aliases", () => {
     ).toEqual(original);
   });
 
-  test("supports cross-set references from nested group tokens", () => {
+  test("supports cross-set references from nested group tokens", async () => {
     const original = {
       version: "2025.10",
       resolutionOrder: [
@@ -1613,12 +1613,83 @@ describe("cross-set aliases", () => {
         },
       ],
     };
-    const result = parseTokenResolver(original);
+    const result = await parseTokenResolver(original);
     expect(result.errors).toHaveLength(0);
     expect(
       serializeTokenResolver(
         new Map(result.nodes.map((node) => [node.nodeId, node])),
       ),
     ).toEqual(original);
+  });
+
+  test("resolves JSON Pointer $ref inside composite token $value objects", async () => {
+    // This tests the typography pattern where bold variants use $ref to inherit from $root
+    const result = await parseTokenResolver({
+      version: "2025.10",
+      resolutionOrder: [
+        {
+          type: "set" as const,
+          name: "Typography",
+          sources: [
+            {
+              typography: {
+                $type: "typography" as const,
+                text: {
+                  primary: {
+                    $root: {
+                      $value: {
+                        fontFamily: "Inter",
+                        fontSize: { value: 16, unit: "px" as const },
+                        fontWeight: 400,
+                        lineHeight: 1.5,
+                        letterSpacing: { value: 0, unit: "px" as const },
+                      },
+                    },
+                    bold: {
+                      $value: {
+                        // JSON Pointer refs to $root values
+                        fontFamily: {
+                          $ref: "#/typography/text/primary/$root/$value/fontFamily",
+                        },
+                        fontSize: {
+                          $ref: "#/typography/text/primary/$root/$value/fontSize",
+                        },
+                        fontWeight: 700, // Override weight
+                        lineHeight: {
+                          $ref: "#/typography/text/primary/$root/$value/lineHeight",
+                        },
+                        letterSpacing: {
+                          $ref: "#/typography/text/primary/$root/$value/letterSpacing",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.errors).toHaveLength(0);
+
+    // Find the bold token
+    const boldToken = result.nodes.find(
+      (n) => n.meta.nodeType === "token" && n.meta.name === "bold",
+    );
+    expect(boldToken).toBeDefined();
+    expect(boldToken?.meta.nodeType).toBe("token");
+
+    if (boldToken?.meta.nodeType === "token") {
+      // Verify $ref values were resolved to actual values
+      expect(boldToken.meta.value).toEqual({
+        fontFamily: "Inter",
+        fontSize: { value: 16, unit: "px" },
+        fontWeight: 700,
+        lineHeight: 1.5,
+        letterSpacing: { value: 0, unit: "px" },
+      });
+    }
   });
 });
