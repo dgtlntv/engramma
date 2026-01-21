@@ -40,6 +40,9 @@
     Paintbrush,
     Tags,
     ListPlus,
+    ToggleLeft,
+    Layers,
+    FileJson,
   } from "@lucide/svelte";
   import TreeView, { type TreeItem } from "./tree-view.svelte";
   import Editor from "./editor.svelte";
@@ -67,6 +70,23 @@
 
   const rootNodes = $derived(treeState.getChildren(undefined));
 
+  // Virtual section ID prefixes for grouping sets and modifiers
+  const SETS_SECTION_PREFIX = "__sets__";
+  const MODIFIERS_SECTION_PREFIX = "__modifiers__";
+
+  // Helper to create virtual section IDs (unique per parent)
+  const getSetsId = (parentId?: string) =>
+    parentId ? `${SETS_SECTION_PREFIX}:${parentId}` : SETS_SECTION_PREFIX;
+  const getModifiersId = (parentId?: string) =>
+    parentId
+      ? `${MODIFIERS_SECTION_PREFIX}:${parentId}`
+      : MODIFIERS_SECTION_PREFIX;
+
+  // Check if an ID is a virtual section
+  const isVirtualSection = (id: string) =>
+    id.startsWith(SETS_SECTION_PREFIX) ||
+    id.startsWith(MODIFIERS_SECTION_PREFIX);
+
   // svelte-ignore state_referenced_locally
   let selectedItems = new SvelteSet<string>(
     rootNodes.length ? [rootNodes[0].nodeId] : [],
@@ -82,10 +102,99 @@
     };
   };
 
-  const treeData = $derived(rootNodes.map(buildTreeItem));
-  const defaultExpandedItems = $derived(
-    rootNodes.length ? [rootNodes[0].nodeId] : [],
+  // Build tree item for a resolver with virtual Sets/Modifiers sections
+  const buildResolverTreeItem = (node: TreeNode<TreeNodeMeta>): TreeItem => {
+    const children = treeState.getChildren(node.nodeId);
+    const sets = children.filter((n) => n.meta.nodeType === "token-set");
+    const modifiers = children.filter((n) => n.meta.nodeType === "modifier");
+
+    const sections: TreeItem[] = [];
+
+    if (sets.length > 0) {
+      sections.push({
+        id: getSetsId(node.nodeId),
+        parentId: node.nodeId,
+        name: "Sets",
+        children: sets.map(buildTreeItem),
+      });
+    }
+
+    if (modifiers.length > 0) {
+      sections.push({
+        id: getModifiersId(node.nodeId),
+        parentId: node.nodeId,
+        name: "Modifiers",
+        children: modifiers.map(buildTreeItem),
+      });
+    }
+
+    return {
+      id: node.nodeId,
+      parentId: node.parentId,
+      name: node.meta.name,
+      children: sections,
+    };
+  };
+
+  // Build tree data, handling both resolver-based and legacy modes
+  const treeData = $derived.by(() => {
+    // Check if there are resolver nodes at root level
+    const resolvers = rootNodes.filter((n) => n.meta.nodeType === "resolver");
+
+    if (resolvers.length > 0) {
+      // Resolver-based mode: show resolvers with Sets/Modifiers sections inside
+      return resolvers.map(buildResolverTreeItem);
+    }
+
+    // Legacy mode: group root-level sets and modifiers into virtual sections
+    const sets = rootNodes.filter((n) => n.meta.nodeType === "token-set");
+    const modifiers = rootNodes.filter((n) => n.meta.nodeType === "modifier");
+
+    const sections: TreeItem[] = [];
+
+    if (sets.length > 0) {
+      sections.push({
+        id: getSetsId(),
+        parentId: undefined,
+        name: "Sets",
+        children: sets.map(buildTreeItem),
+      });
+    }
+
+    if (modifiers.length > 0) {
+      sections.push({
+        id: getModifiersId(),
+        parentId: undefined,
+        name: "Modifiers",
+        children: modifiers.map(buildTreeItem),
+      });
+    }
+
+    return sections;
+  });
+
+  // Check if we're in resolver-based mode
+  const hasResolvers = $derived(
+    rootNodes.some((n) => n.meta.nodeType === "resolver"),
   );
+
+  const defaultExpandedItems = $derived.by(() => {
+    if (hasResolvers) {
+      // In resolver mode, expand all resolver nodes and their sections
+      const resolverIds = rootNodes
+        .filter((n) => n.meta.nodeType === "resolver")
+        .map((n) => n.nodeId);
+      const sectionIds = resolverIds.flatMap((id) => [
+        getSetsId(id),
+        getModifiersId(id),
+      ]);
+      return [...resolverIds, ...sectionIds];
+    }
+    // Legacy mode: expand virtual sections
+    return [getSetsId(), getModifiersId()].filter((id) =>
+      treeData.some((section) => section.id === id),
+    );
+  });
 
   const handleDelete = () => {
     if (selectedItems.size === 0) {
@@ -116,14 +225,47 @@
     }
   };
 
+  // Find the resolver node to add children to (based on selection or first resolver)
+  const getTargetResolverId = (): string | undefined => {
+    if (!hasResolvers) return undefined;
+
+    // Check if selection is inside a resolver
+    const firstSelectedId = Array.from(selectedItems)[0];
+    if (firstSelectedId) {
+      // Check if a virtual section is selected (e.g., "__sets__:resolverId")
+      if (isVirtualSection(firstSelectedId)) {
+        const parts = firstSelectedId.split(":");
+        if (parts.length > 1) {
+          return parts[1];
+        }
+      }
+
+      // Walk up the tree to find resolver
+      let current = treeState.getNode(firstSelectedId);
+      while (current) {
+        if (current.meta.nodeType === "resolver") {
+          return current.nodeId;
+        }
+        current = current.parentId
+          ? treeState.getNode(current.parentId)
+          : undefined;
+      }
+    }
+
+    // Fall back to first resolver
+    const firstResolver = rootNodes.find((n) => n.meta.nodeType === "resolver");
+    return firstResolver?.nodeId;
+  };
+
   const handleAddSet = () => {
-    // Token-sets can only be at the top level
-    const rootChildren = treeState.getChildren(undefined);
-    const lastChildIndex = rootChildren.at(-1)?.index ?? zeroIndex;
+    // In resolver mode, sets go under the target resolver; in legacy mode, at root
+    const parentId = getTargetResolverId();
+    const parentChildren = treeState.getChildren(parentId);
+    const lastChildIndex = parentChildren.at(-1)?.index ?? zeroIndex;
     const insertAfterIndex = generateKeyBetween(lastChildIndex, null);
     const newSet: TreeNode<TreeNodeMeta> = {
       nodeId: crypto.randomUUID(),
-      parentId: undefined,
+      parentId,
       index: insertAfterIndex,
       meta: {
         nodeType: "token-set",
@@ -137,6 +279,77 @@
     selectedItems.add(newSet.nodeId);
   };
 
+  const handleAddModifier = () => {
+    // In resolver mode, modifiers go under the target resolver; in legacy mode, at root
+    const parentId = getTargetResolverId();
+    const parentChildren = treeState.getChildren(parentId);
+    const lastChildIndex = parentChildren.at(-1)?.index ?? zeroIndex;
+    const insertAfterIndex = generateKeyBetween(lastChildIndex, null);
+    const modifierNodeId = crypto.randomUUID();
+    const newModifier: TreeNode<TreeNodeMeta> = {
+      nodeId: modifierNodeId,
+      parentId,
+      index: insertAfterIndex,
+      meta: {
+        nodeType: "modifier",
+        name: "New Modifier",
+      },
+    };
+    // Create a default context as child
+    const defaultContextId = crypto.randomUUID();
+    const defaultContext: TreeNode<TreeNodeMeta> = {
+      nodeId: defaultContextId,
+      parentId: modifierNodeId,
+      index: zeroIndex,
+      meta: {
+        nodeType: "modifier-context",
+        name: "default",
+      },
+    };
+    treeState.transact((tx) => {
+      tx.set(newModifier);
+      tx.set(defaultContext);
+    });
+    selectedItems.clear();
+    selectedItems.add(modifierNodeId);
+  };
+
+  const handleAddContext = () => {
+    const firstSelectedId = Array.from(selectedItems)[0];
+    const firstSelectedNode = treeState.getNode(firstSelectedId);
+    if (!firstSelectedNode) {
+      return;
+    }
+    // Determine the modifier node to add context to
+    let modifierNodeId: string | undefined;
+    if (firstSelectedNode.meta.nodeType === "modifier") {
+      modifierNodeId = firstSelectedId;
+    } else if (firstSelectedNode.meta.nodeType === "modifier-context") {
+      modifierNodeId = firstSelectedNode.parentId;
+    }
+    if (!modifierNodeId) {
+      return;
+    }
+    // Add context at the end of the modifier's children
+    const children = treeState.getChildren(modifierNodeId);
+    const lastChildIndex = children.at(-1)?.index ?? zeroIndex;
+    const insertAfterIndex = generateKeyBetween(lastChildIndex, null);
+    const newContext: TreeNode<TreeNodeMeta> = {
+      nodeId: crypto.randomUUID(),
+      parentId: modifierNodeId,
+      index: insertAfterIndex,
+      meta: {
+        nodeType: "modifier-context",
+        name: "New Context",
+      },
+    };
+    treeState.transact((tx) => {
+      tx.set(newContext);
+    });
+    selectedItems.clear();
+    selectedItems.add(newContext.nodeId);
+  };
+
   const handleAddGroup = () => {
     const firstSelectedId = Array.from(selectedItems)[0];
     const firstSelectedNode = treeState.getNode(firstSelectedId);
@@ -148,13 +361,20 @@
     let insertAfterIndex: string;
     if (
       firstSelectedNode.meta.nodeType === "token-set" ||
-      firstSelectedNode.meta.nodeType === "token-group"
+      firstSelectedNode.meta.nodeType === "token-group" ||
+      firstSelectedNode.meta.nodeType === "modifier-context"
     ) {
       parentId = firstSelectedId;
       // add at the end of the group
       const children = treeState.getChildren(firstSelectedId);
       const lastChildIndex = children.at(-1)?.index ?? zeroIndex;
       insertAfterIndex = generateKeyBetween(lastChildIndex, null);
+    } else if (
+      firstSelectedNode.meta.nodeType === "modifier" ||
+      firstSelectedNode.meta.nodeType === "resolver"
+    ) {
+      // Cannot add group directly to modifier or resolver
+      return;
     } else {
       // add after the token
       parentId = firstSelectedNode.parentId;
@@ -205,27 +425,78 @@
     newParentId: undefined | string,
     position: number,
   ) => {
-    // Validate that token-sets can only be at top level
+    // Virtual sections map to their parent resolver (or undefined in legacy mode)
+    // Format: "__sets__" (legacy) or "__sets__:resolverId" (resolver mode)
+    let actualParentId: string | undefined;
+    const isSetsSection = newParentId?.startsWith(SETS_SECTION_PREFIX);
+    const isModifiersSection = newParentId?.startsWith(
+      MODIFIERS_SECTION_PREFIX,
+    );
+
+    if (isSetsSection || isModifiersSection) {
+      // Extract resolver ID from section ID if present (e.g., "__sets__:abc123" -> "abc123")
+      const parts = newParentId?.split(":") ?? [];
+      actualParentId = parts.length > 1 ? parts[1] : undefined;
+    } else {
+      actualParentId = newParentId;
+    }
+
+    const newParentNode = actualParentId
+      ? treeState.getNode(actualParentId)
+      : undefined;
+
+    // Validate move constraints
     for (const itemId of itemIds) {
       const node = treeState.getNode(itemId);
-      if (node?.meta.nodeType === "token-set" && newParentId !== undefined) {
-        // Token-sets cannot be nested, reject this move
+      if (!node) continue;
+
+      // Token-sets can be dropped into Sets section or resolver nodes
+      if (node.meta.nodeType === "token-set") {
+        if (!isSetsSection && newParentNode?.meta.nodeType !== "resolver") {
+          return;
+        }
+      }
+
+      // Modifiers can be dropped into Modifiers section or resolver nodes
+      if (node.meta.nodeType === "modifier") {
+        if (
+          !isModifiersSection &&
+          newParentNode?.meta.nodeType !== "resolver"
+        ) {
+          return;
+        }
+      }
+
+      // Modifier-contexts can only be inside modifiers
+      if (node.meta.nodeType === "modifier-context") {
+        if (newParentNode?.meta.nodeType !== "modifier") {
+          return;
+        }
+      }
+
+      // Groups and tokens cannot be moved directly into modifiers or resolvers
+      if (
+        (node.meta.nodeType === "token-group" ||
+          node.meta.nodeType === "token") &&
+        (newParentNode?.meta.nodeType === "modifier" ||
+          newParentNode?.meta.nodeType === "resolver")
+      ) {
         return;
       }
     }
 
-    // get the children of the new parent to calculate the new index
-    const newParentChildren = treeState.getChildren(newParentId);
+    // get the children of the actual parent to calculate the new index
+    const newParentChildren = treeState.getChildren(actualParentId);
     const prevIndex = newParentChildren[position - 1]?.index ?? zeroIndex;
     const nextIndex = newParentChildren[position]?.index ?? null;
     treeState.transact((tx) => {
-      // move each item to the new parent
+      // move each item to the actual parent (undefined for legacy virtual sections)
       for (const itemId of itemIds) {
         const node = treeState.getNode(itemId);
         if (node) {
           tx.set({
             ...node,
-            parentId: newParentId,
+            parentId: actualParentId,
             index: generateKeyBetween(prevIndex, nextIndex),
           });
         }
@@ -345,6 +616,33 @@
           </div>
           <button
             class="a-button"
+            aria-label="Add modifier"
+            interestfor="app-add-modifier-tooltip"
+            onclick={handleAddModifier}
+          >
+            <ToggleLeft size={16} />
+          </button>
+          <div id="app-add-modifier-tooltip" popover="hint" class="a-tooltip">
+            Add a new modifier
+          </div>
+          {#if Array.from(selectedItems).some((id) => {
+            const n = treeState.getNode(id);
+            return n?.meta.nodeType === "modifier" || n?.meta.nodeType === "modifier-context";
+          })}
+            <button
+              class="a-button"
+              aria-label="Add context"
+              interestfor="app-add-context-tooltip"
+              onclick={handleAddContext}
+            >
+              <Layers size={16} />
+            </button>
+            <div id="app-add-context-tooltip" popover="hint" class="a-tooltip">
+              Add a new context
+            </div>
+          {/if}
+          <button
+            class="a-button"
             aria-label="Add group"
             interestfor="app-add-group-tooltip"
             onclick={handleAddGroup}
@@ -409,14 +707,53 @@
       {#snippet renderTreeItem(item: TreeItem)}
         {@const node = treeState.getNode(item.id)}
 
-        {#if node?.meta.nodeType === "token-set"}
+        {#if item.id.startsWith(SETS_SECTION_PREFIX)}
           <div class="token">
+            <div class="token-icon">
+              <ListPlus size={16} />
+            </div>
+            <span class="token-section-name">{item.name}</span>
+          </div>
+        {:else if item.id.startsWith(MODIFIERS_SECTION_PREFIX)}
+          <div class="token">
+            <div class="token-icon">
+              <ToggleLeft size={16} />
+            </div>
+            <span class="token-section-name">{item.name}</span>
+          </div>
+        {:else if node?.meta.nodeType === "resolver"}
+          <div class="token">
+            <div class="token-icon">
+              <FileJson size={16} />
+            </div>
+            <span class="token-resolver-name">{item.name}</span>
+            {@render treeItemEditorButton(item.id)}
+          </div>
+        {:else if node?.meta.nodeType === "token-set"}
+          <div class="token">
+            <div class="token-icon">
+              <ListPlus size={16} />
+            </div>
             <span class="token-set-name">{item.name}</span>
             {@render treeItemEditorButton(item.id)}
           </div>
-        {/if}
-
-        {#if node?.meta.nodeType === "token-group"}
+        {:else if node?.meta.nodeType === "modifier"}
+          <div class="token">
+            <div class="token-icon">
+              <ToggleLeft size={16} />
+            </div>
+            <span class="token-set-name">{item.name}</span>
+            {@render treeItemEditorButton(item.id)}
+          </div>
+        {:else if node?.meta.nodeType === "modifier-context"}
+          <div class="token">
+            <div class="token-icon">
+              <Layers size={16} />
+            </div>
+            <span class="token-name">{item.name}</span>
+            {@render treeItemEditorButton(item.id)}
+          </div>
+        {:else if node?.meta.nodeType === "token-group"}
           {@const type = findTokenType(node, treeState.nodes())}
           <div class="token">
             <div class="token-icon">
@@ -429,9 +766,7 @@
             <span class="token-name">{item.name}</span>
             {@render treeItemEditorButton(item.id)}
           </div>
-        {/if}
-
-        {#if node?.meta.nodeType === "token"}
+        {:else if node?.meta.nodeType === "token"}
           {@const tokenValue = resolveTokenValue(node, treeState.nodes())}
           <div class="token">
             {#if tokenValue.type === "color"}
@@ -459,15 +794,54 @@
           {defaultExpandedItems}
           renderItem={renderTreeItem}
           canAcceptChildren={(targetId, items) => {
-            // only set can be dropped into root
-            if (!targetId) {
+            // Virtual sections: Sets section accepts only token-sets
+            if (targetId?.startsWith(SETS_SECTION_PREFIX)) {
               return items.every(
                 (itemId) =>
                   treeState.getNode(itemId)?.meta.nodeType === "token-set",
               );
             }
+            // Virtual sections: Modifiers section accepts only modifiers
+            if (targetId?.startsWith(MODIFIERS_SECTION_PREFIX)) {
+              return items.every(
+                (itemId) =>
+                  treeState.getNode(itemId)?.meta.nodeType === "modifier",
+              );
+            }
+            // Root level is not directly accessible anymore (use sections or resolvers)
+            if (!targetId) {
+              return false;
+            }
             const target = targetId ? treeState.getNode(targetId) : undefined;
-            // groups and sets accepts only other groups and tokens
+            // resolver nodes accept only token-sets and modifiers
+            if (target?.meta.nodeType === "resolver") {
+              return items.every((itemId) => {
+                const node = treeState.getNode(itemId);
+                return (
+                  node?.meta.nodeType === "token-set" ||
+                  node?.meta.nodeType === "modifier"
+                );
+              });
+            }
+            // modifiers accept only modifier-context nodes
+            if (target?.meta.nodeType === "modifier") {
+              return items.every(
+                (itemId) =>
+                  treeState.getNode(itemId)?.meta.nodeType ===
+                  "modifier-context",
+              );
+            }
+            // modifier-contexts accept groups and tokens (like sets)
+            if (target?.meta.nodeType === "modifier-context") {
+              return items.every((itemId) => {
+                const node = treeState.getNode(itemId);
+                return (
+                  node?.meta.nodeType === "token-group" ||
+                  node?.meta.nodeType === "token"
+                );
+              });
+            }
+            // groups and sets accept only other groups and tokens
             if (
               target?.meta.nodeType === "token-set" ||
               target?.meta.nodeType === "token-group"
@@ -589,6 +963,20 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
+  }
+
+  .token-resolver-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .token-section-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
   }
 
   .edit-button {

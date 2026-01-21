@@ -14,17 +14,22 @@
   const nodes = $derived(treeState.nodes());
   const jsonOutput = $derived.by(() => {
     const filteredNodes = new Map<string, TreeNode<TokenMeta | GroupMeta>>();
-    // remove set node from data and serialize as DTCG format module
-    const setIds = new Set<undefined | string>();
+    // remove resolver/set/modifier/context nodes from data and serialize as DTCG format module
+    const containerIds = new Set<undefined | string>();
     for (const node of nodes.values()) {
-      if (node.meta.nodeType === "token-set") {
-        setIds.add(node.nodeId);
+      if (
+        node.meta.nodeType === "resolver" ||
+        node.meta.nodeType === "token-set" ||
+        node.meta.nodeType === "modifier" ||
+        node.meta.nodeType === "modifier-context"
+      ) {
+        containerIds.add(node.nodeId);
       } else {
         filteredNodes.set(node.nodeId, node as TreeNode<TokenMeta | GroupMeta>);
       }
     }
     for (const node of filteredNodes.values()) {
-      if (setIds.has(node.parentId)) {
+      if (containerIds.has(node.parentId)) {
         // avoid mutating nodes
         filteredNodes.set(node.nodeId, { ...node, parentId: undefined });
       }

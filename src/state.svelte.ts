@@ -12,8 +12,30 @@ import {
 import { setDataInUrl } from "./url-data";
 import { serializeTokenResolver } from "./resolver";
 
+export type ResolverMeta = {
+  nodeType: "resolver";
+  name: string;
+  description?: string;
+  extensions?: Record<string, unknown>;
+};
+
 export type SetMeta = {
   nodeType: "token-set";
+  name: string;
+  description?: string;
+  extensions?: Record<string, unknown>;
+};
+
+export type ModifierMeta = {
+  nodeType: "modifier";
+  name: string;
+  description?: string;
+  default?: string;
+  extensions?: Record<string, unknown>;
+};
+
+export type ModifierContextMeta = {
+  nodeType: "modifier-context";
   name: string;
   description?: string;
   extensions?: Record<string, unknown>;
@@ -44,8 +66,13 @@ export const findTokenType = (
   node: TreeNode<TreeNodeMeta>,
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
 ): Value["type"] | undefined => {
-  // Token-set nodes don't have types
-  if (node.meta.nodeType === "token-set") {
+  // Resolver, token-set, modifier, and modifier-context nodes don't have types
+  if (
+    node.meta.nodeType === "resolver" ||
+    node.meta.nodeType === "token-set" ||
+    node.meta.nodeType === "modifier" ||
+    node.meta.nodeType === "modifier-context"
+  ) {
     return;
   }
   // If token has explicit type, use it
@@ -351,7 +378,13 @@ export const isAliasCircular = (
   return false; // No circular dependency
 };
 
-export type TreeNodeMeta = GroupMeta | TokenMeta | SetMeta;
+export type TreeNodeMeta =
+  | ResolverMeta
+  | GroupMeta
+  | TokenMeta
+  | SetMeta
+  | ModifierMeta
+  | ModifierContextMeta;
 
 export class TreeState<Meta> {
   #store = new TreeStore<Meta>();

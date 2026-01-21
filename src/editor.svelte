@@ -403,11 +403,17 @@
 <div {id} popover="auto" class="a-popover editor-popover" {...rest}>
   <div class="form-header">
     <h2 class="a-panel-title">
-      {node?.meta.nodeType === "token-set"
-        ? "Token Set"
-        : node?.meta.nodeType === "token-group"
-          ? "Group"
-          : "Token"}
+      {node?.meta.nodeType === "resolver"
+        ? "Resolver"
+        : node?.meta.nodeType === "token-set"
+          ? "Token Set"
+          : node?.meta.nodeType === "modifier"
+            ? "Modifier"
+            : node?.meta.nodeType === "modifier-context"
+              ? "Context"
+              : node?.meta.nodeType === "token-group"
+                ? "Group"
+                : "Token"}
     </h2>
     <button
       class="a-button"
@@ -463,6 +469,33 @@
           oninput={(e) => handleDescriptionChange(e.currentTarget.value)}
         ></textarea>
       </div>
+
+      {#if node?.meta?.nodeType === "modifier"}
+        {@const contextChildren = treeState
+          .getChildren(node.nodeId)
+          .filter((child) => child.meta.nodeType === "modifier-context")}
+        <div class="form-group">
+          <label class="a-label" for="default-context-select"
+            >Default Context</label
+          >
+          <select
+            id="default-context-select"
+            class="a-field"
+            value={node.meta.default ?? ""}
+            onchange={(e) => {
+              const value = e.currentTarget.value || undefined;
+              updateMeta({ default: value });
+            }}
+          >
+            <option class="a-item" value="">None</option>
+            {#each contextChildren as context}
+              <option class="a-item" value={context.meta.name}>
+                {context.meta.name}
+              </option>
+            {/each}
+          </select>
+        </div>
+      {/if}
 
       {#if node?.meta?.nodeType === "token-group"}
         {@const availableTypes = getAvailableGroupTypes(node)}

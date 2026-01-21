@@ -505,8 +505,11 @@
   {@const tokens = children.filter((node) => node.meta.nodeType === "token")}
   {@const groups = children.filter(
     (node) =>
+      node.meta.nodeType === "resolver" ||
       node.meta.nodeType === "token-set" ||
-      node.meta.nodeType === "token-group",
+      node.meta.nodeType === "token-group" ||
+      node.meta.nodeType === "modifier" ||
+      node.meta.nodeType === "modifier-context",
   )}
   <!-- render tokens first and then groups to strictly co-locate
   headings with content which can have nested headings -->

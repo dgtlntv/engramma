@@ -288,7 +288,7 @@ describe("parseTokenResolver", () => {
     ]);
   });
 
-  test("silently skips modifier items in resolutionOrder", async () => {
+  test("parses modifier items in resolutionOrder", async () => {
     const result = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
@@ -309,6 +309,7 @@ describe("parseTokenResolver", () => {
         {
           type: "modifier",
           name: "Theme",
+          default: "light",
           contexts: {
             light: [],
             dark: [
@@ -326,8 +327,38 @@ describe("parseTokenResolver", () => {
       ],
     });
     expect(result.errors).toHaveLength(0);
-    // Modifier should be silently skipped, only Base set processed
-    expect(result.nodes.length).toBeGreaterThan(1);
+
+    // Should have: Base set node, colors group, primary token,
+    //              Theme modifier, light context, dark context, colors group, primary token
+    const modifierNode = result.nodes.find(
+      (n) => n.meta.nodeType === "modifier",
+    );
+    expect(modifierNode).toBeDefined();
+    expect(modifierNode?.meta.name).toBe("Theme");
+    expect((modifierNode?.meta as any).default).toBe("light");
+
+    // Find context nodes
+    const contextNodes = result.nodes.filter(
+      (n) => n.meta.nodeType === "modifier-context",
+    );
+    expect(contextNodes).toHaveLength(2);
+    expect(contextNodes.map((n) => n.meta.name).sort()).toEqual([
+      "dark",
+      "light",
+    ]);
+
+    // Find token in dark context
+    const darkContext = contextNodes.find((n) => n.meta.name === "dark");
+    const darkTokens = result.nodes.filter(
+      (n) =>
+        n.meta.nodeType === "token" &&
+        result.nodes.some(
+          (parent) =>
+            parent.nodeId === n.parentId &&
+            parent.parentId === darkContext?.nodeId,
+        ),
+    );
+    expect(darkTokens.length).toBeGreaterThan(0);
   });
 
   test("collects errors from invalid tokens in sources", async () => {
@@ -1104,7 +1135,7 @@ describe("serializeTokenResolver", () => {
     expect(parseResult2.errors).toHaveLength(0);
   });
 
-  test("skips modifier items and serializes only sets", async () => {
+  test("serializes both sets and modifiers", async () => {
     const resolver = await parseTokenResolver({
       version: "2025.10",
       resolutionOrder: [
@@ -1125,9 +1156,28 @@ describe("serializeTokenResolver", () => {
         {
           type: "modifier",
           name: "Theme",
+          default: "light",
           contexts: {
-            light: [],
-            dark: [],
+            light: [
+              {
+                colors: {
+                  bg: {
+                    $type: "color",
+                    $value: { colorSpace: "srgb", components: [1, 1, 1] },
+                  },
+                },
+              },
+            ],
+            dark: [
+              {
+                colors: {
+                  bg: {
+                    $type: "color",
+                    $value: { colorSpace: "srgb", components: [0, 0, 0] },
+                  },
+                },
+              },
+            ],
           },
         },
       ],
@@ -1136,9 +1186,18 @@ describe("serializeTokenResolver", () => {
     const nodes = new Map(resolver.nodes.map((n) => [n.nodeId, n]));
     const document = serializeTokenResolver(nodes);
 
-    // Should only have the Base set, modifier is skipped
-    expect(document.resolutionOrder).toHaveLength(1);
+    // Should have both the Base set and the Theme modifier
+    expect(document.resolutionOrder).toHaveLength(2);
     expect(document.resolutionOrder[0].name).toBe("Base");
+    expect(document.resolutionOrder[0].type).toBe("set");
+    expect(document.resolutionOrder[1].name).toBe("Theme");
+    expect(document.resolutionOrder[1].type).toBe("modifier");
+
+    // Verify modifier structure
+    const modifier = document.resolutionOrder[1] as any;
+    expect(modifier.default).toBe("light");
+    expect(modifier.contexts).toBeDefined();
+    expect(Object.keys(modifier.contexts)).toEqual(["light", "dark"]);
   });
 });
 

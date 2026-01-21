@@ -54,8 +54,14 @@ export const referenceToVariable = (
   let currentId: string | undefined = nodeRef.ref;
   while (currentId) {
     const node = nodes.get(currentId);
-    // token set is the root of the tree
-    if (!node || node.meta.nodeType === "token-set") {
+    // resolver, token-set, modifier, modifier-context are container nodes - stop at them
+    if (
+      !node ||
+      node.meta.nodeType === "resolver" ||
+      node.meta.nodeType === "token-set" ||
+      node.meta.nodeType === "modifier" ||
+      node.meta.nodeType === "modifier-context"
+    ) {
       break;
     }
     path.unshift(node.meta.name);
@@ -184,9 +190,14 @@ const processNode = (
   lines: string[],
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
 ) => {
-  // token-set is intended for grouping globals
+  // resolver, token-set, modifier, and modifier-context are intended for grouping
   // and should be omitted in generated variables
-  if (node.meta.nodeType === "token-set") {
+  if (
+    node.meta.nodeType === "resolver" ||
+    node.meta.nodeType === "token-set" ||
+    node.meta.nodeType === "modifier" ||
+    node.meta.nodeType === "modifier-context"
+  ) {
     const children = childrenByParent.get(node.nodeId) ?? [];
     for (const child of children) {
       processNode(child, path, childrenByParent, lines, nodes);

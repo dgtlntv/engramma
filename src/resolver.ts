@@ -20,6 +20,9 @@ import {
 import { compareTreeNodes } from "./store";
 import type {
   GroupMeta,
+  ModifierMeta,
+  ModifierContextMeta,
+  ResolverMeta,
   SetMeta,
   TokenMeta,
   TreeNodeMeta,
@@ -51,43 +54,50 @@ export const isRefObject = (obj: unknown): obj is RefObject => {
   );
 };
 
-// Helper function to deep merge sources respecting path-based order
-// Later sources override earlier ones at the same path
+// Deep merge two objects, with source taking precedence over target.
+// Groups are merged recursively, but tokens (objects with $value) are replaced entirely.
+// Returns a new merged object without mutating inputs.
+const deepMerge = (
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = { ...target };
+
+  for (const [key, value] of Object.entries(source)) {
+    if (
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      !(value instanceof Date) &&
+      !("$value" in value) && // Token - don't merge, replace
+      result[key] !== null &&
+      typeof result[key] === "object" &&
+      !Array.isArray(result[key]) &&
+      result[key] instanceof Object
+    ) {
+      // Both are plain objects and not tokens - recurse
+      result[key] = deepMerge(
+        result[key] as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
+    } else {
+      // Override: source wins
+      result[key] = value;
+    }
+  }
+
+  return result;
+};
+
+// Helper function to merge multiple sources into a single object.
+// Later sources override earlier ones at the same path.
 const mergeSources = (
   sources: Record<string, unknown>[],
 ): Record<string, unknown> => {
-  const merged: Record<string, unknown> = {};
-
-  const deepMerge = (
-    target: Record<string, unknown>,
-    source: Record<string, unknown>,
-  ): void => {
-    for (const [key, value] of Object.entries(source)) {
-      if (
-        value !== null &&
-        typeof value === "object" &&
-        !Array.isArray(value) &&
-        !(value instanceof Date) &&
-        !("$value" in value) && // Token - don't merge, replace
-        target[key] !== null &&
-        typeof target[key] === "object" &&
-        !Array.isArray(target[key]) &&
-        target[key] instanceof Object
-      ) {
-        // Both are plain objects and not tokens - recurse
-        deepMerge(
-          target[key] as Record<string, unknown>,
-          value as Record<string, unknown>,
-        );
-      } else {
-        // Override: later source wins
-        target[key] = value;
-      }
-    }
-  };
+  let merged: Record<string, unknown> = {};
 
   for (const source of sources) {
-    deepMerge(merged, source);
+    merged = deepMerge(merged, source);
   }
 
   return merged;
@@ -242,15 +252,18 @@ export const resolveResolverRefs = async (
 
 // Parse a resolved resolver document containing sets and modifiers in resolutionOrder
 // Creates separate root token-sets for each Set item
-// Only processes Set items; Modifier items are silently skipped
 // Supports cross-set token aliases through two-phase resolution:
 // Phase 1: Extract intermediary nodes from all sets (collect what tokens/groups exist)
 // Phase 2: Resolve with all accumulated nodes available (enables cross-set references)
 //
 // Note: Input must be a ResolvedResolverDocument (all $refs already resolved at file level)
 // Internal JSON Pointer $refs (e.g., #/path/to/value) inside token $value objects are resolved here
+//
+// @param input - The resolved resolver document
+// @param resolverNodeId - Optional parent ID (resolver node) for sets and modifiers
 export const parseTokenResolver = async (
   input: unknown,
+  resolverNodeId?: string,
 ): Promise<ParseResult> => {
   // Validate resolved resolver document structure
   const validation = resolvedResolverDocumentSchema.safeParse(input);
@@ -269,22 +282,41 @@ export const parseTokenResolver = async (
   const lastChildIndexPerParent = new Map<string | undefined, string>();
   const zeroIndex = generateKeyBetween(null, null);
 
-  // PHASE 1: Extract intermediary nodes from all sets
-  // This collects all tokens/groups with their paths, without resolving references yet
+  // PHASE 1: Extract intermediary nodes from all sets and modifier contexts
+  // JSON Pointer $ref resolution requires the full document context, so we:
+  // 1. First collect and merge all SET sources into a base document
+  // 2. For each modifier context, merge it on top of the base, dereference, then extract its tokens
   const allIntermediaryNodes = new Map<string, any>();
   const intermediaryNodesBySet = new Map<
     string,
     Map<string, IntermediaryNode>
   >();
+  // For modifiers: key is "modifierName/contextName"
+  const intermediaryNodesByModifierContext = new Map<
+    string,
+    Map<string, IntermediaryNode>
+  >();
+
+  // First pass: collect all SET sources to build the base document for $ref resolution
+  // This is needed because modifier contexts may contain JSON Pointer $refs that reference set tokens
+  let baseDocument: Record<string, unknown> = {};
+  const setSourcesByName = new Map<string, Record<string, unknown>>();
 
   for (const item of resolverDoc.resolutionOrder) {
-    // Silently skip modifier items
-    if (item.type === "modifier") {
-      continue;
+    if (item.type === "set") {
+      const mergedSetSources = mergeSources(item.sources);
+      setSourcesByName.set(item.name, mergedSetSources);
+      // Merge into base document (later sets override earlier ones)
+      baseDocument = deepMerge(baseDocument, mergedSetSources);
     }
-    const mergedSetSources = mergeSources(item.sources);
-    // Resolve internal JSON Pointer $refs (e.g., #/typography/text/primary/$root/$value/fontFamily)
-    // These are used in composite token values like typography to reference other values in the same document
+  }
+
+  // Second pass: process sets (dereference each set against itself)
+  for (const item of resolverDoc.resolutionOrder) {
+    if (item.type !== "set") continue;
+
+    const mergedSetSources = setSourcesByName.get(item.name)!;
+    // Resolve internal JSON Pointer $refs within the set
     let dereferencedSources;
     try {
       dereferencedSources = await $RefParser.dereference(
@@ -303,11 +335,144 @@ export const parseTokenResolver = async (
     collectedErrors.push(...errors);
   }
 
+  // Third pass: process modifier contexts
+  // Each context is merged on top of the base document so JSON Pointer $refs can resolve
+  for (const item of resolverDoc.resolutionOrder) {
+    if (item.type !== "modifier") continue;
+
+    for (const [contextName, sources] of Object.entries(item.contexts)) {
+      const contextKey = `${item.name}/${contextName}`;
+      const mergedContextSources = mergeSources(sources);
+
+      // Merge context sources on top of the base document for $ref resolution
+      const fullDocumentForContext = deepMerge(
+        structuredClone(baseDocument),
+        mergedContextSources,
+      );
+
+      // Dereference the full document (context + base)
+      let dereferencedFullDocument;
+      try {
+        dereferencedFullDocument = await $RefParser.dereference(
+          fullDocumentForContext,
+          { mutateInputSchema: true },
+        );
+      } catch (err) {
+        console.error(
+          `Failed to dereference modifier context "${contextKey}":`,
+          err,
+        );
+        dereferencedFullDocument = fullDocumentForContext;
+      }
+
+      // Extract ONLY the paths that were defined in the context sources (not the base)
+      // This ensures we only get the context's own tokens, not the inherited set tokens
+      const contextPaths = new Set<string>();
+      const collectPaths = (obj: unknown, path: string[] = []) => {
+        if (typeof obj !== "object" || obj === null || Array.isArray(obj))
+          return;
+        for (const [key, value] of Object.entries(obj)) {
+          if (key.startsWith("$") && key !== "$root") continue;
+          const currentPath = [...path, key].join(".");
+          contextPaths.add(currentPath);
+          collectPaths(value, [...path, key]);
+        }
+      };
+      collectPaths(mergedContextSources);
+
+      // Extract intermediary nodes from the dereferenced document
+      const { nodes: allDereferencedNodes, errors } = extractIntermediaryNodes(
+        dereferencedFullDocument,
+      );
+
+      // Filter to only include nodes that belong to this context
+      const contextNodes = new Map<string, IntermediaryNode>();
+      for (const [path, node] of allDereferencedNodes) {
+        if (contextPaths.has(path)) {
+          contextNodes.set(path, node);
+        }
+      }
+
+      intermediaryNodesByModifierContext.set(contextKey, contextNodes);
+      for (const [path, node] of contextNodes) {
+        allIntermediaryNodes.set(path, node);
+      }
+      collectedErrors.push(...errors);
+    }
+  }
+
   // PHASE 2: Resolve intermediary nodes with cross-set availability
   // Now that we have all tokens/groups from all sets, resolve references with full visibility
+  // The parent for sets and modifiers is either the resolver node (if provided) or root (undefined)
+  const rootParentId = resolverNodeId ?? undefined;
+
   for (const item of resolverDoc.resolutionOrder) {
     if (item.type === "modifier") {
-      // Silently skip modifier items
+      // Create a modifier node under the resolver (or at root level)
+      const modifierNodeId = crypto.randomUUID();
+      const prevIndex = lastChildIndexPerParent.get(rootParentId);
+      const newIndex = generateKeyBetween(prevIndex ?? zeroIndex, null);
+      lastChildIndexPerParent.set(rootParentId, newIndex);
+
+      const modifierNode: TreeNode<ModifierMeta> = {
+        nodeId: modifierNodeId,
+        parentId: rootParentId,
+        index: newIndex,
+        meta: {
+          nodeType: "modifier",
+          name: item.name,
+          description: item.description,
+          default: item.default,
+          extensions: item.$extensions,
+        },
+      };
+      allNodes.push(modifierNode);
+
+      // Create context nodes as children of the modifier
+      for (const [contextName] of Object.entries(item.contexts)) {
+        const contextKey = `${item.name}/${contextName}`;
+        const intermediaryNodes =
+          intermediaryNodesByModifierContext.get(contextKey);
+        if (!intermediaryNodes) {
+          continue;
+        }
+
+        // Resolve context's intermediary nodes
+        const { nodes, errors } = resolveIntermediaryNodes(
+          intermediaryNodes,
+          allIntermediaryNodes,
+        );
+
+        // Create a context node as child of modifier
+        const contextNodeId = crypto.randomUUID();
+        const prevContextIndex = lastChildIndexPerParent.get(modifierNodeId);
+        const newContextIndex = generateKeyBetween(
+          prevContextIndex ?? zeroIndex,
+          null,
+        );
+        lastChildIndexPerParent.set(modifierNodeId, newContextIndex);
+
+        const contextNode: TreeNode<ModifierContextMeta> = {
+          nodeId: contextNodeId,
+          parentId: modifierNodeId,
+          index: newContextIndex,
+          meta: {
+            nodeType: "modifier-context",
+            name: contextName,
+          },
+        };
+        allNodes.push(contextNode);
+
+        // Re-parent root-level tokens/groups to the context node
+        for (const node of nodes) {
+          if (node.parentId === undefined) {
+            node.parentId = contextNodeId;
+          }
+          allNodes.push(node);
+        }
+
+        collectedErrors.push(...errors);
+      }
       continue;
     }
     // Get this set's intermediary nodes
@@ -321,15 +486,15 @@ export const parseTokenResolver = async (
       allIntermediaryNodes,
     );
 
-    // Create a new token-set node for this Set
+    // Create a new token-set node for this Set under the resolver (or at root level)
     const setNodeId = crypto.randomUUID();
-    const prevSetIndex = lastChildIndexPerParent.get(undefined);
+    const prevSetIndex = lastChildIndexPerParent.get(rootParentId);
     const newSetIndex = generateKeyBetween(prevSetIndex ?? zeroIndex, null);
-    lastChildIndexPerParent.set(undefined, newSetIndex);
+    lastChildIndexPerParent.set(rootParentId, newSetIndex);
 
     const setNode: TreeNode<SetMeta> = {
       nodeId: setNodeId,
-      parentId: undefined,
+      parentId: rootParentId,
       index: newSetIndex,
       meta: {
         nodeType: "token-set",
@@ -385,54 +550,132 @@ export const serializeTokenResolver = (
   nodes: Map<string, TreeNode<TreeNodeMeta>>,
   metadata?: { name?: string; description?: string },
 ): ResolvedResolverDocument => {
-  const setNodes: Array<TreeNode<SetMeta>> = [];
+  // Collect all sets and modifiers (either at root or under resolver nodes)
+  const rootNodes: Array<TreeNode<SetMeta | ModifierMeta>> = [];
   for (const node of nodes.values()) {
-    if (node.parentId === undefined && node.meta.nodeType === "token-set") {
-      setNodes.push(node as TreeNode<SetMeta>);
+    if (
+      node.meta.nodeType === "token-set" ||
+      node.meta.nodeType === "modifier"
+    ) {
+      // Check if parent is either undefined (root) or a resolver node
+      const parentNode = node.parentId ? nodes.get(node.parentId) : undefined;
+      if (
+        node.parentId === undefined ||
+        parentNode?.meta.nodeType === "resolver"
+      ) {
+        rootNodes.push(node as TreeNode<SetMeta | ModifierMeta>);
+      }
     }
   }
 
   // Sort by index to maintain document order
-  setNodes.sort(compareTreeNodes);
-  const resolutionOrder: ResolvedResolverSet[] = [];
-  for (const setNode of setNodes) {
-    // Create a filtered map containing only this set's descendants (excluding the set node itself)
-    // serializeDesignTokens expects token and group nodes, not token-set nodes
-    const setSubtree = new Map<string, TreeNode<TreeNodeMeta>>();
-    const collectDescendants = (nodeId: string | undefined) => {
-      let node = nodeId ? nodes.get(nodeId) : undefined;
-      if (!node) {
-        return;
-      }
-      // Skip the token-set node itself, only collect token and group children
-      if (node.meta.nodeType !== "token-set") {
-        // Re-parent direct children of token-set to root (undefined)
-        if (node.parentId === setNode.nodeId) {
-          // avoid mutating original nodes
-          node = { ...node, parentId: undefined };
-        }
-        setSubtree.set(node.nodeId, node);
-      }
-      // Recursively collect all children
-      for (const child of nodes.values()) {
-        if (child.parentId === nodeId) {
-          collectDescendants(child.nodeId);
-        }
-      }
-    };
+  rootNodes.sort(compareTreeNodes);
+  const resolutionOrder: (ResolvedResolverSet | ResolvedResolverModifier)[] =
+    [];
 
-    collectDescendants(setNode.nodeId);
-    const source = serializeDesignTokens(
-      setSubtree as Map<string, TreeNode<TokenMeta | GroupMeta>>,
-      nodes as Map<string, TreeNode<TokenMeta | GroupMeta>>, // Pass all nodes for cross-set reference lookup
-    );
-    resolutionOrder.push({
-      type: "set",
-      name: setNode.meta.name,
-      description: setNode.meta.description,
-      $extensions: setNode.meta.extensions,
-      sources: [source],
-    });
+  for (const rootNode of rootNodes) {
+    if (rootNode.meta.nodeType === "modifier") {
+      const modifierNode = rootNode as TreeNode<ModifierMeta>;
+      // Collect context children of this modifier
+      const contextNodes: Array<TreeNode<ModifierContextMeta>> = [];
+      for (const node of nodes.values()) {
+        if (
+          node.parentId === modifierNode.nodeId &&
+          node.meta.nodeType === "modifier-context"
+        ) {
+          contextNodes.push(node as TreeNode<ModifierContextMeta>);
+        }
+      }
+      contextNodes.sort(compareTreeNodes);
+
+      // Build contexts object
+      const contexts: Record<string, ResolverSource[]> = {};
+      for (const contextNode of contextNodes) {
+        // Create a filtered map containing only this context's descendants
+        const contextSubtree = new Map<string, TreeNode<TreeNodeMeta>>();
+        const collectDescendants = (
+          nodeId: string | undefined,
+          parentNodeId: string,
+        ) => {
+          let node = nodeId ? nodes.get(nodeId) : undefined;
+          if (!node) {
+            return;
+          }
+          // Skip modifier and modifier-context nodes
+          if (
+            node.meta.nodeType !== "modifier" &&
+            node.meta.nodeType !== "modifier-context"
+          ) {
+            // Re-parent direct children of context to root (undefined)
+            if (node.parentId === parentNodeId) {
+              node = { ...node, parentId: undefined };
+            }
+            contextSubtree.set(node.nodeId, node);
+          }
+          // Recursively collect all children
+          for (const child of nodes.values()) {
+            if (child.parentId === nodeId) {
+              collectDescendants(child.nodeId, parentNodeId);
+            }
+          }
+        };
+
+        collectDescendants(contextNode.nodeId, contextNode.nodeId);
+        const source = serializeDesignTokens(
+          contextSubtree as Map<string, TreeNode<TokenMeta | GroupMeta>>,
+          nodes as Map<string, TreeNode<TokenMeta | GroupMeta>>,
+        );
+        contexts[contextNode.meta.name] = [source];
+      }
+
+      resolutionOrder.push({
+        type: "modifier",
+        name: modifierNode.meta.name,
+        description: modifierNode.meta.description,
+        default: modifierNode.meta.default,
+        $extensions: modifierNode.meta.extensions,
+        contexts,
+      });
+    } else {
+      const setNode = rootNode as TreeNode<SetMeta>;
+      // Create a filtered map containing only this set's descendants (excluding the set node itself)
+      // serializeDesignTokens expects token and group nodes, not token-set nodes
+      const setSubtree = new Map<string, TreeNode<TreeNodeMeta>>();
+      const collectDescendants = (nodeId: string | undefined) => {
+        let node = nodeId ? nodes.get(nodeId) : undefined;
+        if (!node) {
+          return;
+        }
+        // Skip the token-set node itself, only collect token and group children
+        if (node.meta.nodeType !== "token-set") {
+          // Re-parent direct children of token-set to root (undefined)
+          if (node.parentId === setNode.nodeId) {
+            // avoid mutating original nodes
+            node = { ...node, parentId: undefined };
+          }
+          setSubtree.set(node.nodeId, node);
+        }
+        // Recursively collect all children
+        for (const child of nodes.values()) {
+          if (child.parentId === nodeId) {
+            collectDescendants(child.nodeId);
+          }
+        }
+      };
+
+      collectDescendants(setNode.nodeId);
+      const source = serializeDesignTokens(
+        setSubtree as Map<string, TreeNode<TokenMeta | GroupMeta>>,
+        nodes as Map<string, TreeNode<TokenMeta | GroupMeta>>, // Pass all nodes for cross-set reference lookup
+      );
+      resolutionOrder.push({
+        type: "set",
+        name: setNode.meta.name,
+        description: setNode.meta.description,
+        $extensions: setNode.meta.extensions,
+        sources: [source],
+      });
+    }
   }
 
   return {
