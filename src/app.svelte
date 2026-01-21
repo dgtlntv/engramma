@@ -87,10 +87,51 @@
     id.startsWith(SETS_SECTION_PREFIX) ||
     id.startsWith(MODIFIERS_SECTION_PREFIX);
 
+  // Get initial selection from URL hash or default to first root node
+  const getInitialSelection = (): string[] => {
+    const hash = window.location.hash.slice(1); // Remove the # prefix
+    if (hash && treeState.getNode(hash)) {
+      return [hash];
+    }
+    return rootNodes.length ? [rootNodes[0].nodeId] : [];
+  };
+
   // svelte-ignore state_referenced_locally
-  let selectedItems = new SvelteSet<string>(
-    rootNodes.length ? [rootNodes[0].nodeId] : [],
-  );
+  let selectedItems = new SvelteSet<string>(getInitialSelection());
+
+  // Track if we're handling a popstate to avoid update loops
+  let isHandlingPopState = false;
+
+  // Handle browser back/forward navigation
+  $effect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const hash = window.location.hash.slice(1);
+      if (hash && treeState.getNode(hash)) {
+        isHandlingPopState = true;
+        selectedItems.clear();
+        selectedItems.add(hash);
+        isHandlingPopState = false;
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  });
+
+  // Sync selection to URL hash (replaceState so tree clicks don't add history entries)
+  // Reference link clicks use pushState separately in styleguide.svelte
+  $effect(() => {
+    if (isHandlingPopState) return;
+    const firstSelected = Array.from(selectedItems)[0];
+    const currentHash = window.location.hash.slice(1);
+    if (firstSelected && firstSelected !== currentHash) {
+      const newUrl = `${window.location.pathname}${window.location.search}#${firstSelected}`;
+      window.history.replaceState(
+        { selectedNodeId: firstSelected },
+        "",
+        newUrl,
+      );
+    }
+  });
 
   const buildTreeItem = (node: TreeNode<TreeNodeMeta>): TreeItem => {
     const children = treeState.getChildren(node.nodeId);

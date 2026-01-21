@@ -2,7 +2,16 @@
   import { noCase, snakeCase } from "change-case";
   import { titleCase } from "title-case";
   import type { TokenMeta, TreeNodeMeta } from "./state.svelte";
-  import { treeState, resolveTokenValue } from "./state.svelte";
+  import {
+    treeState,
+    resolveTokenValue,
+    getTokenReference,
+    getComponentReferences,
+    getJsonPointerReferences,
+    type TokenReference,
+    type ComponentReference,
+    type JsonPointerReference,
+  } from "./state.svelte";
   import type { TreeNode } from "./store";
   import { serializeColor } from "./color";
   import type {
@@ -23,6 +32,14 @@
   import CopyButton from "./copy-button.svelte";
 
   const { selectedItems }: { selectedItems: Set<string> } = $props();
+
+  const navigateToToken = (nodeId: string) => {
+    // Push to browser history so back/forward works
+    const newUrl = `${window.location.pathname}${window.location.search}#${nodeId}`;
+    window.history.pushState({ selectedNodeId: nodeId }, "", newUrl);
+    selectedItems.clear();
+    selectedItems.add(nodeId);
+  };
 
   const visibleNodes = $derived.by(() => {
     const visibleNodes = new Set<string>();
@@ -243,6 +260,73 @@
   {/if}
 {/snippet}
 
+{#snippet referenceLink(ref: TokenReference)}
+  <button
+    type="button"
+    class="reference-link"
+    onclick={() => navigateToToken(ref.nodeId)}
+    title="Go to {ref.path.join(' > ')}"
+  >
+    {"{" + ref.path.join(".") + "}"}
+  </button>
+{/snippet}
+
+{#snippet tokenReference(node: TreeNode<TreeNodeMeta>)}
+  {@const ref = getTokenReference(node, treeState.nodes())}
+  {#if ref}
+    <div class="token-reference">
+      <span class="reference-label">Alias of</span>
+      {@render referenceLink(ref)}
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet jsonPointerRefLink(ref: JsonPointerReference)}
+  {#if ref.targetNodeId}
+    <button
+      type="button"
+      class="reference-link json-pointer-ref"
+      onclick={() => navigateToToken(ref.targetNodeId!)}
+      title="Go to referenced token"
+    >
+      {ref.displayRef}
+    </button>
+  {:else}
+    <span class="reference-link json-pointer-ref disabled"
+      >{ref.displayRef}</span
+    >
+  {/if}
+{/snippet}
+
+{#snippet componentReferences(node: TreeNode<TreeNodeMeta>)}
+  {@const curlyBraceRefs = getComponentReferences(node, treeState.nodes())}
+  {@const jsonPtrRefs = getJsonPointerReferences(node, treeState.nodes())}
+  {@const jsonPtrKeys = new Set(jsonPtrRefs.map((r) => r.componentKey))}
+  {@const filteredCurlyRefs = curlyBraceRefs.filter(
+    (r) => !jsonPtrKeys.has(r.key),
+  )}
+  {@const hasAnyRefs = filteredCurlyRefs.length > 0 || jsonPtrRefs.length > 0}
+  {#if hasAnyRefs}
+    <div class="component-references">
+      <span class="reference-label">References</span>
+      <div class="component-reference-list">
+        {#each filteredCurlyRefs as compRef (compRef.key)}
+          <div class="component-reference-item">
+            <span class="component-key">{compRef.key}:</span>
+            {@render referenceLink(compRef.reference)}
+          </div>
+        {/each}
+        {#each jsonPtrRefs as ref (ref.componentKey)}
+          <div class="component-reference-item">
+            <span class="component-key">{ref.componentKey}:</span>
+            {@render jsonPointerRefLink(ref)}
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+{/snippet}
+
 {#snippet copyButton(node: TreeNode<TreeNodeMeta>)}
   {@const cssVariable = referenceToVariable(
     { ref: node.nodeId },
@@ -260,6 +344,11 @@
   parentId?: string,
 )}
   {@const tokenValue = resolveTokenValue(node, treeState.nodes())}
+  {@const tokenRef = getTokenReference(node, treeState.nodes())}
+  {@const compRefs = getComponentReferences(node, treeState.nodes())}
+  {@const jsonPtrRefs = getJsonPointerReferences(node, treeState.nodes())}
+  {@const hasRefs =
+    tokenRef !== undefined || compRefs.length > 0 || jsonPtrRefs.length > 0}
   <div class="token-card" data-deprecated={Boolean(tokenMeta.deprecated)}>
     {#if tokenValue.type === "color"}
       {@const color = serializeColor(tokenValue.value)}
@@ -269,7 +358,16 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">Color: {color}</div>
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">Color: {color}</div>
+          </details>
+        {:else}
+          <div class="token-value">Color: {color}</div>
+        {/if}
       </div>
     {/if}
 
@@ -283,7 +381,15 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">Dimension: {value}</div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">Dimension: {value}</div>
+          </details>
+        {:else}
+          <div class="token-value">Dimension: {value}</div>
+        {/if}
       </div>
     {/if}
 
@@ -298,9 +404,19 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          Duration: {toDurationValue(tokenValue.value)}
-        </div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              Duration: {toDurationValue(tokenValue.value)}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            Duration: {toDurationValue(tokenValue.value)}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -314,9 +430,19 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          Cubic Bezier: {tokenValue.value.join(", ")}
-        </div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              Cubic Bezier: {tokenValue.value.join(", ")}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            Cubic Bezier: {tokenValue.value.join(", ")}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -338,7 +464,15 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">Number: {tokenValue.value}</div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">Number: {tokenValue.value}</div>
+          </details>
+        {:else}
+          <div class="token-value">Number: {tokenValue.value}</div>
+        {/if}
       </div>
     {/if}
 
@@ -352,7 +486,15 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">Font: {fontFamily}</div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">Font: {fontFamily}</div>
+          </details>
+        {:else}
+          <div class="token-value">Font: {fontFamily}</div>
+        {/if}
       </div>
     {/if}
 
@@ -366,7 +508,15 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">Weight: {weight}</div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">Weight: {weight}</div>
+          </details>
+        {:else}
+          <div class="token-value">Weight: {weight}</div>
+        {/if}
       </div>
     {/if}
 
@@ -383,11 +533,24 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          Duration: {toDurationValue(transition.duration)}<br />
-          Delay: {toDurationValue(transition.delay)}<br />
-          Timing: {toCubicBezierValue(transition.timingFunction)}
-        </div>
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              Duration: {toDurationValue(transition.duration)}<br />
+              Delay: {toDurationValue(transition.delay)}<br />
+              Timing: {toCubicBezierValue(transition.timingFunction)}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            Duration: {toDurationValue(transition.duration)}<br />
+            Delay: {toDurationValue(transition.delay)}<br />
+            Timing: {toCubicBezierValue(transition.timingFunction)}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -409,13 +572,28 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          Font: {toFontFamilyValue(typo.fontFamily)}<br />
-          Weight: {typo.fontWeight}<br />
-          Size: {toDimensionValue(typo.fontSize)}<br />
-          Line Height: {typo.lineHeight}<br />
-          Letter Spacing: {toDimensionValue(typo.letterSpacing)}
-        </div>
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              Font: {toFontFamilyValue(typo.fontFamily)}<br />
+              Weight: {typo.fontWeight}<br />
+              Size: {toDimensionValue(typo.fontSize)}<br />
+              Line Height: {typo.lineHeight}<br />
+              Letter Spacing: {toDimensionValue(typo.letterSpacing)}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            Font: {toFontFamilyValue(typo.fontFamily)}<br />
+            Weight: {typo.fontWeight}<br />
+            Size: {toDimensionValue(typo.fontSize)}<br />
+            Line Height: {typo.lineHeight}<br />
+            Letter Spacing: {toDimensionValue(typo.letterSpacing)}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -430,13 +608,28 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          {#each tokenValue.value as stop}
-            <div>
-              {stop.position * 100}%: {serializeColor(stop.color)}
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              {#each tokenValue.value as stop}
+                <div>
+                  {stop.position * 100}%: {serializeColor(stop.color)}
+                </div>
+              {/each}
             </div>
-          {/each}
-        </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            {#each tokenValue.value as stop}
+              <div>
+                {stop.position * 100}%: {serializeColor(stop.color)}
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -451,13 +644,28 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          {#each shadows as shadow}
-            <div>
-              {toShadowValue([shadow], new Map())}
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              {#each shadows as shadow}
+                <div>
+                  {toShadowValue([shadow], new Map())}
+                </div>
+              {/each}
             </div>
-          {/each}
-        </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            {#each shadows as shadow}
+              <div>
+                {toShadowValue([shadow], new Map())}
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -475,11 +683,24 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          <div>Color: {color}</div>
-          <div>Width: {width}</div>
-          {@render strokeStyleMetadata(border.style)}
-        </div>
+        {@render tokenReference(node)}
+        {@render componentReferences(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              <div>Color: {color}</div>
+              <div>Width: {width}</div>
+              {@render strokeStyleMetadata(border.style)}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            <div>Color: {color}</div>
+            <div>Width: {width}</div>
+            {@render strokeStyleMetadata(border.style)}
+          </div>
+        {/if}
       </div>
     {/if}
 
@@ -490,9 +711,19 @@
       </div>
       <div class="token-content">
         {@render metadata(tokenMeta)}
-        <div class="token-value">
-          {@render strokeStyleMetadata(tokenValue.value)}
-        </div>
+        {@render tokenReference(node)}
+        {#if hasRefs}
+          <details class="resolved-value-accordion">
+            <summary>Resolved value</summary>
+            <div class="token-value">
+              {@render strokeStyleMetadata(tokenValue.value)}
+            </div>
+          </details>
+        {:else}
+          <div class="token-value">
+            {@render strokeStyleMetadata(tokenValue.value)}
+          </div>
+        {/if}
       </div>
     {/if}
   </div>
@@ -721,6 +952,99 @@
     font-size: 11px;
     font-weight: 500;
     justify-self: start;
+  }
+
+  .token-reference,
+  .component-references {
+    font-size: 11px;
+  }
+
+  .reference-label {
+    color: #888;
+    margin-right: 4px;
+  }
+
+  .reference-link {
+    display: inline;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--typography-monospace-code);
+    font-size: 11px;
+    color: #4f46e5;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+      color: #3730a3;
+      text-decoration: underline;
+    }
+  }
+
+  .component-reference-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 2px;
+  }
+
+  .component-reference-item {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .component-key {
+    color: #666;
+    font-family: var(--typography-monospace-code);
+    font-size: 10px;
+  }
+
+  .json-pointer-ref {
+    word-break: break-all;
+
+    &.disabled {
+      color: #999;
+      cursor: default;
+    }
+  }
+
+  .resolved-value-accordion {
+    margin-top: 4px;
+
+    & > summary {
+      font-size: 11px;
+      color: #888;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::before {
+        content: "▶";
+        display: inline-block;
+        margin-right: 4px;
+        font-size: 8px;
+        transition: transform 0.15s;
+      }
+
+      &:hover {
+        color: #666;
+      }
+    }
+
+    &[open] > summary::before {
+      transform: rotate(90deg);
+    }
+
+    & > .token-value {
+      margin-top: 4px;
+      padding-left: 12px;
+    }
   }
 
   .color-preview {

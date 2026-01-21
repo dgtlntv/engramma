@@ -26,6 +26,18 @@ import { backwardCompatibleTokenSchema } from "./legacy.schema";
 
 type TreeNodeMeta = GroupMeta | TokenMeta;
 
+/**
+ * Represents a JSON Pointer reference for a component within a token
+ */
+export type JsonPointerRefInfo = {
+  /** The component key (e.g., "fontFamily", "color") */
+  componentKey: string;
+  /** The full $ref target (e.g., "#/typography/text/primary/$root/$value/fontFamily") */
+  targetRef: string;
+  /** The token path extracted from targetRef (e.g., "typography.text.primary.$root") */
+  targetTokenPath: string;
+};
+
 // Intermediary node collected during tree traversal
 // Contains information needed to generate normalized tree nodes
 export type IntermediaryNode = {
@@ -34,6 +46,8 @@ export type IntermediaryNode = {
   nodeId: string;
   type: TokenType | undefined;
   payload: Token | Group;
+  /** JSON Pointer $refs found within this token's $value */
+  jsonPointerRefs?: JsonPointerRefInfo[];
 };
 
 const getPathFromTokenRef = (tokenRef: string) => tokenRef.replace(/[{}]/g, "");
@@ -141,7 +155,19 @@ const isTokenReference = (value: unknown): value is string => {
   return referenceSchema.safeParse(value).success;
 };
 
-export const extractIntermediaryNodes = (input: unknown) => {
+/**
+ * Input type for captured JSON Pointer refs (from resolver.ts)
+ */
+export type CapturedJsonPointerRef = {
+  locationPath: string;
+  targetRef: string;
+  targetTokenPath: string;
+};
+
+export const extractIntermediaryNodes = (
+  input: unknown,
+  capturedRefs?: Map<string, CapturedJsonPointerRef>,
+) => {
   const nodes = new Map<string, IntermediaryNode>();
   const errors: Array<{ path: string; message: string }> = [];
 
@@ -173,12 +199,35 @@ export const extractIntermediaryNodes = (input: unknown) => {
     inheritedType = payload.data.$type ?? inheritedType;
     const nodeId = crypto.randomUUID();
     const pathStr = path.join(".");
+
+    // Find any JSON Pointer refs that belong to this token
+    let jsonPointerRefs: JsonPointerRefInfo[] | undefined;
+    if (capturedRefs && "$value" in payload.data) {
+      const tokenValuePrefix = `${pathStr}.$value.`;
+      const refsForToken: JsonPointerRefInfo[] = [];
+      for (const [refPath, refInfo] of capturedRefs) {
+        if (refPath.startsWith(tokenValuePrefix)) {
+          // Extract the component key (e.g., "fontFamily" from "typography.bold.$value.fontFamily")
+          const componentKey = refPath.slice(tokenValuePrefix.length);
+          refsForToken.push({
+            componentKey,
+            targetRef: refInfo.targetRef,
+            targetTokenPath: refInfo.targetTokenPath,
+          });
+        }
+      }
+      if (refsForToken.length > 0) {
+        jsonPointerRefs = refsForToken;
+      }
+    }
+
     nodes.set(pathStr, {
       parentPath: parentPath?.join("."),
       name,
       nodeId,
       type: inheritedType,
       payload: payload.data,
+      jsonPointerRefs,
     });
     // skip traversing children on token
     if (!("$value" in payload.data) && isObject(data)) {
@@ -383,6 +432,7 @@ export const resolveIntermediaryNodes = (
         description: token.$description,
         deprecated: token.$deprecated,
         extensions: token.$extensions,
+        jsonPointerRefs: intermediaryNode.jsonPointerRefs,
         ...typeAndValue,
       };
     } else {

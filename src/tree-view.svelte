@@ -82,16 +82,33 @@
     }
   };
 
-  // expand all parents of selected items
-  // so newly created items could be visible
-  $effect(() => {
-    traverceNodes(data, (nodeId, parentId) => {
-      for (const selectedItemId of selectedItems) {
-        if (nodeId === selectedItemId && parentId) {
-          expandedItems.add(parentId);
-        }
+  // Build a map of nodeId -> parentId for efficient ancestor lookup
+  const buildParentMap = (
+    nodes: TreeItem[],
+  ): Map<string, string | undefined> => {
+    const map = new Map<string, string | undefined>();
+    const traverse = (items: TreeItem[]) => {
+      for (const item of items) {
+        map.set(item.id, item.parentId);
+        traverse(item.children);
       }
-    });
+    };
+    traverse(nodes);
+    return map;
+  };
+
+  // expand all ancestors of selected items
+  // so newly created items or navigated items are visible
+  $effect(() => {
+    const parentMap = buildParentMap(data);
+    for (const selectedItemId of selectedItems) {
+      // Walk up the parent chain and expand all ancestors
+      let currentId: string | undefined = parentMap.get(selectedItemId);
+      while (currentId !== undefined) {
+        expandedItems.add(currentId);
+        currentId = parentMap.get(currentId);
+      }
+    }
   });
 
   const getItemId = (item: undefined | null | Element) => {

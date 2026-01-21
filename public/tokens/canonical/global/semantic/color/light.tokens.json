@@ -8,9 +8,9 @@
         "components": [
           { "$ref": "#/color/palette/black/$value/components/0" },
           { "$ref": "#/color/palette/black/$value/components/1" },
-          { "$ref": "#/number/opacity/backdrop/$value" }
+          { "$ref": "#/color/palette/black/$value/components/2" }
         ],
-        "alpha": 1
+        "alpha": { "$ref": "#/number/opacity/backdrop/$value" }
       },
       "$description": "Backdrop color for modal overlays"
     },

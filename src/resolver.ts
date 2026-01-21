@@ -54,6 +54,101 @@ export const isRefObject = (obj: unknown): obj is RefObject => {
   );
 };
 
+/**
+ * Represents a JSON Pointer reference found in the source
+ */
+export type JsonPointerRef = {
+  /** The JSON path where the $ref was found (e.g., "typography.text.bold.$value.fontFamily") */
+  locationPath: string;
+  /** The $ref target (e.g., "#/typography/text/primary/$root/$value/fontFamily") */
+  targetRef: string;
+  /** The token path extracted from targetRef (e.g., "typography.text.primary.$root") */
+  targetTokenPath: string;
+};
+
+/**
+ * Extract the token path from a JSON Pointer $ref
+ * e.g., "#/typography/text/primary/$root/$value/fontFamily" -> "typography.text.primary.$root"
+ * We extract everything up to and including the token name (before $value or $extensions)
+ */
+const extractTokenPathFromRef = (ref: string): string => {
+  // Remove the leading "#/"
+  const path = ref.replace(/^#\//, "");
+  // Split by "/"
+  const parts = path.split("/");
+  // Find where $value or $extensions starts - the token is everything before that
+  const valueIndex = parts.findIndex(
+    (p) => p === "$value" || p === "$extensions",
+  );
+  if (valueIndex === -1) {
+    // No $value found, return the whole path (might be referencing a token directly)
+    return parts.join(".");
+  }
+  // Return everything up to (but not including) $value/$extensions
+  return parts.slice(0, valueIndex).join(".");
+};
+
+/**
+ * Walk a JSON object and capture all internal $ref objects (starting with #)
+ * Returns a map of location paths to their $ref targets
+ */
+export const captureJsonPointerRefs = (
+  obj: unknown,
+  currentPath: string[] = [],
+): Map<string, JsonPointerRef> => {
+  const refs = new Map<string, JsonPointerRef>();
+
+  if (typeof obj !== "object" || obj === null) {
+    return refs;
+  }
+
+  // Check if the current object itself is a $ref object (e.g., array element that is { "$ref": "..." })
+  if (isRefObject(obj) && obj.$ref.startsWith("#")) {
+    const pathStr = currentPath.join(".");
+    refs.set(pathStr, {
+      locationPath: pathStr,
+      targetRef: obj.$ref,
+      targetTokenPath: extractTokenPathFromRef(obj.$ref),
+    });
+    return refs;
+  }
+
+  if (Array.isArray(obj)) {
+    obj.forEach((item, index) => {
+      const childRefs = captureJsonPointerRefs(item, [
+        ...currentPath,
+        `[${index}]`,
+      ]);
+      for (const [key, value] of childRefs) {
+        refs.set(key, value);
+      }
+    });
+    return refs;
+  }
+
+  for (const [key, value] of Object.entries(obj)) {
+    const path = [...currentPath, key];
+    const pathStr = path.join(".");
+
+    // Check if this value is an internal $ref object (starts with #)
+    if (isRefObject(value) && value.$ref.startsWith("#")) {
+      refs.set(pathStr, {
+        locationPath: pathStr,
+        targetRef: value.$ref,
+        targetTokenPath: extractTokenPathFromRef(value.$ref),
+      });
+    } else {
+      // Recurse into nested objects
+      const childRefs = captureJsonPointerRefs(value, path);
+      for (const [childKey, childValue] of childRefs) {
+        refs.set(childKey, childValue);
+      }
+    }
+  }
+
+  return refs;
+};
+
 // Deep merge two objects, with source taking precedence over target.
 // Groups are merged recursively, but tokens (objects with $value) are replaced entirely.
 // Returns a new merged object without mutating inputs.
@@ -316,6 +411,10 @@ export const parseTokenResolver = async (
     if (item.type !== "set") continue;
 
     const mergedSetSources = setSourcesByName.get(item.name)!;
+
+    // Capture JSON Pointer $refs before dereferencing
+    const capturedRefs = captureJsonPointerRefs(mergedSetSources);
+
     // Resolve internal JSON Pointer $refs within the set
     let dereferencedSources;
     try {
@@ -327,7 +426,10 @@ export const parseTokenResolver = async (
       console.error(`Failed to dereference set "${item.name}":`, err);
       dereferencedSources = mergedSetSources;
     }
-    const { nodes, errors } = extractIntermediaryNodes(dereferencedSources);
+    const { nodes, errors } = extractIntermediaryNodes(
+      dereferencedSources,
+      capturedRefs,
+    );
     intermediaryNodesBySet.set(item.name, nodes);
     for (const [path, node] of nodes) {
       allIntermediaryNodes.set(path, node);
@@ -343,6 +445,9 @@ export const parseTokenResolver = async (
     for (const [contextName, sources] of Object.entries(item.contexts)) {
       const contextKey = `${item.name}/${contextName}`;
       const mergedContextSources = mergeSources(sources);
+
+      // Capture JSON Pointer $refs from context sources before dereferencing
+      const capturedRefs = captureJsonPointerRefs(mergedContextSources);
 
       // Merge context sources on top of the base document for $ref resolution
       const fullDocumentForContext = deepMerge(
@@ -383,6 +488,7 @@ export const parseTokenResolver = async (
       // Extract intermediary nodes from the dereferenced document
       const { nodes: allDereferencedNodes, errors } = extractIntermediaryNodes(
         dereferencedFullDocument,
+        capturedRefs,
       );
 
       // Filter to only include nodes that belong to this context

@@ -11,6 +11,7 @@ import {
 } from "./schema";
 import { setDataInUrl } from "./url-data";
 import { serializeTokenResolver } from "./resolver";
+import type { JsonPointerRefInfo } from "./tokens";
 
 export type ResolverMeta = {
   nodeType: "resolver";
@@ -56,6 +57,8 @@ export type TokenMeta = {
   description?: string;
   deprecated?: boolean | string;
   extensions?: Record<string, unknown>;
+  /** JSON Pointer $refs found within this token's $value (captured before dereferencing) */
+  jsonPointerRefs?: JsonPointerRefInfo[];
 } & RawValueWithReference;
 
 /**
@@ -88,6 +91,213 @@ export const findTokenType = (
     }
     currentParentId = parentNode?.parentId;
   }
+};
+
+/**
+ * Get the full path to a token as an array of names
+ * Useful for displaying reference paths like "colors > primary > base"
+ */
+export const getTokenPath = (
+  nodeId: string,
+  nodes: Map<string, TreeNode<TreeNodeMeta>>,
+): string[] => {
+  const path: string[] = [];
+  let currentId: string | undefined = nodeId;
+  while (currentId !== undefined) {
+    const currentNode = nodes.get(currentId);
+    if (!currentNode) break;
+    path.unshift(currentNode.meta.name);
+    currentId = currentNode.parentId;
+  }
+  return path;
+};
+
+/**
+ * Information about a token reference
+ */
+export type TokenReference = {
+  /** The node ID being referenced */
+  nodeId: string;
+  /** The path to the referenced token */
+  path: string[];
+};
+
+/**
+ * Get reference information for a token if it's an alias
+ * Returns undefined if the token has a direct value (not a reference)
+ */
+export const getTokenReference = (
+  node: TreeNode<TreeNodeMeta>,
+  nodes: Map<string, TreeNode<TreeNodeMeta>>,
+): TokenReference | undefined => {
+  if (node.meta.nodeType !== "token") {
+    return undefined;
+  }
+  if (!isNodeRef(node.meta.value)) {
+    return undefined;
+  }
+  const refNodeId = node.meta.value.ref;
+  return {
+    nodeId: refNodeId,
+    path: getTokenPath(refNodeId, nodes),
+  };
+};
+
+/**
+ * Reference information for a component within a composite token
+ */
+export type ComponentReference = {
+  /** The component key (e.g., "color", "width", "fontFamily") */
+  key: string;
+  /** The reference information */
+  reference: TokenReference;
+};
+
+/**
+ * Get all component references within a composite token's raw value
+ * Returns an array of component references for any sub-values that are references
+ */
+export const getComponentReferences = (
+  node: TreeNode<TreeNodeMeta>,
+  nodes: Map<string, TreeNode<TreeNodeMeta>>,
+): ComponentReference[] => {
+  if (node.meta.nodeType !== "token") {
+    return [];
+  }
+  // If the whole token is a reference, don't return component references
+  if (isNodeRef(node.meta.value)) {
+    return [];
+  }
+
+  const refs: ComponentReference[] = [];
+
+  const addRefIfPresent = (key: string, value: unknown) => {
+    if (isNodeRef(value)) {
+      refs.push({
+        key,
+        reference: {
+          nodeId: value.ref,
+          path: getTokenPath(value.ref, nodes),
+        },
+      });
+    }
+  };
+
+  switch (node.meta.type) {
+    case "transition": {
+      const val = node.meta.value;
+      addRefIfPresent("duration", val.duration);
+      addRefIfPresent("delay", val.delay);
+      addRefIfPresent("timingFunction", val.timingFunction);
+      break;
+    }
+    case "border": {
+      const val = node.meta.value;
+      addRefIfPresent("color", val.color);
+      addRefIfPresent("width", val.width);
+      addRefIfPresent("style", val.style);
+      break;
+    }
+    case "shadow": {
+      const shadows = node.meta.value;
+      for (let i = 0; i < shadows.length; i++) {
+        const shadow = shadows[i];
+        addRefIfPresent(`shadow[${i}].color`, shadow.color);
+        addRefIfPresent(`shadow[${i}].offsetX`, shadow.offsetX);
+        addRefIfPresent(`shadow[${i}].offsetY`, shadow.offsetY);
+        addRefIfPresent(`shadow[${i}].blur`, shadow.blur);
+        addRefIfPresent(`shadow[${i}].spread`, shadow.spread);
+      }
+      break;
+    }
+    case "typography": {
+      const val = node.meta.value;
+      addRefIfPresent("fontFamily", val.fontFamily);
+      addRefIfPresent("fontSize", val.fontSize);
+      addRefIfPresent("fontWeight", val.fontWeight);
+      addRefIfPresent("letterSpacing", val.letterSpacing);
+      addRefIfPresent("lineHeight", val.lineHeight);
+      break;
+    }
+    case "gradient": {
+      const stops = node.meta.value;
+      for (let i = 0; i < stops.length; i++) {
+        addRefIfPresent(`stop[${i}].color`, stops[i].color);
+      }
+      break;
+    }
+  }
+
+  return refs;
+};
+
+/**
+ * Information about a JSON Pointer reference for display in the UI
+ */
+export type JsonPointerReference = {
+  /** The component key (e.g., "fontFamily") */
+  componentKey: string;
+  /** The full $ref path to display (e.g., "#/typography/text/primary/$root/$value/fontFamily") */
+  displayRef: string;
+  /** The target node ID to navigate to (if found) */
+  targetNodeId: string | undefined;
+};
+
+/**
+ * Get JSON Pointer references for a token
+ * Returns the refs with resolved target node IDs for navigation
+ */
+export const getJsonPointerReferences = (
+  node: TreeNode<TreeNodeMeta>,
+  nodes: Map<string, TreeNode<TreeNodeMeta>>,
+): JsonPointerReference[] => {
+  if (node.meta.nodeType !== "token") {
+    return [];
+  }
+  const jsonPointerRefs = node.meta.jsonPointerRefs;
+  if (!jsonPointerRefs || jsonPointerRefs.length === 0) {
+    return [];
+  }
+
+  // Build maps for token path lookup
+  // Full path map: "theme.light.color.palette.black" -> nodeId
+  // We also need to match partial paths since JSON Pointer targets don't include container hierarchy
+  const fullPathToNodeId = new Map<string, string>();
+  const nodeEntries: Array<{ nodeId: string; path: string[] }> = [];
+
+  for (const [nodeId, n] of nodes) {
+    if (n.meta.nodeType === "token" || n.meta.nodeType === "token-group") {
+      const pathParts = getTokenPath(nodeId, nodes);
+      const fullPath = pathParts.join(".");
+      fullPathToNodeId.set(fullPath, nodeId);
+      nodeEntries.push({ nodeId, path: pathParts });
+    }
+  }
+
+  // Find a node whose path ends with the target path
+  const findNodeByTargetPath = (targetPath: string): string | undefined => {
+    // First try exact match
+    if (fullPathToNodeId.has(targetPath)) {
+      return fullPathToNodeId.get(targetPath);
+    }
+    // Then try suffix match (for paths within containers like modifiers)
+    const targetParts = targetPath.split(".");
+    for (const entry of nodeEntries) {
+      if (entry.path.length >= targetParts.length) {
+        const suffix = entry.path.slice(-targetParts.length);
+        if (suffix.join(".") === targetPath) {
+          return entry.nodeId;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  return jsonPointerRefs.map((ref) => ({
+    componentKey: ref.componentKey,
+    displayRef: ref.targetRef,
+    targetNodeId: findNodeByTargetPath(ref.targetTokenPath),
+  }));
 };
 
 type ResolveContext = {
