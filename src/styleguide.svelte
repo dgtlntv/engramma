@@ -1203,12 +1203,13 @@
     inset: 0;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
 
   .dimension-bar {
     width: var(--value);
+    height: var(--value);
     background-color: var(--bg-primary);
-    height: 100%;
   }
 
   .cubic-bezier-preview {
