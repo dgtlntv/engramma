@@ -20,7 +20,7 @@
           "Segoe UI Emoji",
           "sans-serif"
         ],
-        "$description": "Sans-serif font stack with Ubuntu Sans as primary"
+        "$description": "Primitive font family stack sansSerif (primary: Ubuntu Sans)"
       },
       "monospace": {
         "$value": [
@@ -39,42 +39,42 @@
           "Roboto Mono",
           "monospace"
         ],
-        "$description": "Monospace font stack with Ubuntu Sans Mono as primary"
+        "$description": "Primitive font family stack monospace (primary: Ubuntu Sans Mono)"
       }
     },
     "weight": {
       "$type": "fontWeight",
       "thin": {
         "$value": 100,
-        "$description": "Thin font weight"
+        "$description": "Primitive font weight thin"
       },
       "extraLight": {
         "$value": 200,
-        "$description": "Extra light font weight"
+        "$description": "Primitive font weight extraLight"
       },
       "light": {
         "$value": 300,
-        "$description": "Light font weight"
+        "$description": "Primitive font weight light"
       },
       "regular": {
         "$value": 400,
-        "$description": "Regular font weight"
+        "$description": "Primitive font weight regular"
       },
       "medium": {
         "$value": 500,
-        "$description": "Medium font weight"
+        "$description": "Primitive font weight medium"
       },
       "semiBold": {
         "$value": 600,
-        "$description": "Semi-bold font weight"
+        "$description": "Primitive font weight semiBold"
       },
       "bold": {
         "$value": 700,
-        "$description": "Bold font weight"
+        "$description": "Primitive font weight bold"
       },
       "extraBold": {
         "$value": 800,
-        "$description": "Extra bold font weight"
+        "$description": "Primitive font weight extraBold"
       }
     },
     "fontStyle": {
@@ -85,7 +85,7 @@
             "$value": "italic"
           }
         },
-        "$description": "Italic font style"
+        "$description": "Primitive font style italic (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     },
     "fontPosition": {
@@ -96,7 +96,7 @@
             "$value": "sub"
           }
         },
-        "$description": "Subscript vertical alignment"
+        "$description": "Primitive font position subscript (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "superscript": {
         "$extensions": {
@@ -105,7 +105,7 @@
             "$value": "super"
           }
         },
-        "$description": "Superscript vertical alignment"
+        "$description": "Primitive font position superscript (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     },
     "figureStyle": {
@@ -116,7 +116,7 @@
             "$value": "normal"
           }
         },
-        "$description": "Normal figure style"
+        "$description": "Primitive figure style normal (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "oldStyleFigure": {
         "$extensions": {
@@ -125,7 +125,7 @@
             "$value": "oldstyle-nums"
           }
         },
-        "$description": "Old-style figures with varying heights"
+        "$description": "Primitive figure style oldStyleFigure (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "liningFigures": {
         "$extensions": {
@@ -134,7 +134,7 @@
             "$value": "lining-nums"
           }
         },
-        "$description": "Lining figures with uniform height"
+        "$description": "Primitive figure style liningFigures (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     },
     "textDecoration": {
@@ -145,7 +145,7 @@
             "$value": "underline solid"
           }
         },
-        "$description": "Solid underline decoration"
+        "$description": "Primitive text decoration underline (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "strikethrough": {
         "$extensions": {
@@ -154,7 +154,7 @@
             "$value": "line-through"
           }
         },
-        "$description": "Strikethrough decoration"
+        "$description": "Primitive text decoration strikethrough (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     },
     "letterCase": {
@@ -165,7 +165,7 @@
             "$value": "normal"
           }
         },
-        "$description": "Default letter case"
+        "$description": "Primitive letter case default (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "smallcaps": {
         "$extensions": {
@@ -174,7 +174,7 @@
             "$value": "small-caps"
           }
         },
-        "$description": "Small capitals letter case"
+        "$description": "Primitive letter case smallcaps (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     }
   }

@@ -5,12 +5,12 @@
     "size": {
       "rootFontSize": {
         "$value": "{dimension.200}",
-        "$description": "Root font size for small breakpoint - 1rem, 16px"
+        "$description": "Base font size defining the root rem unit for small breakpoint layouts (16px)"
       },
       "height": {
         "baseline": {
           "$value": "{dimension.100}",
-          "$description": "Baseline grid height - 0.5rem, 8px"
+          "$description": "Baseline grid unit for vertical rhythm and component alignment (8px)"
         }
       }
     }

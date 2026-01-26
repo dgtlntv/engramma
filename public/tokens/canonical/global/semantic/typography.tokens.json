@@ -15,12 +15,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.normal}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/normal/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Primary body text - 16px regular"
+          "$description": "Default text style for UI elements such as buttons, labels, and form inputs, etc. (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -50,7 +54,7 @@
               }
             }
           },
-          "$description": "Primary body text - bold variant"
+          "$description": "Bold variant of primary text for emphasis in UI elements (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "code": {
           "$value": {
@@ -74,11 +78,43 @@
                 "letterCase": {
                   "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
                 },
-                "figureStyle": "{typography.figureStyle.normal}"
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/normal/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Primary code text"
+          "$description": "Monospace text style for code snippets (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
+        },
+        "smallcaps": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": "{dimension.letterSpacing.wide}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/smallcaps/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
+              }
+            }
+          },
+          "$description": "Small caps variant of primary text with wide letter spacing for stylistic headings and emphasis (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "prose": {
           "$root": {
@@ -105,11 +141,13 @@
                   "letterCase": {
                     "$ref": "#/typography/text/primary/$root/$extensions/com.canonical.typography/$value/letterCase"
                   },
-                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                  "figureStyle": {
+                    "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                  }
                 }
               }
             },
-            "$description": "Primary prose text with oldstyle figures - 16px regular"
+            "$description": "Body text style for flowing paragraph content and long-form reading, using oldstyle figures for improved readability (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           },
           "bold": {
             "$value": {
@@ -139,7 +177,7 @@
                 }
               }
             },
-            "$description": "Primary prose text with oldstyle figures - bold variant"
+            "$description": "Bold variant of primary prose text for emphasis in paragraph content (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           }
         }
       },
@@ -155,12 +193,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.normal}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/normal/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Secondary body text - 14px regular"
+          "$description": "Secondary text style for less prominent UI elements (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -190,7 +232,7 @@
               }
             }
           },
-          "$description": "Secondary body text - bold variant"
+          "$description": "Bold variant of secondary text for emphasis (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "code": {
           "$value": {
@@ -214,11 +256,13 @@
                 "letterCase": {
                   "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
                 },
-                "figureStyle": "{typography.figureStyle.normal}"
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/normal/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Secondary code text"
+          "$description": "Monospace text style for code snippets at secondary text size (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "prose": {
           "$root": {
@@ -245,11 +289,13 @@
                   "letterCase": {
                     "$ref": "#/typography/text/secondary/$root/$extensions/com.canonical.typography/$value/letterCase"
                   },
-                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                  "figureStyle": {
+                    "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                  }
                 }
               }
             },
-            "$description": "Secondary prose text with oldstyle figures - 14px regular"
+            "$description": "Secondary text style for flowing paragraph content, using oldstyle figures for improved readability (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           },
           "bold": {
             "$value": {
@@ -279,7 +325,7 @@
                 }
               }
             },
-            "$description": "Secondary prose text with oldstyle figures - bold variant"
+            "$description": "Bold variant of secondary prose text for emphasis in paragraph content (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           }
         }
       },
@@ -295,12 +341,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.normal}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/normal/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Tertiary body text - 12px regular"
+          "$description": "Tertiary body text style for supplementary UI elements (12px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -330,7 +380,7 @@
               }
             }
           },
-          "$description": "Tertiary body text - bold variant"
+          "$description": "Bold variant of tertiary text for emphasis (12px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "prose": {
           "$root": {
@@ -357,11 +407,13 @@
                   "letterCase": {
                     "$ref": "#/typography/text/tertiary/$root/$extensions/com.canonical.typography/$value/letterCase"
                   },
-                  "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                  "figureStyle": {
+                    "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                  }
                 }
               }
             },
-            "$description": "Tertiary prose text with oldstyle figures - 12px regular"
+            "$description": "Tertiary text style for flowing paragraph content, using oldstyle figures for improved readability (12px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           },
           "bold": {
             "$value": {
@@ -391,7 +443,7 @@
                 }
               }
             },
-            "$description": "Tertiary prose text with oldstyle figures - bold variant"
+            "$description": "Bold variant of tertiary prose text for emphasis in paragraph content (12px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
           }
         }
       },
@@ -399,87 +451,78 @@
         "$extensions": {
           "com.canonical.typography": {
             "$type": "fontStyle",
-            "$value": "{typography.fontStyle.italic}"
+            "$value": {
+              "$ref": "#/typography/fontStyle/italic/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Italic text modifier"
+        "$description": "Italic text modifier for emphasis (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "oldStyleFigure": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "figureStyle",
-            "$value": "{typography.figureStyle.oldStyleFigure}"
+            "$value": {
+              "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Old style figures modifier"
+        "$description": "Oldstyle figures modifier for improved readability in prose (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "liningFigures": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "figureStyle",
-            "$value": "{typography.figureStyle.liningFigures}"
+            "$value": {
+              "$ref": "#/typography/figureStyle/liningFigures/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Lining figures modifier"
+        "$description": "Lining figures modifier for tabular data and UI elements (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "superscript": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "fontPosition",
-            "$value": "{typography.fontPosition.superscript}"
+            "$value": {
+              "$ref": "#/typography/fontPosition/superscript/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Superscript modifier"
+        "$description": "Superscript modifier for footnote references and ordinals (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "subscript": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "fontPosition",
-            "$value": "{typography.fontPosition.subscript}"
+            "$value": {
+              "$ref": "#/typography/fontPosition/subscript/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Subscript modifier"
+        "$description": "Subscript modifier for chemical formulas and mathematical notation (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "underline": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "textDecoration",
-            "$value": "{typography.textDecoration.underline}"
+            "$value": {
+              "$ref": "#/typography/textDecoration/underline/$extensions/com.canonical.typography/$value"
+            }
           }
         },
-        "$description": "Underline text modifier"
+        "$description": "Underline text modifier for links or emphasis (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       },
       "strikethrough": {
         "$extensions": {
           "com.canonical.typography": {
             "$type": "textDecoration",
-            "$value": "{typography.textDecoration.strikethrough}"
-          }
-        },
-        "$description": "Strikethrough text modifier"
-      },
-      "smallcaps": {
-        "$description": "Small caps text modifier with wide letter spacing",
-        "letterCase": {
-          "$extensions": {
-            "com.canonical.typography": {
-              "$type": "letterCase",
-              "$value": "{typography.letterCase.smallcaps}"
+            "$value": {
+              "$ref": "#/typography/textDecoration/strikethrough/$extensions/com.canonical.typography/$value"
             }
           }
         },
-        "letterSpacing": {
-          "$type": "dimension",
-          "$value": "{dimension.letterSpacing.wide}"
-        },
-        "figureStyle": {
-          "$extensions": {
-            "com.canonical.typography": {
-              "$type": "figureStyle",
-              "$value": "{typography.figureStyle.oldStyleFigure}"
-            }
-          }
-        }
+        "$description": "Strikethrough text modifier for deleted or outdated content (This token type is not yet supported by the W3C DTCG specification, so it is stored in $extensions and requires a token transformer compatible with Canonical design system extensions.)"
       }
     },
     "heading": {
@@ -495,12 +538,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 1 - 42px medium"
+          "$description": "Primary page heading (e.g. for main titles and hero sections) (42px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -530,7 +577,7 @@
               }
             }
           },
-          "$description": "Heading 1 - bold variant"
+          "$description": "Bold variant of heading 1 for additional emphasis (42px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       },
       "2": {
@@ -545,12 +592,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 2 - 42px light"
+          "$description": "Secondary page heading (42px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -580,7 +631,7 @@
               }
             }
           },
-          "$description": "Heading 2 - bold variant"
+          "$description": "Bold variant of heading 2 for additional emphasis (42px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       },
       "3": {
@@ -595,12 +646,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 3 - 24px medium"
+          "$description": "Tertiary page heading (24px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -630,7 +685,7 @@
               }
             }
           },
-          "$description": "Heading 3 - bold variant"
+          "$description": "Bold variant of heading 3 for additional emphasis (24px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       },
       "4": {
@@ -645,12 +700,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 4 - 24px light"
+          "$description": "Quaternary page heading (24px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -680,7 +739,7 @@
               }
             }
           },
-          "$description": "Heading 4 - bold variant"
+          "$description": "Bold variant of heading 4 for additional emphasis (24px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       },
       "5": {
@@ -695,12 +754,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.smallcaps}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/smallcaps/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 5 - 16px semibold small caps"
+          "$description": "Quinary page heading (styled as smallcaps) (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -730,7 +793,7 @@
               }
             }
           },
-          "$description": "Heading 5 - bold variant"
+          "$description": "Bold variant of heading 5 for additional emphasis (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       },
       "6": {
@@ -745,12 +808,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Heading 6 - 16px semibold"
+          "$description": "Senary page heading (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -780,7 +847,7 @@
               }
             }
           },
-          "$description": "Heading 6 - bold variant"
+          "$description": "Bold variant of heading 6 for additional emphasis (16px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       }
     }

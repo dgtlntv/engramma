@@ -1135,6 +1135,18 @@
           />
         </div>
       {/if}
+
+      {#if node?.meta.extensions && Object.keys(node.meta.extensions).length > 0}
+        <div class="form-group">
+          <!-- svelte-ignore a11y_label_has_associated_control -->
+          <label class="a-label">Extensions</label>
+          <pre class="extensions-display">{JSON.stringify(
+              node.meta.extensions,
+              null,
+              2,
+            )}</pre>
+        </div>
+      {/if}
     </div>
   {/key}
 </div>
@@ -1272,5 +1284,21 @@
     display: grid;
     gap: 8px;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .extensions-display {
+    margin: 0;
+    padding: 8px;
+    background: var(--bg-secondary, #f5f5f5);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    font-family: var(--typography-monospace-code, monospace);
+    font-size: 11px;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
   }
 </style>

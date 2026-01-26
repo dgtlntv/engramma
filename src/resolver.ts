@@ -406,7 +406,9 @@ export const parseTokenResolver = async (
     }
   }
 
-  // Second pass: process sets (dereference each set against itself)
+  // Second pass: process sets (dereference each set against cumulative base)
+  // This allows sets to use JSON Pointer $refs that reference tokens from earlier sets
+  let cumulativeSetDocument: Record<string, unknown> = {};
   for (const item of resolverDoc.resolutionOrder) {
     if (item.type !== "set") continue;
 
@@ -415,26 +417,59 @@ export const parseTokenResolver = async (
     // Capture JSON Pointer $refs before dereferencing
     const capturedRefs = captureJsonPointerRefs(mergedSetSources);
 
-    // Resolve internal JSON Pointer $refs within the set
-    let dereferencedSources;
+    // Collect paths that belong to this set (for filtering after dereferencing)
+    const setPaths = new Set<string>();
+    const collectSetPaths = (obj: unknown, path: string[] = []) => {
+      if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return;
+      for (const [key, value] of Object.entries(obj)) {
+        if (key.startsWith("$") && key !== "$root") continue;
+        const currentPath = [...path, key].join(".");
+        setPaths.add(currentPath);
+        collectSetPaths(value, [...path, key]);
+      }
+    };
+    collectSetPaths(mergedSetSources);
+
+    // Merge current set on top of cumulative document for $ref resolution
+    const fullDocumentForSet = deepMerge(
+      structuredClone(cumulativeSetDocument),
+      mergedSetSources,
+    );
+
+    // Resolve JSON Pointer $refs against the full cumulative document
+    let dereferencedFullDocument;
     try {
-      dereferencedSources = await $RefParser.dereference(
-        structuredClone(mergedSetSources),
+      dereferencedFullDocument = await $RefParser.dereference(
+        fullDocumentForSet,
         { mutateInputSchema: true },
       );
     } catch (err) {
       console.error(`Failed to dereference set "${item.name}":`, err);
-      dereferencedSources = mergedSetSources;
+      dereferencedFullDocument = fullDocumentForSet;
     }
-    const { nodes, errors } = extractIntermediaryNodes(
-      dereferencedSources,
+
+    // Extract intermediary nodes from the dereferenced document
+    const { nodes: allDereferencedNodes, errors } = extractIntermediaryNodes(
+      dereferencedFullDocument,
       capturedRefs,
     );
-    intermediaryNodesBySet.set(item.name, nodes);
-    for (const [path, node] of nodes) {
+
+    // Filter to only include nodes that belong to this set
+    const setNodes = new Map<string, IntermediaryNode>();
+    for (const [path, node] of allDereferencedNodes) {
+      if (setPaths.has(path)) {
+        setNodes.set(path, node);
+      }
+    }
+
+    intermediaryNodesBySet.set(item.name, setNodes);
+    for (const [path, node] of setNodes) {
       allIntermediaryNodes.set(path, node);
     }
     collectedErrors.push(...errors);
+
+    // Add this set to the cumulative document for subsequent sets
+    cumulativeSetDocument = deepMerge(cumulativeSetDocument, mergedSetSources);
   }
 
   // Third pass: process modifier contexts
@@ -500,9 +535,10 @@ export const parseTokenResolver = async (
       }
 
       intermediaryNodesByModifierContext.set(contextKey, contextNodes);
-      for (const [path, node] of contextNodes) {
-        allIntermediaryNodes.set(path, node);
-      }
+      // NOTE: We intentionally do NOT add modifier context tokens to allIntermediaryNodes here.
+      // Modifier contexts (like light/dark themes) define the same token paths with different values.
+      // Adding them to allIntermediaryNodes would cause later contexts to overwrite earlier ones,
+      // resulting in incorrect alias resolution. Instead, we build context-specific maps in PHASE 2.
       collectedErrors.push(...errors);
     }
   }
@@ -543,10 +579,18 @@ export const parseTokenResolver = async (
           continue;
         }
 
+        // Build a context-specific map for alias resolution:
+        // - Start with base tokens from sets (allIntermediaryNodes)
+        // - Overlay this context's tokens (so context-specific aliases resolve within the context)
+        const contextAvailableNodes = new Map(allIntermediaryNodes);
+        for (const [path, node] of intermediaryNodes) {
+          contextAvailableNodes.set(path, node);
+        }
+
         // Resolve context's intermediary nodes
         const { nodes, errors } = resolveIntermediaryNodes(
           intermediaryNodes,
-          allIntermediaryNodes,
+          contextAvailableNodes,
         );
 
         // Create a context node as child of modifier

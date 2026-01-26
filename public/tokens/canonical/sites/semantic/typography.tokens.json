@@ -15,12 +15,16 @@
           "$extensions": {
             "com.canonical.typography": {
               "$value": {
-                "letterCase": "{typography.letterCase.default}",
-                "figureStyle": "{typography.figureStyle.oldStyleFigure}"
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/default/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
               }
             }
           },
-          "$description": "Display heading - 84px extra light (sites only)"
+          "$description": "Display heading for hero sections and major page titles (84px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
         "bold": {
           "$value": {
@@ -50,7 +54,7 @@
               }
             }
           },
-          "$description": "Display heading - bold variant (sites only)"
+          "$description": "Bold variant of display heading for additional emphasis (84px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         }
       }
     }

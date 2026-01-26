@@ -260,6 +260,19 @@
   {/if}
 {/snippet}
 
+{#snippet extensionsDisplay(tokenMeta: TokenMeta)}
+  {#if tokenMeta.extensions && Object.keys(tokenMeta.extensions).length > 0}
+    <div class="token-extensions-section">
+      <span class="extensions-label">Extensions</span>
+      <pre class="token-extensions">{JSON.stringify(
+          tokenMeta.extensions,
+          null,
+          2,
+        )}</pre>
+    </div>
+  {/if}
+{/snippet}
+
 {#snippet referenceLink(ref: TokenReference)}
   <button
     type="button"
@@ -360,6 +373,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -382,6 +396,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -405,6 +420,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -431,6 +447,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -465,6 +482,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -487,6 +505,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -509,6 +528,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -535,6 +555,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -574,6 +595,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -610,6 +632,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -646,6 +669,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -685,6 +709,7 @@
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
         {@render componentReferences(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -712,6 +737,7 @@
       <div class="token-content">
         {@render metadata(tokenMeta)}
         {@render tokenReference(node)}
+        {@render extensionsDisplay(tokenMeta)}
         {#if hasRefs}
           <details class="resolved-value-accordion">
             <summary>Resolved value</summary>
@@ -761,6 +787,16 @@
       <p>
         {group.meta.description}
       </p>
+    {/if}
+    {#if group.meta.extensions && Object.keys(group.meta.extensions).length > 0}
+      <div class="group-extensions-section">
+        <span class="extensions-label">Extensions</span>
+        <pre class="token-extensions">{JSON.stringify(
+            group.meta.extensions,
+            null,
+            2,
+          )}</pre>
+      </div>
     {/if}
     {@render renderNodes(group.nodeId, depth + 1)}
   {/each}
@@ -1134,5 +1170,35 @@
   .curve-impulse {
     opacity: 0.8;
     filter: drop-shadow(0 0 3px rgba(79, 70, 229, 0.3));
+  }
+
+  .token-extensions-section {
+    margin-top: 4px;
+  }
+
+  .group-extensions-section {
+    margin-bottom: 20px;
+  }
+
+  .extensions-label {
+    font-size: 11px;
+    color: #888;
+  }
+
+  .token-extensions {
+    margin: 4px 0 0 0;
+    padding: 8px;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-family: var(--typography-monospace-code);
+    font-size: 10px;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 150px;
+    overflow-y: auto;
+    color: #555;
   }
 </style>
