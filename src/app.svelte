@@ -59,6 +59,8 @@
   import { serializeColor } from "./color";
   import type { Value } from "./schema";
 
+  const readOnly = __READ_ONLY__;
+
   const zeroIndex = generateKeyBetween(null, null);
 
   onMount(() => {
@@ -244,6 +246,7 @@
   });
 
   const handleDelete = () => {
+    if (readOnly) return;
     if (selectedItems.size === 0) {
       return;
     }
@@ -305,6 +308,7 @@
   };
 
   const handleAddSet = () => {
+    if (readOnly) return;
     // In resolver mode, sets go under the target resolver; in legacy mode, at root
     const parentId = getTargetResolverId();
     const parentChildren = treeState.getChildren(parentId);
@@ -327,6 +331,7 @@
   };
 
   const handleAddModifier = () => {
+    if (readOnly) return;
     // In resolver mode, modifiers go under the target resolver; in legacy mode, at root
     const parentId = getTargetResolverId();
     const parentChildren = treeState.getChildren(parentId);
@@ -362,6 +367,7 @@
   };
 
   const handleAddContext = () => {
+    if (readOnly) return;
     const firstSelectedId = Array.from(selectedItems)[0];
     const firstSelectedNode = treeState.getNode(firstSelectedId);
     if (!firstSelectedNode) {
@@ -398,6 +404,7 @@
   };
 
   const handleAddGroup = () => {
+    if (readOnly) return;
     const firstSelectedId = Array.from(selectedItems)[0];
     const firstSelectedNode = treeState.getNode(firstSelectedId);
     if (!firstSelectedNode) {
@@ -444,6 +451,7 @@
   };
 
   const handleTokenAdded = (tokenNodeId: string) => {
+    if (readOnly) return;
     // select and open editor for the new token
     selectedItems.clear();
     selectedItems.add(tokenNodeId);
@@ -459,10 +467,10 @@
       return;
     }
     const closestTree = event.target.closest("[role=tree]");
-    if (event.key === "Enter" && closestTree) {
+    if (!readOnly && event.key === "Enter" && closestTree) {
       document.getElementById("app-node-editor")?.showPopover();
     }
-    if (event.key === "Backspace" && closestTree) {
+    if (!readOnly && event.key === "Backspace" && closestTree) {
       handleDelete();
     }
   };
@@ -472,6 +480,7 @@
     newParentId: undefined | string,
     position: number,
   ) => {
+    if (readOnly) return;
     // Virtual sections map to their parent resolver (or undefined in legacy mode)
     // Format: "__sets__" (legacy) or "__sets__:resolverId" (resolver mode)
     let actualParentId: string | undefined;
@@ -634,73 +643,84 @@
     <!-- Left Panel: Design Tokens -->
     <aside class="panel left-panel">
       <div class="panel-header">
-        <AppMenu />
+        {#if !readOnly}
+          <AppMenu />
+        {/if}
         <h1 class="a-panel-title">Engramma</h1>
-        <div class="toolbar-actions">
-          {#if selectedItems.size > 0}
+        {#if readOnly}
+          <span class="read-only-badge">View Only</span>
+        {/if}
+        {#if !readOnly}
+          <div class="toolbar-actions">
+            {#if selectedItems.size > 0}
+              <button
+                class="a-button"
+                aria-label={`Delete ${selectedItems.size} item(s)`}
+                interestfor="app-delete-tooltip"
+                onclick={handleDelete}
+              >
+                <Trash2 size={16} />
+              </button>
+              <div id="app-delete-tooltip" popover="hint" class="a-tooltip">
+                Delete selected items
+              </div>
+            {/if}
             <button
               class="a-button"
-              aria-label={`Delete ${selectedItems.size} item(s)`}
-              interestfor="app-delete-tooltip"
-              onclick={handleDelete}
+              aria-label="Add set"
+              interestfor="app-add-set-tooltip"
+              onclick={handleAddSet}
             >
-              <Trash2 size={16} />
+              <ListPlus size={16} />
             </button>
-            <div id="app-delete-tooltip" popover="hint" class="a-tooltip">
-              Delete selected items
+            <div id="app-add-set-tooltip" popover="hint" class="a-tooltip">
+              Add a new token set
             </div>
-          {/if}
-          <button
-            class="a-button"
-            aria-label="Add set"
-            interestfor="app-add-set-tooltip"
-            onclick={handleAddSet}
-          >
-            <ListPlus size={16} />
-          </button>
-          <div id="app-add-set-tooltip" popover="hint" class="a-tooltip">
-            Add a new token set
-          </div>
-          <button
-            class="a-button"
-            aria-label="Add modifier"
-            interestfor="app-add-modifier-tooltip"
-            onclick={handleAddModifier}
-          >
-            <ToggleLeft size={16} />
-          </button>
-          <div id="app-add-modifier-tooltip" popover="hint" class="a-tooltip">
-            Add a new modifier
-          </div>
-          {#if Array.from(selectedItems).some((id) => {
-            const n = treeState.getNode(id);
-            return n?.meta.nodeType === "modifier" || n?.meta.nodeType === "modifier-context";
-          })}
             <button
               class="a-button"
-              aria-label="Add context"
-              interestfor="app-add-context-tooltip"
-              onclick={handleAddContext}
+              aria-label="Add modifier"
+              interestfor="app-add-modifier-tooltip"
+              onclick={handleAddModifier}
             >
-              <Layers size={16} />
+              <ToggleLeft size={16} />
             </button>
-            <div id="app-add-context-tooltip" popover="hint" class="a-tooltip">
-              Add a new context
+            <div id="app-add-modifier-tooltip" popover="hint" class="a-tooltip">
+              Add a new modifier
             </div>
-          {/if}
-          <button
-            class="a-button"
-            aria-label="Add group"
-            interestfor="app-add-group-tooltip"
-            onclick={handleAddGroup}
-          >
-            <Folder size={16} />
-          </button>
-          <div id="app-add-group-tooltip" popover="hint" class="a-tooltip">
-            Add a new group
+            {#if Array.from(selectedItems).some((id) => {
+              const n = treeState.getNode(id);
+              return n?.meta.nodeType === "modifier" || n?.meta.nodeType === "modifier-context";
+            })}
+              <button
+                class="a-button"
+                aria-label="Add context"
+                interestfor="app-add-context-tooltip"
+                onclick={handleAddContext}
+              >
+                <Layers size={16} />
+              </button>
+              <div
+                id="app-add-context-tooltip"
+                popover="hint"
+                class="a-tooltip"
+              >
+                Add a new context
+              </div>
+            {/if}
+            <button
+              class="a-button"
+              aria-label="Add group"
+              interestfor="app-add-group-tooltip"
+              onclick={handleAddGroup}
+            >
+              <Folder size={16} />
+            </button>
+            <div id="app-add-group-tooltip" popover="hint" class="a-tooltip">
+              Add a new group
+            </div>
+            <AddToken {selectedItems} onTokenAdded={handleTokenAdded} />
           </div>
-          <AddToken {selectedItems} onTokenAdded={handleTokenAdded} />
-        </div>
+        {/if}
       </div>
 
       {#snippet renderTypeIcon(type: Value["type"])}
@@ -737,18 +757,20 @@
       {/snippet}
 
       {#snippet treeItemEditorButton(nodeId: string)}
-        <button
-          class="a-small-button edit-button"
-          aria-label="Edit"
-          onclick={() => {
-            selectedItems.clear();
-            selectedItems.add(nodeId);
-            /* safari closes dialog whenever cursor is out of button */
-            document.getElementById("app-node-editor")?.showPopover();
-          }}
-        >
-          <Settings size={16} />
-        </button>
+        {#if !readOnly}
+          <button
+            class="a-small-button edit-button"
+            aria-label="Edit"
+            onclick={() => {
+              selectedItems.clear();
+              selectedItems.add(nodeId);
+              /* safari closes dialog whenever cursor is out of button */
+              document.getElementById("app-node-editor")?.showPopover();
+            }}
+          >
+            <Settings size={16} />
+          </button>
+        {/if}
       {/snippet}
 
       {#snippet renderTreeItem(item: TreeItem)}
@@ -904,12 +926,14 @@
             // tokens do not accept anything
             return false;
           }}
-          onMove={handleMove}
+          onMove={readOnly ? undefined : handleMove}
         />
       </div>
     </aside>
 
-    <Editor id="app-node-editor" {selectedItems} />
+    {#if !readOnly}
+      <Editor id="app-node-editor" {selectedItems} />
+    {/if}
 
     <!-- Right Panel: CSS Variables / JSON -->
     <main class="panel right-panel">
@@ -1002,6 +1026,19 @@
     display: flex;
     align-items: center;
     margin-left: auto;
+  }
+
+  .read-only-badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
   }
 
   .tokens-container {

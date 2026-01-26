@@ -3,6 +3,8 @@
   import NewProject from "./new-project.svelte";
   import ExportDialog from "./export-dialog.svelte";
 
+  const readOnly = __READ_ONLY__;
+
   const shareUrl = () => {
     navigator.clipboard.writeText(window.location.href);
   };
@@ -26,16 +28,18 @@
   role="menu"
   onclick={(event) => event.currentTarget.hidePopover()}
 >
-  <!-- svelte-ignore a11y_autofocus -->
-  <button
-    class="a-item"
-    role="menuitem"
-    autofocus
-    commandfor="new-project-dialog"
-    command="show-modal"
-  >
-    New Project
-  </button>
+  {#if !readOnly}
+    <!-- svelte-ignore a11y_autofocus -->
+    <button
+      class="a-item"
+      role="menuitem"
+      autofocus
+      commandfor="new-project-dialog"
+      command="show-modal"
+    >
+      New Project
+    </button>
+  {/if}
   <button
     class="a-item"
     role="menuitem"
@@ -44,7 +48,11 @@
   >
     Export tokens
   </button>
-  <button class="a-item" role="menuitem" onclick={shareUrl}> Share URL </button>
+  {#if !readOnly}
+    <button class="a-item" role="menuitem" onclick={shareUrl}>
+      Share URL
+    </button>
+  {/if}
   <a
     class="a-item"
     role="menuitem"
@@ -64,7 +72,9 @@
   </button>
 </div>
 
-<NewProject />
+{#if !readOnly}
+  <NewProject />
+{/if}
 
 <ExportDialog />
 

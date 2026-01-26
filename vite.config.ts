@@ -10,6 +10,9 @@ export default defineConfig({
       include: ["buffer", "path"],
     }),
   ],
+  define: {
+    __READ_ONLY__: JSON.stringify(process.env.ENGRAMMA_READ_ONLY === "true"),
+  },
   build: {
     // auto prefixing height: stretch breaks the app
     cssMinify: false,
