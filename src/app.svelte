@@ -102,6 +102,9 @@
   // svelte-ignore state_referenced_locally
   let selectedItems = new SvelteSet<string>(getInitialSelection());
 
+  // Search state for filtering tokens in styleguide
+  let searchQuery = $state("");
+
   // Track if we're handling a popstate to avoid update loops
   let isHandlingPopState = false;
 
@@ -910,9 +913,41 @@
 
     <!-- Right Panel: CSS Variables / JSON -->
     <main class="panel right-panel">
-      <div class="panel-header"><!-- placeholder for sets --></div>
+      <div class="panel-header">
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search tokens..."
+            bind:value={searchQuery}
+          />
+          {#if searchQuery}
+            <button
+              type="button"
+              class="search-clear"
+              onclick={() => (searchQuery = "")}
+              aria-label="Clear search"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          {/if}
+        </div>
+      </div>
       <div class="styleguide-panel">
-        <Styleguide {selectedItems} />
+        <Styleguide {selectedItems} {searchQuery} />
       </div>
     </main>
   </div>
@@ -1030,5 +1065,77 @@
 
   .styleguide-panel {
     overflow: hidden;
+  }
+
+  .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 6px 32px 6px 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--accent-color) 20%, transparent);
+    }
+  }
+
+  .search-clear {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-secondary);
+    }
+
+    & svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 </style>

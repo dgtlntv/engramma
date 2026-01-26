@@ -10,6 +10,7 @@
     getTokenReference,
     getComponentReferences,
     getJsonPointerReferences,
+    getTokenPath,
     type TokenReference,
     type ComponentReference,
     type JsonPointerReference,
@@ -33,7 +34,10 @@
   } from "./css-variables";
   import CopyButton from "./copy-button.svelte";
 
-  const { selectedItems }: { selectedItems: Set<string> } = $props();
+  const {
+    selectedItems,
+    searchQuery = "",
+  }: { selectedItems: Set<string>; searchQuery?: string } = $props();
 
   // Cache nodes() to avoid redundant calls
   const allNodes = $derived(treeState.nodes());
@@ -106,6 +110,52 @@
 
   const typographyPlaceholder =
     "The quick brown fox jumps over 12 lazy dogs. Sphinx of black quartz, judge my vow.";
+
+  // Get display path without resolver/set/modifier parts
+  const getDisplayPath = (nodeId: string): string[] => {
+    const path: string[] = [];
+    let currentId: string | undefined = nodeId;
+    while (currentId !== undefined) {
+      const currentNode = allNodes.get(currentId);
+      if (!currentNode) break;
+      // Skip resolver, token-set, modifier, and modifier-context nodes
+      if (
+        currentNode.meta.nodeType !== "resolver" &&
+        currentNode.meta.nodeType !== "token-set" &&
+        currentNode.meta.nodeType !== "modifier" &&
+        currentNode.meta.nodeType !== "modifier-context"
+      ) {
+        path.unshift(currentNode.meta.name);
+      }
+      currentId = currentNode.parentId;
+    }
+    return path;
+  };
+
+  // Check if a token matches the search query
+  const matchesSearch = (node: TreeNode<TreeNodeMeta>): boolean => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const path = getDisplayPath(node.nodeId).join(".").toLowerCase();
+    const description =
+      node.meta.nodeType === "token"
+        ? (node.meta.description ?? "").toLowerCase()
+        : "";
+    return path.includes(query) || description.includes(query);
+  };
+
+  // Check if a group has any descendants that match the search
+  const hasMatchingDescendants = (nodeId: string): boolean => {
+    const children = treeState.getChildren(nodeId);
+    for (const child of children) {
+      if (child.meta.nodeType === "token") {
+        if (matchesSearch(child)) return true;
+      } else if (hasMatchingDescendants(child.nodeId)) {
+        return true;
+      }
+    }
+    return false;
+  };
 </script>
 
 {#snippet cubicBezierPreview({
@@ -288,8 +338,9 @@
   {/if}
 {/snippet}
 
-{#snippet metadata(tokenMeta: TokenMeta)}
-  <div class="token-name">{titleCase(noCase(tokenMeta.name))}</div>
+{#snippet metadata(node: TreeNode<TreeNodeMeta>, tokenMeta: TokenMeta)}
+  {@const fullPath = getDisplayPath(node.nodeId).join(".")}
+  <div class="token-name">{fullPath}</div>
   {#if tokenMeta.description}
     <div class="token-description">{tokenMeta.description}</div>
   {/if}
@@ -416,7 +467,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -440,7 +491,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -464,7 +515,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -491,7 +542,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -526,7 +577,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -549,7 +600,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -572,7 +623,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -598,7 +649,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -638,7 +689,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -675,7 +726,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -712,7 +763,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -752,7 +803,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render componentReferences(node)}
           {@render extensionsDisplay(tokenMeta)}
@@ -781,7 +832,7 @@
           {@render copyButton(node)}
         </div>
         <div class="token-content">
-          {@render metadata(tokenMeta)}
+          {@render metadata(node, tokenMeta)}
           {@render tokenReference(node)}
           {@render extensionsDisplay(tokenMeta)}
           {#if hasRefs}
@@ -802,7 +853,7 @@
       <!-- Placeholder while loading -->
       <div class="token-preview token-placeholder"></div>
       <div class="token-content">
-        <div class="token-name">{titleCase(noCase(tokenMeta.name))}</div>
+        <div class="token-name">{getDisplayPath(node.nodeId).join(".")}</div>
       </div>
     {/if}
   </div>
@@ -812,15 +863,21 @@
   {@const children = treeState
     .getChildren(parentId)
     .filter((node) => visibleNodes.size === 0 || visibleNodes.has(node.nodeId))}
-  {@const tokens = children.filter((node) => node.meta.nodeType === "token")}
-  {@const groups = children.filter(
-    (node) =>
-      node.meta.nodeType === "resolver" ||
-      node.meta.nodeType === "token-set" ||
-      node.meta.nodeType === "token-group" ||
-      node.meta.nodeType === "modifier" ||
-      node.meta.nodeType === "modifier-context",
-  )}
+  {@const tokens = children
+    .filter((node) => node.meta.nodeType === "token")
+    .filter((node) => matchesSearch(node))}
+  {@const groups = children
+    .filter(
+      (node) =>
+        node.meta.nodeType === "resolver" ||
+        node.meta.nodeType === "token-set" ||
+        node.meta.nodeType === "token-group" ||
+        node.meta.nodeType === "modifier" ||
+        node.meta.nodeType === "modifier-context",
+    )
+    .filter(
+      (node) => !searchQuery.trim() || hasMatchingDescendants(node.nodeId),
+    )}
   <!-- render tokens first and then groups to strictly co-locate
   headings with content which can have nested headings -->
   {#if tokens.length > 0}
