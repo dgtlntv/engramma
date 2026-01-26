@@ -600,12 +600,13 @@ export class TreeState<Meta> {
   #store = new TreeStore<Meta>();
   #subscribe = createSubscriber((update) => this.#store.subscribe(update));
   #syncToUrl: boolean = false;
+  #urlUpdateTimer: ReturnType<typeof setTimeout> | null = null;
 
   transact(callback: (tx: Transaction<Meta>) => void): void {
     this.#store.transact(callback);
-    // Sync to URL after transaction completes
+    // Sync to URL after transaction completes (debounced)
     if (this.#syncToUrl) {
-      this.#updateUrl();
+      this.#debouncedUpdateUrl();
     }
   }
 
@@ -613,12 +614,23 @@ export class TreeState<Meta> {
     this.#syncToUrl = true;
   }
 
-  #updateUrl(): void {
-    const allNodes = this.#store.nodes() as Map<string, TreeNode<TreeNodeMeta>>;
-    const serialized = serializeTokenResolver(allNodes);
-    setDataInUrl(serialized).catch((error) => {
-      console.error("Failed to sync design tokens to URL:", error);
-    });
+  #debouncedUpdateUrl(): void {
+    // Clear any pending update
+    if (this.#urlUpdateTimer !== null) {
+      clearTimeout(this.#urlUpdateTimer);
+    }
+    // Schedule new update with 500ms debounce
+    this.#urlUpdateTimer = setTimeout(() => {
+      this.#urlUpdateTimer = null;
+      const allNodes = this.#store.nodes() as Map<
+        string,
+        TreeNode<TreeNodeMeta>
+      >;
+      const serialized = serializeTokenResolver(allNodes);
+      setDataInUrl(serialized).catch((error) => {
+        console.error("Failed to sync design tokens to URL:", error);
+      });
+    }, 500);
   }
 
   values(): TreeNode<Meta>[] {

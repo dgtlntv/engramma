@@ -68,6 +68,9 @@
     ]);
   });
 
+  // Cache nodes() to avoid redundant calls
+  const allNodes = $derived(treeState.nodes());
+
   const rootNodes = $derived(treeState.getChildren(undefined));
 
   // Virtual section ID prefixes for grouping sets and modifiers
@@ -795,7 +798,7 @@
             {@render treeItemEditorButton(item.id)}
           </div>
         {:else if node?.meta.nodeType === "token-group"}
-          {@const type = findTokenType(node, treeState.nodes())}
+          {@const type = findTokenType(node, allNodes)}
           <div class="token">
             <div class="token-icon">
               {#if type}
@@ -808,7 +811,7 @@
             {@render treeItemEditorButton(item.id)}
           </div>
         {:else if node?.meta.nodeType === "token"}
-          {@const tokenValue = resolveTokenValue(node, treeState.nodes())}
+          {@const tokenValue = resolveTokenValue(node, allNodes)}
           <div class="token">
             {#if tokenValue.type === "color"}
               <div

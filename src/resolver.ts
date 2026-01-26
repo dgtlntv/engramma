@@ -239,27 +239,29 @@ export const resolveResolverRefs = async (
     }
   };
 
-  // Resolve a sources array - replace $ref objects with loaded file contents
+  // Resolve a sources array - replace $ref objects with loaded file contents (in parallel)
   const resolveSources = async (
     sources: SourceItem[],
   ): Promise<ResolverSource[]> => {
-    const resolved: ResolverSource[] = [];
-
-    for (const source of sources) {
-      if (isRefObject(source)) {
-        const ref = source.$ref;
-        // External file reference (doesn't start with #)
-        if (!ref.startsWith("#")) {
-          const content = await loadFile(ref);
-          resolved.push(content as ResolverSource);
+    const results = await Promise.all(
+      sources.map(async (source) => {
+        if (isRefObject(source)) {
+          const ref = source.$ref;
+          // External file reference (doesn't start with #)
+          if (!ref.startsWith("#")) {
+            const content = await loadFile(ref);
+            return content as ResolverSource;
+          }
+          // Internal reference - skip (handled elsewhere)
+          return null;
         }
-      } else {
         // Inline tokens - pass through
-        resolved.push(source);
-      }
-    }
+        return source;
+      }),
+    );
 
-    return resolved;
+    // Filter out nulls (internal refs) while preserving order
+    return results.filter((r): r is ResolverSource => r !== null);
   };
 
   // Build the resolved resolutionOrder array
@@ -394,6 +396,7 @@ export const parseTokenResolver = async (
 
   // First pass: collect all SET sources to build the base document for $ref resolution
   // This is needed because modifier contexts may contain JSON Pointer $refs that reference set tokens
+  console.time("parseTokenResolver:merge-sets");
   let baseDocument: Record<string, unknown> = {};
   const setSourcesByName = new Map<string, Record<string, unknown>>();
 
@@ -405,9 +408,11 @@ export const parseTokenResolver = async (
       baseDocument = deepMerge(baseDocument, mergedSetSources);
     }
   }
+  console.timeEnd("parseTokenResolver:merge-sets");
 
   // Second pass: process sets (dereference each set against cumulative base)
   // This allows sets to use JSON Pointer $refs that reference tokens from earlier sets
+  console.time("parseTokenResolver:process-sets");
   let cumulativeSetDocument: Record<string, unknown> = {};
   for (const item of resolverDoc.resolutionOrder) {
     if (item.type !== "set") continue;
@@ -471,9 +476,11 @@ export const parseTokenResolver = async (
     // Add this set to the cumulative document for subsequent sets
     cumulativeSetDocument = deepMerge(cumulativeSetDocument, mergedSetSources);
   }
+  console.timeEnd("parseTokenResolver:process-sets");
 
   // Third pass: process modifier contexts
   // Each context is merged on top of the base document so JSON Pointer $refs can resolve
+  console.time("parseTokenResolver:process-modifiers");
   for (const item of resolverDoc.resolutionOrder) {
     if (item.type !== "modifier") continue;
 
@@ -542,10 +549,12 @@ export const parseTokenResolver = async (
       collectedErrors.push(...errors);
     }
   }
+  console.timeEnd("parseTokenResolver:process-modifiers");
 
   // PHASE 2: Resolve intermediary nodes with cross-set availability
   // Now that we have all tokens/groups from all sets, resolve references with full visibility
   // The parent for sets and modifiers is either the resolver node (if provided) or root (undefined)
+  console.time("parseTokenResolver:phase2-resolve");
   const rootParentId = resolverNodeId ?? undefined;
 
   for (const item of resolverDoc.resolutionOrder) {
@@ -670,6 +679,7 @@ export const parseTokenResolver = async (
     // Collect errors from this Set
     collectedErrors.push(...errors);
   }
+  console.timeEnd("parseTokenResolver:phase2-resolve");
 
   return {
     nodes: allNodes,

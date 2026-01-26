@@ -20,34 +20,39 @@ const RESOLVER_FILES = [
   "sites.resolver.json",
 ];
 
-// Load all resolvers from public folder
+// Load all resolvers from public folder (in parallel)
 const loadAllResolvers = async (): Promise<
   Array<{ filename: string; resolved: ResolvedResolverDocument }>
 > => {
   const baseUrl = "/tokens/canonical/";
-  const results: Array<{
-    filename: string;
-    resolved: ResolvedResolverDocument;
-  }> = [];
 
-  for (const filename of RESOLVER_FILES) {
-    try {
-      const response = await fetch(`${baseUrl}${filename}`);
-      if (!response.ok) {
-        console.warn(
-          `Failed to load resolver ${filename}: ${response.statusText}`,
-        );
-        continue;
+  const loadResults = await Promise.all(
+    RESOLVER_FILES.map(async (filename) => {
+      try {
+        const response = await fetch(`${baseUrl}${filename}`);
+        if (!response.ok) {
+          console.warn(
+            `Failed to load resolver ${filename}: ${response.statusText}`,
+          );
+          return null;
+        }
+        const resolverDoc: ResolverDocument = await response.json();
+        const resolved = await resolveResolverRefs(resolverDoc, { baseUrl });
+        return { filename, resolved };
+      } catch (err) {
+        console.warn(`Error loading resolver ${filename}:`, err);
+        return null;
       }
-      const resolverDoc: ResolverDocument = await response.json();
-      const resolved = await resolveResolverRefs(resolverDoc, { baseUrl });
-      results.push({ filename, resolved });
-    } catch (err) {
-      console.warn(`Error loading resolver ${filename}:`, err);
-    }
-  }
+    }),
+  );
 
-  return results;
+  // Filter out failed loads and maintain order
+  return loadResults.filter(
+    (
+      result,
+    ): result is { filename: string; resolved: ResolvedResolverDocument } =>
+      result !== null,
+  );
 };
 
 // Load default tokens from resolver in public folder (legacy single-file mode)
@@ -62,7 +67,10 @@ const loadDefaultTokens = async () => {
 };
 
 // Get design tokens from URL or load all resolvers
+console.time("total-load");
+console.time("url-check");
 const urlData = await getDataFromUrl();
+console.timeEnd("url-check");
 
 const zeroIndex = generateKeyBetween(null, null);
 
@@ -75,14 +83,18 @@ const allParsedResults: Array<{
 if (urlData) {
   // URL data takes precedence - load as single file (legacy behavior)
   if (isResolverFormat(urlData)) {
+    console.time("parse-url-resolver");
     const result = await parseTokenResolver(urlData);
+    console.timeEnd("parse-url-resolver");
     allParsedResults.push(result);
     if (result.nodes.length > 0 || result.errors.length > 0) {
+      console.time("transact-url");
       treeState.transact((tx) => {
         for (const node of result.nodes) {
           tx.set(node);
         }
       });
+      console.timeEnd("transact-url");
     }
   } else {
     // Try as tokens format
@@ -111,15 +123,31 @@ if (urlData) {
   }
 } else {
   // Load all resolver files and create resolver nodes for each
+  console.time("load-resolvers");
   const resolvers = await loadAllResolvers();
+  console.timeEnd("load-resolvers");
+
+  // Parse all resolvers in parallel
+  console.time("parse-resolvers");
+  const parsedResolvers = await Promise.all(
+    resolvers.map(async ({ filename, resolved }) => {
+      const resolverName = filename.replace(".resolver.json", "");
+      const resolverNodeId = crypto.randomUUID();
+      const result = await parseTokenResolver(resolved, resolverNodeId);
+      return { resolverName, resolverNodeId, resolved, result };
+    }),
+  );
+  console.timeEnd("parse-resolvers");
+
+  // Now add to tree state (must be sequential due to index ordering)
+  console.time("transact-resolvers");
   let lastResolverIndex: string | null = null;
-
-  for (const { filename, resolved } of resolvers) {
-    // Extract resolver name from filename (e.g., "apps.resolver.json" -> "apps")
-    const resolverName = filename.replace(".resolver.json", "");
-
-    // Create a resolver node
-    const resolverNodeId = crypto.randomUUID();
+  for (const {
+    resolverName,
+    resolverNodeId,
+    resolved,
+    result,
+  } of parsedResolvers) {
     const newIndex = generateKeyBetween(lastResolverIndex ?? zeroIndex, null);
     lastResolverIndex = newIndex;
 
@@ -134,19 +162,16 @@ if (urlData) {
       },
     };
 
-    // Parse the resolver's tokens with the resolver node as parent
-    const result = await parseTokenResolver(resolved, resolverNodeId);
     allParsedResults.push(result);
 
     treeState.transact((tx) => {
-      // Add the resolver node first
       tx.set(resolverNode);
-      // Then add all parsed nodes (sets, modifiers, groups, tokens)
       for (const node of result.nodes) {
         tx.set(node);
       }
     });
   }
+  console.timeEnd("transact-resolvers");
 }
 
 // Log any parsing errors
@@ -157,8 +182,11 @@ if (totalErrors.length > 0) {
 
 const totalNodes = allParsedResults.reduce((sum, r) => sum + r.nodes.length, 0);
 console.info(`Loaded design tokens: ${totalNodes} nodes`);
+console.timeEnd("total-load");
 
 // Enable URL sync after initial load
 treeState.enableUrlSync();
 
+console.time("mount");
 mount(App, { target: document.body });
+console.timeEnd("mount");

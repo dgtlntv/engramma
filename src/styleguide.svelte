@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { SvelteSet } from "svelte/reactivity";
   import { noCase, snakeCase } from "change-case";
   import { titleCase } from "title-case";
   import type { TokenMeta, TreeNodeMeta } from "./state.svelte";
@@ -32,6 +34,46 @@
   import CopyButton from "./copy-button.svelte";
 
   const { selectedItems }: { selectedItems: Set<string> } = $props();
+
+  // Cache nodes() to avoid redundant calls
+  const allNodes = $derived(treeState.nodes());
+
+  // Track which token cards are visible (for lazy rendering)
+  const visibleTokenCards = new SvelteSet<string>();
+  let intersectionObserver: IntersectionObserver | null = null;
+  let scrollContainer: HTMLElement | null = null;
+
+  const setupObserver = () => {
+    if (!scrollContainer) return;
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const nodeId = entry.target.getAttribute("data-node-id");
+          if (nodeId && entry.isIntersecting) {
+            visibleTokenCards.add(nodeId);
+            // Stop observing once visible (card stays loaded)
+            intersectionObserver?.unobserve(entry.target);
+          }
+        }
+      },
+      { root: scrollContainer, rootMargin: "200px" },
+    );
+  };
+
+  onMount(() => {
+    setupObserver();
+    return () => intersectionObserver?.disconnect();
+  });
+
+  const observeTokenCard = (element: HTMLElement) => {
+    // Defer observation until observer is ready
+    if (intersectionObserver) {
+      intersectionObserver.observe(element);
+    } else {
+      // Observer not ready yet, try again after setup
+      requestAnimationFrame(() => intersectionObserver?.observe(element));
+    }
+  };
 
   const navigateToToken = (nodeId: string) => {
     // Push to browser history so back/forward works
@@ -285,7 +327,7 @@
 {/snippet}
 
 {#snippet tokenReference(node: TreeNode<TreeNodeMeta>)}
-  {@const ref = getTokenReference(node, treeState.nodes())}
+  {@const ref = getTokenReference(node, allNodes)}
   {#if ref}
     <div class="token-reference">
       <span class="reference-label">Alias of</span>
@@ -312,8 +354,8 @@
 {/snippet}
 
 {#snippet componentReferences(node: TreeNode<TreeNodeMeta>)}
-  {@const curlyBraceRefs = getComponentReferences(node, treeState.nodes())}
-  {@const jsonPtrRefs = getJsonPointerReferences(node, treeState.nodes())}
+  {@const curlyBraceRefs = getComponentReferences(node, allNodes)}
+  {@const jsonPtrRefs = getJsonPointerReferences(node, allNodes)}
   {@const jsonPtrKeys = new Set(jsonPtrRefs.map((r) => r.componentKey))}
   {@const filteredCurlyRefs = curlyBraceRefs.filter(
     (r) => !jsonPtrKeys.has(r.key),
@@ -341,10 +383,7 @@
 {/snippet}
 
 {#snippet copyButton(node: TreeNode<TreeNodeMeta>)}
-  {@const cssVariable = referenceToVariable(
-    { ref: node.nodeId },
-    treeState.nodes(),
-  )}
+  {@const cssVariable = referenceToVariable({ ref: node.nodeId }, allNodes)}
   <div class="copy-css-button">
     <CopyButton label="Copy CSS Variable" data={cssVariable} />
   </div>
@@ -356,249 +395,265 @@
   index: number,
   parentId?: string,
 )}
-  {@const tokenValue = resolveTokenValue(node, treeState.nodes())}
-  {@const tokenRef = getTokenReference(node, treeState.nodes())}
-  {@const compRefs = getComponentReferences(node, treeState.nodes())}
-  {@const jsonPtrRefs = getJsonPointerReferences(node, treeState.nodes())}
-  {@const hasRefs =
-    tokenRef !== undefined || compRefs.length > 0 || jsonPtrRefs.length > 0}
-  <div class="token-card" data-deprecated={Boolean(tokenMeta.deprecated)}>
-    {#if tokenValue.type === "color"}
-      {@const color = serializeColor(tokenValue.value)}
-      <div class="token-preview">
-        <div class="color-preview" style="background: {color};"></div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
-            <div class="token-value">Color: {color}</div>
-          </details>
-        {:else}
-          <div class="token-value">Color: {color}</div>
-        {/if}
-      </div>
-    {/if}
-
-    {#if tokenValue.type === "dimension"}
-      {@const value = toDimensionValue(tokenValue.value)}
-      <div class="token-preview">
-        <div class="dimension-preview" style:--value={value}>
-          <div class="dimension-bar"></div>
+  {@const isVisible = visibleTokenCards.has(node.nodeId)}
+  <div
+    class="token-card"
+    data-deprecated={Boolean(tokenMeta.deprecated)}
+    data-node-id={node.nodeId}
+    use:observeTokenCard
+  >
+    {#if isVisible}
+      {@const tokenValue = resolveTokenValue(node, allNodes)}
+      {@const tokenRef = getTokenReference(node, allNodes)}
+      {@const compRefs = getComponentReferences(node, allNodes)}
+      {@const jsonPtrRefs = getJsonPointerReferences(node, allNodes)}
+      {@const hasRefs =
+        tokenRef !== undefined || compRefs.length > 0 || jsonPtrRefs.length > 0}
+      {#if tokenValue.type === "color"}
+        {@const color = serializeColor(tokenValue.value)}
+        <div class="token-preview">
+          <div class="color-preview" style="background: {color};"></div>
+          {@render copyButton(node)}
         </div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
-            <div class="token-value">Dimension: {value}</div>
-          </details>
-        {:else}
-          <div class="token-value">Dimension: {value}</div>
-        {/if}
-      </div>
-    {/if}
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">Color: {color}</div>
+            </details>
+          {:else}
+            <div class="token-value">Color: {color}</div>
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "duration"}
-      <div class="token-preview">
-        {@render cubicBezierPreview({
-          id: `styleguide-duration-${index}`,
-          cubicBezier: [0, 0, 1, 1],
-          duration: tokenValue.value,
-        })}
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "dimension"}
+        {@const value = toDimensionValue(tokenValue.value)}
+        <div class="token-preview">
+          <div class="dimension-preview" style:--value={value}>
+            <div class="dimension-bar"></div>
+          </div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">Dimension: {value}</div>
+            </details>
+          {:else}
+            <div class="token-value">Dimension: {value}</div>
+          {/if}
+        </div>
+      {/if}
+
+      {#if tokenValue.type === "duration"}
+        <div class="token-preview">
+          {@render cubicBezierPreview({
+            id: `styleguide-duration-${index}`,
+            cubicBezier: [0, 0, 1, 1],
+            duration: tokenValue.value,
+          })}
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                Duration: {toDurationValue(tokenValue.value)}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               Duration: {toDurationValue(tokenValue.value)}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            Duration: {toDurationValue(tokenValue.value)}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "cubicBezier"}
-      <div class="token-preview">
-        {@render cubicBezierPreview({
-          id: `styleguide-cubic-bezier-${index}`,
-          cubicBezier: tokenValue.value,
-        })}
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "cubicBezier"}
+        <div class="token-preview">
+          {@render cubicBezierPreview({
+            id: `styleguide-cubic-bezier-${index}`,
+            cubicBezier: tokenValue.value,
+          })}
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                Cubic Bezier: {tokenValue.value.join(", ")}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               Cubic Bezier: {tokenValue.value.join(", ")}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            Cubic Bezier: {tokenValue.value.join(", ")}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "number"}
-      {@const groupTokens = treeState
-        .getChildren(parentId)
-        .filter((n) => n.meta.nodeType === "token")
-        .map((n) => {
-          const val = resolveTokenValue(n, treeState.nodes());
-          return val.type === "number" ? val.value : null;
-        })
-        .filter((v) => v !== null)}
-      <div class="token-preview">
-        {@render numberPreview({
-          tokens: groupTokens,
-          value: tokenValue.value,
-        })}
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "number"}
+        {@const groupTokens = treeState
+          .getChildren(parentId)
+          .filter((n) => n.meta.nodeType === "token")
+          .map((n) => {
+            const val = resolveTokenValue(n, allNodes);
+            return val.type === "number" ? val.value : null;
+          })
+          .filter((v) => v !== null)}
+        <div class="token-preview">
+          {@render numberPreview({
+            tokens: groupTokens,
+            value: tokenValue.value,
+          })}
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">Number: {tokenValue.value}</div>
+            </details>
+          {:else}
             <div class="token-value">Number: {tokenValue.value}</div>
-          </details>
-        {:else}
-          <div class="token-value">Number: {tokenValue.value}</div>
-        {/if}
-      </div>
-    {/if}
-
-    {#if tokenValue.type === "fontFamily"}
-      {@const fontFamily = toFontFamilyValue(tokenValue.value)}
-      <div class="token-preview">
-        <div class="typography-preview" style="font-family: {fontFamily};">
-          {typographyPlaceholder}
+          {/if}
         </div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {/if}
+
+      {#if tokenValue.type === "fontFamily"}
+        {@const fontFamily = toFontFamilyValue(tokenValue.value)}
+        <div class="token-preview">
+          <div class="typography-preview" style="font-family: {fontFamily};">
+            {typographyPlaceholder}
+          </div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">Font: {fontFamily}</div>
+            </details>
+          {:else}
             <div class="token-value">Font: {fontFamily}</div>
-          </details>
-        {:else}
-          <div class="token-value">Font: {fontFamily}</div>
-        {/if}
-      </div>
-    {/if}
-
-    {#if tokenValue.type === "fontWeight"}
-      {@const weight = tokenValue.value}
-      <div class="token-preview">
-        <div class="typography-preview" style="font-weight: {weight};">
-          {typographyPlaceholder}
+          {/if}
         </div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
-            <div class="token-value">Weight: {weight}</div>
-          </details>
-        {:else}
-          <div class="token-value">Weight: {weight}</div>
-        {/if}
-      </div>
-    {/if}
+      {/if}
 
-    {#if tokenValue.type === "transition"}
-      {@const transition = tokenValue.value}
-      <div class="token-preview">
-        {@render cubicBezierPreview({
-          id: `styleguide-transition-${index}`,
-          duration: transition.duration,
-          delay: transition.delay,
-          cubicBezier: transition.timingFunction,
-        })}
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "fontWeight"}
+        {@const weight = tokenValue.value}
+        <div class="token-preview">
+          <div class="typography-preview" style="font-weight: {weight};">
+            {typographyPlaceholder}
+          </div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">Weight: {weight}</div>
+            </details>
+          {:else}
+            <div class="token-value">Weight: {weight}</div>
+          {/if}
+        </div>
+      {/if}
+
+      {#if tokenValue.type === "transition"}
+        {@const transition = tokenValue.value}
+        <div class="token-preview">
+          {@render cubicBezierPreview({
+            id: `styleguide-transition-${index}`,
+            duration: transition.duration,
+            delay: transition.delay,
+            cubicBezier: transition.timingFunction,
+          })}
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                Duration: {toDurationValue(transition.duration)}<br />
+                Delay: {toDurationValue(transition.delay)}<br />
+                Timing: {toCubicBezierValue(transition.timingFunction)}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               Duration: {toDurationValue(transition.duration)}<br />
               Delay: {toDurationValue(transition.delay)}<br />
               Timing: {toCubicBezierValue(transition.timingFunction)}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            Duration: {toDurationValue(transition.duration)}<br />
-            Delay: {toDurationValue(transition.delay)}<br />
-            Timing: {toCubicBezierValue(transition.timingFunction)}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "typography"}
-      {@const typo = tokenValue.value}
-      <div class="token-preview">
-        <div
-          class="typography-preview"
-          style="
+      {#if tokenValue.type === "typography"}
+        {@const typo = tokenValue.value}
+        <div class="token-preview">
+          <div
+            class="typography-preview"
+            style="
           font-family: {toFontFamilyValue(typo.fontFamily)};
           font-weight: {typo.fontWeight};
           font-size: {toDimensionValue(typo.fontSize)};
           line-height: {typo.lineHeight};
           letter-spacing: {toDimensionValue(typo.letterSpacing)};"
-        >
-          {typographyPlaceholder}
+          >
+            {typographyPlaceholder}
+          </div>
+          {@render copyButton(node)}
         </div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                Font: {toFontFamilyValue(typo.fontFamily)}<br />
+                Weight: {typo.fontWeight}<br />
+                Size: {toDimensionValue(typo.fontSize)}<br />
+                Line Height: {typo.lineHeight}<br />
+                Letter Spacing: {toDimensionValue(typo.letterSpacing)}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               Font: {toFontFamilyValue(typo.fontFamily)}<br />
               Weight: {typo.fontWeight}<br />
@@ -606,36 +661,36 @@
               Line Height: {typo.lineHeight}<br />
               Letter Spacing: {toDimensionValue(typo.letterSpacing)}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            Font: {toFontFamilyValue(typo.fontFamily)}<br />
-            Weight: {typo.fontWeight}<br />
-            Size: {toDimensionValue(typo.fontSize)}<br />
-            Line Height: {typo.lineHeight}<br />
-            Letter Spacing: {toDimensionValue(typo.letterSpacing)}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "gradient"}
-      {@const gradient = toGradientValue(tokenValue.value, new Map())}
-      <div class="token-preview">
-        <div
-          class="gradient-preview"
-          style="background-image: {gradient};"
-        ></div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "gradient"}
+        {@const gradient = toGradientValue(tokenValue.value, new Map())}
+        <div class="token-preview">
+          <div
+            class="gradient-preview"
+            style="background-image: {gradient};"
+          ></div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                {#each tokenValue.value as stop}
+                  <div>
+                    {stop.position * 100}%: {serializeColor(stop.color)}
+                  </div>
+                {/each}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               {#each tokenValue.value as stop}
                 <div>
@@ -643,36 +698,36 @@
                 </div>
               {/each}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            {#each tokenValue.value as stop}
-              <div>
-                {stop.position * 100}%: {serializeColor(stop.color)}
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "shadow"}
-      {@const shadows = tokenValue.value}
-      <div class="token-preview">
-        <div
-          class="shadow-preview"
-          style="box-shadow: {toShadowValue(tokenValue.value, new Map())};"
-        ></div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "shadow"}
+        {@const shadows = tokenValue.value}
+        <div class="token-preview">
+          <div
+            class="shadow-preview"
+            style="box-shadow: {toShadowValue(tokenValue.value, new Map())};"
+          ></div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                {#each shadows as shadow}
+                  <div>
+                    {toShadowValue([shadow], new Map())}
+                  </div>
+                {/each}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               {#each shadows as shadow}
                 <div>
@@ -680,76 +735,74 @@
                 </div>
               {/each}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            {#each shadows as shadow}
-              <div>
-                {toShadowValue([shadow], new Map())}
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "border"}
-      {@const border = tokenValue.value}
-      {@const width = toDimensionValue(border.width)}
-      {@const style = toStrokeStyleValue(border.style)}
-      {@const color = serializeColor(border.color)}
-      <div class="token-preview">
-        <div
-          class="border-preview"
-          style="border: {width} {style} {color};"
-        ></div>
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render componentReferences(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "border"}
+        {@const border = tokenValue.value}
+        {@const width = toDimensionValue(border.width)}
+        {@const style = toStrokeStyleValue(border.style)}
+        {@const color = serializeColor(border.color)}
+        <div class="token-preview">
+          <div
+            class="border-preview"
+            style="border: {width} {style} {color};"
+          ></div>
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render componentReferences(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                <div>Color: {color}</div>
+                <div>Width: {width}</div>
+                {@render strokeStyleMetadata(border.style)}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               <div>Color: {color}</div>
               <div>Width: {width}</div>
               {@render strokeStyleMetadata(border.style)}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            <div>Color: {color}</div>
-            <div>Width: {width}</div>
-            {@render strokeStyleMetadata(border.style)}
-          </div>
-        {/if}
-      </div>
-    {/if}
+          {/if}
+        </div>
+      {/if}
 
-    {#if tokenValue.type === "strokeStyle"}
-      <div class="token-preview">
-        {@render strokeStylePreview(tokenValue.value)}
-        {@render copyButton(node)}
-      </div>
-      <div class="token-content">
-        {@render metadata(tokenMeta)}
-        {@render tokenReference(node)}
-        {@render extensionsDisplay(tokenMeta)}
-        {#if hasRefs}
-          <details class="resolved-value-accordion">
-            <summary>Resolved value</summary>
+      {#if tokenValue.type === "strokeStyle"}
+        <div class="token-preview">
+          {@render strokeStylePreview(tokenValue.value)}
+          {@render copyButton(node)}
+        </div>
+        <div class="token-content">
+          {@render metadata(tokenMeta)}
+          {@render tokenReference(node)}
+          {@render extensionsDisplay(tokenMeta)}
+          {#if hasRefs}
+            <details class="resolved-value-accordion">
+              <summary>Resolved value</summary>
+              <div class="token-value">
+                {@render strokeStyleMetadata(tokenValue.value)}
+              </div>
+            </details>
+          {:else}
             <div class="token-value">
               {@render strokeStyleMetadata(tokenValue.value)}
             </div>
-          </details>
-        {:else}
-          <div class="token-value">
-            {@render strokeStyleMetadata(tokenValue.value)}
-          </div>
-        {/if}
+          {/if}
+        </div>
+      {/if}
+    {:else}
+      <!-- Placeholder while loading -->
+      <div class="token-preview token-placeholder"></div>
+      <div class="token-content">
+        <div class="token-name">{titleCase(noCase(tokenMeta.name))}</div>
       </div>
     {/if}
   </div>
@@ -802,7 +855,7 @@
   {/each}
 {/snippet}
 
-<div class="styleguide">
+<div class="styleguide" bind:this={scrollContainer}>
   <div class="container">
     <h1>Design Tokens Styleguide</h1>
     {@render renderNodes(undefined, 2)}
@@ -1170,6 +1223,21 @@
   .curve-impulse {
     opacity: 0.8;
     filter: drop-shadow(0 0 3px rgba(79, 70, 229, 0.3));
+  }
+
+  .token-placeholder {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: placeholder-shimmer 1.5s infinite;
+  }
+
+  @keyframes placeholder-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   .token-extensions-section {
