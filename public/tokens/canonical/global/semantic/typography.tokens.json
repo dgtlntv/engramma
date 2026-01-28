@@ -1,12 +1,23 @@
 {
   "$schema": "https://designtokens.org/schemas/2025.10/format.json",
   "typography": {
+    "fontFamily": {
+      "$type": "fontFamily",
+      "default": {
+        "$value": "{typography.fontFamily.sansSerif}",
+        "$description": "Default font family"
+      },
+      "code": {
+        "$value": "{typography.fontFamily.monospace}",
+        "$description": "Font family for code"
+      }
+    },
     "$type": "typography",
     "text": {
       "primary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.350}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.350}",
@@ -58,7 +69,7 @@
         },
         "code": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontFamily": "{typography.fontFamily.code}",
             "fontSize": {
               "$ref": "#/typography/text/primary/$root/$value/fontSize"
             },
@@ -184,7 +195,7 @@
       "secondary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.300}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.300}",
@@ -236,7 +247,7 @@
         },
         "code": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontFamily": "{typography.fontFamily.code}",
             "fontSize": {
               "$ref": "#/typography/text/secondary/$root/$value/fontSize"
             },
@@ -332,7 +343,7 @@
       "tertiary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.250}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.250}",
@@ -529,7 +540,7 @@
       "1": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.700}",
             "fontWeight": "{typography.weight.medium}",
             "lineHeight": "{number.lineHeight.700}",
@@ -583,7 +594,7 @@
       "2": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.700}",
             "fontWeight": "{typography.weight.light}",
             "lineHeight": "{number.lineHeight.700}",
@@ -637,7 +648,7 @@
       "3": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.500}",
             "fontWeight": "{typography.weight.medium}",
             "lineHeight": "{number.lineHeight.500}",
@@ -691,7 +702,7 @@
       "4": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.500}",
             "fontWeight": "{typography.weight.light}",
             "lineHeight": "{number.lineHeight.500}",
@@ -745,7 +756,7 @@
       "5": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.350}",
             "fontWeight": "{typography.weight.semiBold}",
             "lineHeight": "{number.lineHeight.350}",
@@ -799,7 +810,7 @@
       "6": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.350}",
             "fontWeight": "{typography.weight.semiBold}",
             "lineHeight": "{number.lineHeight.350}",

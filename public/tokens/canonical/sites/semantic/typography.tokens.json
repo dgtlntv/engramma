@@ -6,7 +6,7 @@
       "display": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.950}",
             "fontWeight": "{typography.weight.extraLight}",
             "lineHeight": "{number.lineHeight.950}",

@@ -6,7 +6,7 @@
       "primary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.300}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.300}",
@@ -58,7 +58,7 @@
         },
         "code": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontFamily": "{typography.fontFamily.code}",
             "fontSize": {
               "$ref": "#/typography/text/primary/$root/$value/fontSize"
             },
@@ -154,7 +154,7 @@
       "secondary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.300}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.300}",
@@ -206,7 +206,7 @@
         },
         "code": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.monospace}",
+            "fontFamily": "{typography.fontFamily.code}",
             "fontSize": {
               "$ref": "#/typography/text/secondary/$root/$value/fontSize"
             },
@@ -302,7 +302,7 @@
       "tertiary": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.250}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.250}",
@@ -422,7 +422,7 @@
       "1": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.600}",
             "fontWeight": "{typography.weight.medium}",
             "lineHeight": "{number.lineHeight.600}",
@@ -476,7 +476,7 @@
       "2": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.600}",
             "fontWeight": "{typography.weight.light}",
             "lineHeight": "{number.lineHeight.600}",
@@ -530,7 +530,7 @@
       "5": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.400}",
             "fontWeight": "{typography.weight.semiBold}",
             "lineHeight": "{number.lineHeight.400}",
@@ -584,7 +584,7 @@
       "6": {
         "$root": {
           "$value": {
-            "fontFamily": "{typography.fontFamily.sansSerif}",
+            "fontFamily": "{typography.fontFamily.default}",
             "fontSize": "{dimension.size.fontSize.400}",
             "fontWeight": "{typography.weight.regular}",
             "lineHeight": "{number.lineHeight.400}",
