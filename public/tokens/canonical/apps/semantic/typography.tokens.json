@@ -86,6 +86,36 @@
           },
           "$description": "Monospace text style for code snippets (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
         },
+        "smallcaps": {
+          "$value": {
+            "fontFamily": {
+              "$ref": "#/typography/text/primary/$root/$value/fontFamily"
+            },
+            "fontSize": {
+              "$ref": "#/typography/text/primary/$root/$value/fontSize"
+            },
+            "fontWeight": {
+              "$ref": "#/typography/text/primary/$root/$value/fontWeight"
+            },
+            "lineHeight": {
+              "$ref": "#/typography/text/primary/$root/$value/lineHeight"
+            },
+            "letterSpacing": "{dimension.letterSpacing.wide}"
+          },
+          "$extensions": {
+            "com.canonical.typography": {
+              "$value": {
+                "letterCase": {
+                  "$ref": "#/typography/letterCase/smallcaps/$extensions/com.canonical.typography/$value"
+                },
+                "figureStyle": {
+                  "$ref": "#/typography/figureStyle/oldStyleFigure/$extensions/com.canonical.typography/$value"
+                }
+              }
+            }
+          },
+          "$description": "Small caps variant of primary text with wide letter spacing for stylistic headings and emphasis (14px) (Some properties of this token are not yet supported by the W3C DTCG specification, so they are stored in $extensions and require a token transformer compatible with Canonical design system extensions.)"
+        },
         "prose": {
           "$root": {
             "$value": {
